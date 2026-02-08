@@ -4,7 +4,7 @@
 # =============================================================================
 
 - name: "[RedHat] Install common packages"
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ common_packages }}"
     state: present
   when: common_packages_install | bool

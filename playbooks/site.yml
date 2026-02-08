@@ -23,8 +23,8 @@
   pre_tasks:
     - name: Validate Ansible version
       ansible.builtin.assert:
-        that: ansible_version.full is version('2.14', '>=')
-        msg: "Ansible 2.14+ required. Found: {{ ansible_version.full }}"
+        that: ansible_version.full is version('2.18', '>=')
+        msg: "Ansible-core 2.18+ required (ansible >= 13.0). Found: {{ ansible_version.full }}"
       run_once: true
 
     - name: Display target information

@@ -2,7 +2,7 @@
 # =============================================================================
 # IAC-Ansible: Initial Host Setup Playbook
 # =============================================================================
-# Run this once on new hosts to bootstrap them into the IAS system.
+# Run this once on new hosts to bootstrap them into the IAC system.
 # After initial setup, hosts will self-manage via ansible-pull.
 #
 # Usage:

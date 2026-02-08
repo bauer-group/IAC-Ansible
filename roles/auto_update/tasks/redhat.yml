@@ -4,10 +4,10 @@
 # =============================================================================
 
 - name: "[RedHat] Install dnf-automatic"
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name:
       - dnf-automatic
-      - yum-utils
+      - dnf-utils
     state: present
 
 - name: "[RedHat] Deploy update script"

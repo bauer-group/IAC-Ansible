@@ -3,7 +3,7 @@ galaxy_info:
   role_name: ansible_pull
   author: Bauer Group
   description: Git-based ansible-pull with systemd timer for automatic configuration updates
-  min_ansible_version: "2.14"
+  min_ansible_version: "2.18"
   platforms:
     - name: Ubuntu
       versions: [jammy, noble]
