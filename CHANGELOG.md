@@ -1,3 +1,10 @@
+## [0.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.1.1...v0.2.0) (2026-02-08)
+
+### 🚀 Features
+
+* Enhance Uptime Kuma integration for automated maintenance window management ([e1fd19a](https://github.com/bauer-group/IAC-Ansible/commit/e1fd19a49dd63457ff5d41076766bb0b6c225671))
+* Integrate Uptime Kuma for automated maintenance window management during updates ([b47a88c](https://github.com/bauer-group/IAC-Ansible/commit/b47a88c609f39fb29cfad54a36d43f23d964a885))
+
 ## [0.1.1](https://github.com/bauer-group/IAC-Ansible/compare/v0.1.0...v0.1.1) (2026-02-08)
 
 ### 🐛 Bug Fixes
