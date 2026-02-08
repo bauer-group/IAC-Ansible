@@ -1,3 +1,9 @@
+## [0.2.3](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.2...v0.2.3) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* Remove linear strategy and run_once from pre_tasks in site.yml ([7ba48a4](https://github.com/bauer-group/IAC-Ansible/commit/7ba48a40a0ac69644c031d8c0d0870ac95ee726b))
+
 ## [0.2.2](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.1...v0.2.2) (2026-02-08)
 
 ### 🐛 Bug Fixes
