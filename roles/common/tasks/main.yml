@@ -35,15 +35,19 @@
     name: "{{ system_timezone }}"
   when: common_timezone_configure | bool
 
-- name: Check for existing NTP services  # noqa: command-instead-of-module
-  ansible.builtin.shell:
-    cmd: >
-      set -o pipefail &&
-      systemctl is-active chronyd chrony ntpd ntp 2>/dev/null | grep -q '^active$'
-      && echo "found" || echo "none"
-    executable: /bin/bash
-  register: common_existing_ntp
-  changed_when: false
+- name: Gather service facts for NTP detection
+  ansible.builtin.service_facts:
+  when: common_ntp_configure | bool and ntp_enabled | bool
+
+- name: Set NTP already active fact
+  ansible.builtin.set_fact:
+    common_ntp_already_active: >-
+      {{
+        (ansible_facts.services['chronyd.service'] | default({})).get('state') == 'running' or
+        (ansible_facts.services['chrony.service'] | default({})).get('state') == 'running' or
+        (ansible_facts.services['ntpd.service'] | default({})).get('state') == 'running' or
+        (ansible_facts.services['ntp.service'] | default({})).get('state') == 'running'
+      }}
   when: common_ntp_configure | bool and ntp_enabled | bool
 
 - name: Deploy timesyncd configuration
@@ -56,7 +60,7 @@
     - common_ntp_configure | bool
     - ntp_enabled | bool
     - ntp_servers is defined
-    - common_existing_ntp.stdout | default('none') == 'none'
+    - not (common_ntp_already_active | default(false) | bool)
 
 - name: Enable and start NTP service
   ansible.builtin.systemd:
@@ -66,7 +70,7 @@
   when:
     - common_ntp_configure | bool
     - ntp_enabled | bool
-    - common_existing_ntp.stdout | default('none') == 'none'
+    - not (common_ntp_already_active | default(false) | bool)
 
 - name: Create Ansible log directory
   ansible.builtin.file:
