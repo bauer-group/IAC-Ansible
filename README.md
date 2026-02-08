@@ -106,7 +106,8 @@ auto_update_type: "security"  # Security updates only
 
 | OS | Versions | Status |
 | --- | --- | --- |
-| Ubuntu | 20.04, 22.04, 24.04 | Supported |
-| Debian | 11, 12 | Supported |
-| CentOS/RHEL | 8, 9 | Supported |
-| Rocky/AlmaLinux | 8, 9 | Supported |
+| Ubuntu | 22.04 LTS, 24.04 LTS | Supported |
+| Debian | 12 (bookworm), 13 (trixie) | Supported |
+| RHEL | 8, 9, 10 | Supported |
+| Rocky Linux | 8, 9, 10 | Supported |
+| AlmaLinux | 8, 9, 10 | Supported |
