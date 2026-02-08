@@ -1,0 +1,16 @@
+// =============================================================================
+// IAS-Ansible: APT Auto-Upgrades Trigger
+// Managed by Ansible - DO NOT EDIT MANUALLY
+// =============================================================================
+
+// Enable package list updates
+APT::Periodic::Update-Package-Lists "1";
+
+// Enable unattended upgrades
+APT::Periodic::Unattended-Upgrade "1";
+
+// Clean download archive every 7 days
+APT::Periodic::AutocleanInterval "7";
+
+// Download upgradeable packages
+APT::Periodic::Download-Upgradeable-Packages "1";

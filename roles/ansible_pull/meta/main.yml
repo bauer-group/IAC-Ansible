@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: ansible_pull
+  author: Bauer Group
+  description: Git-based ansible-pull with systemd timer for automatic configuration updates
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions: [focal, jammy, noble]
+    - name: Debian
+      versions: [bullseye, bookworm]
+    - name: EL
+      versions: [8, 9]
+
+dependencies: []

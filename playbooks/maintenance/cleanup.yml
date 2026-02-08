@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# IAS-Ansible: System Cleanup Playbook
+# =============================================================================
+# Clean temporary files, old logs, and unused packages.
+#
+# Usage:
+#   make cleanup
+#   make cleanup LIMIT="*.bauer-group.com"
+# =============================================================================
+
+- name: System cleanup
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: "[Debian] Clean apt cache"
+      ansible.builtin.apt:
+        autoclean: true
+      when: ansible_os_family == "Debian"
+
+    - name: "[Debian] Remove unused packages"
+      ansible.builtin.apt:
+        autoremove: true
+        purge: true
+      when: ansible_os_family == "Debian"
+
+    - name: "[RedHat] Clean yum/dnf cache"
+      ansible.builtin.command: "{{ 'dnf' if ansible_distribution_major_version | int >= 8 else 'yum' }} clean all"
+      changed_when: true
+      when: ansible_os_family == "RedHat"
+
+    - name: Clean temporary files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/ansible_facts_cache
+      ignore_errors: true
+
+    - name: Clean old log files (older than 30 days)
+      ansible.builtin.command: find /var/log -name "*.gz" -mtime +30 -delete
+      changed_when: false
+      ignore_errors: true
+
+    - name: Report disk usage
+      ansible.builtin.command: df -h /
+      register: disk_usage
+      changed_when: false
+
+    - name: Display disk usage
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }}: {{ disk_usage.stdout_lines[-1] }}"

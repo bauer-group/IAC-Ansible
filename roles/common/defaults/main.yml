@@ -1,0 +1,7 @@
+---
+# Common role defaults
+common_packages_install: true
+common_timezone_configure: true
+common_ntp_configure: true
+common_motd_configure: true
+common_logdir_configure: true

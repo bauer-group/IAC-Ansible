@@ -1,0 +1,22 @@
+---
+# =============================================================================
+# Ansible-Pull - Debian/Ubuntu: Install Ansible
+# =============================================================================
+
+- name: "[Debian] Add Ansible PPA (Ubuntu)"
+  ansible.builtin.apt_repository:
+    repo: "ppa:ansible/ansible"
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: "[Debian] Update apt cache"
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: "[Debian] Install Ansible"
+  ansible.builtin.apt:
+    name:
+      - ansible
+      - git
+    state: present

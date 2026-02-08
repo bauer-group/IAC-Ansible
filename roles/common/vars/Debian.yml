@@ -1,0 +1,20 @@
+---
+# Debian/Ubuntu specific variables
+common_packages:
+  - curl
+  - wget
+  - git
+  - htop
+  - vim
+  - unzip
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - python3
+  - python3-pip
+  - software-properties-common
+  - apt-transport-https
+  - cron
+
+ntp_package: "systemd-timesyncd"
+ntp_service: "systemd-timesyncd"

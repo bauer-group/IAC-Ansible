@@ -1,0 +1,44 @@
+---
+# =============================================================================
+# IAS-Ansible: System Update Playbook
+# =============================================================================
+# Manually trigger system updates on hosts.
+#
+# Usage:
+#   make update                                           # All auto_update hosts
+#   make update LIMIT="0046-20.cloud.bauer-group.com"     # Specific host
+#   make update LIMIT="*.bauer-group.com"                 # Wildcard
+#
+# Override update type:
+#   ansible-playbook playbooks/update.yml -e "auto_update_type=security"
+# =============================================================================
+
+- name: System updates
+  hosts: auto_update
+  become: true
+  gather_facts: true
+  serial: "{{ update_serial | default('100%') }}"
+
+  pre_tasks:
+    - name: Display update configuration
+      ansible.builtin.debug:
+        msg: >
+          Updating {{ inventory_hostname }}
+          | Type: {{ auto_update_type }}
+          | OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+
+  roles:
+    - role: auto_update
+      tags: [update]
+
+  post_tasks:
+    - name: Check if reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+      when: ansible_os_family == "Debian"
+
+    - name: Report reboot status
+      ansible.builtin.debug:
+        msg: "{{ 'REBOOT REQUIRED' if (reboot_required.stat.exists | default(false)) else 'No reboot required' }}"
+      when: ansible_os_family == "Debian"

@@ -1,0 +1,12 @@
+---
+# =============================================================================
+# Host-specific variables: 0046-20.cloud.bauer-group.com
+# =============================================================================
+
+# Platform
+platform: ubuntu_2404
+
+# Auto-update overrides (defaults from group_vars/all/update_settings.yml)
+# Uncomment to override:
+# auto_update_type: "security"
+# auto_update_reboot_cron_weekday: "6"  # Saturday instead of Sunday

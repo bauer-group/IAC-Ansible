@@ -1,0 +1,36 @@
+---
+# =============================================================================
+# Ansible-Pull Role Defaults
+# =============================================================================
+
+# Git repository URL
+ansible_pull_repo_url: "{{ ias_repo_url }}"
+
+# Branch to track
+ansible_pull_branch: "{{ ias_repo_branch | default('main') }}"
+
+# Playbook to execute
+ansible_pull_playbook: "playbooks/site.yml"
+
+# Schedule (systemd timer OnCalendar format)
+# See: https://www.freedesktop.org/software/systemd/man/systemd.time.html
+# Examples:
+#   "*-*-* 02:00:00"       = Daily at 02:00
+#   "*-*-* *:00/30:00"     = Every 30 minutes
+#   "hourly"               = Every hour
+ansible_pull_schedule: "*-*-* 02:00:00"
+
+# Randomized delay to prevent thundering herd
+ansible_pull_random_delay_sec: 900
+
+# Local checkout directory
+ansible_pull_workdir: "/opt/ias-ansible"
+
+# Log file
+ansible_pull_log_file: "/var/log/ansible/ansible-pull.log"
+
+# Extra arguments for ansible-pull
+ansible_pull_extra_args: ""
+
+# Enable/disable ansible-pull
+ansible_pull_enabled: true

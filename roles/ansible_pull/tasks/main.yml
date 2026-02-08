@@ -1,0 +1,58 @@
+---
+# =============================================================================
+# Ansible-Pull Role - Main Tasks
+# =============================================================================
+
+- name: Install Ansible on managed host
+  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
+
+- name: Create ansible-pull working directory
+  ansible.builtin.file:
+    path: "{{ ansible_pull_workdir }}"
+    state: directory
+    mode: "0755"
+
+- name: Create ansible log directory
+  ansible.builtin.file:
+    path: "{{ ansible_pull_log_file | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy ansible-pull systemd service
+  ansible.builtin.template:
+    src: ansible-pull.service.j2
+    dest: /etc/systemd/system/ansible-pull.service
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Deploy ansible-pull systemd timer
+  ansible.builtin.template:
+    src: ansible-pull.timer.j2
+    dest: /etc/systemd/system/ansible-pull.timer
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart ansible-pull timer
+
+- name: Flush handlers to activate systemd units
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start ansible-pull timer
+  ansible.builtin.systemd:
+    name: ansible-pull.timer
+    state: started
+    enabled: true
+  when: ansible_pull_enabled | bool
+
+- name: Disable ansible-pull timer when not needed
+  ansible.builtin.systemd:
+    name: ansible-pull.timer
+    state: stopped
+    enabled: false
+  when: not (ansible_pull_enabled | bool)
+
+- name: Deploy logrotate configuration
+  ansible.builtin.template:
+    src: ansible-pull.logrotate.j2
+    dest: /etc/logrotate.d/ansible-pull
+    mode: "0644"

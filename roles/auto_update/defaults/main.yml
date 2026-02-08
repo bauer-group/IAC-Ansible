@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# Auto-Update Role Defaults
+# =============================================================================
+# All values can be overridden in:
+#   - inventory/production/group_vars/all/update_settings.yml (global)
+#   - inventory/production/host_vars/<hostname>.yml (per-host)
+# =============================================================================
+
+# Master switch
+auto_update_enabled: true
+
+# Update type: "all" or "security"
+auto_update_type: "all"
+
+# --- Update Schedule (cron) ---
+auto_update_cron_minute: "0"
+auto_update_cron_hour: "2"
+auto_update_cron_day: "*"
+auto_update_cron_month: "*"
+auto_update_cron_weekday: "*"
+
+# --- Reboot Settings ---
+auto_update_reboot_enabled: true
+auto_update_reboot_cron_minute: "0"
+auto_update_reboot_cron_hour: "3"
+auto_update_reboot_cron_day: "*"
+auto_update_reboot_cron_month: "*"
+auto_update_reboot_cron_weekday: "0"
+
+# --- Package Management ---
+auto_update_blacklist: []
+auto_update_autoremove: true
+auto_update_remove_old_kernels: true
+
+# --- Notifications ---
+auto_update_mail_to: ""
+auto_update_mail_on_error: true
+
+# --- Logging ---
+auto_update_log_file: "/var/log/auto-update.log"

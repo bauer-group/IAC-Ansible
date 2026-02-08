@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# IAS-Ansible: Controlled Reboot Playbook
+# =============================================================================
+# Safely reboot hosts with pre/post checks.
+#
+# Usage:
+#   make reboot LIMIT="0046-20.cloud.bauer-group.com"
+#   ansible-playbook playbooks/maintenance/reboot.yml --limit "host"
+# =============================================================================
+
+- name: Controlled system reboot
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: 1
+
+  tasks:
+    - name: Pre-reboot notification
+      ansible.builtin.debug:
+        msg: "Initiating controlled reboot for {{ inventory_hostname }}"
+
+    - name: Reboot the system
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        pre_reboot_delay: 10
+        post_reboot_delay: 30
+        msg: "IAS-Ansible: Controlled reboot initiated"
+
+    - name: Wait for system to come back online
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Verify system is operational
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: Post-reboot status
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} is back online. Uptime: {{ uptime_result.stdout }}"

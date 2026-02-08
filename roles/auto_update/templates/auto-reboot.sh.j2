@@ -1,0 +1,45 @@
+#!/bin/bash
+# =============================================================================
+# IAS-Ansible: Controlled Reboot Script
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+set -euo pipefail
+
+LOG_PREFIX="[IAS-AutoReboot]"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "${LOG_PREFIX} ${TIMESTAMP} Checking if reboot is required..."
+
+NEEDS_REBOOT=false
+
+{% if ansible_os_family == "Debian" %}
+# Debian/Ubuntu: check reboot-required flag
+if [ -f /var/run/reboot-required ]; then
+    NEEDS_REBOOT=true
+    echo "${LOG_PREFIX} /var/run/reboot-required exists"
+    if [ -f /var/run/reboot-required.pkgs ]; then
+        echo "${LOG_PREFIX} Packages requiring reboot:"
+        cat /var/run/reboot-required.pkgs
+    fi
+fi
+{% else %}
+# RedHat/CentOS: use needs-restarting
+if ! needs-restarting -r &>/dev/null; then
+    NEEDS_REBOOT=true
+    echo "${LOG_PREFIX} needs-restarting reports reboot required"
+fi
+{% endif %}
+
+if [ "${NEEDS_REBOOT}" = true ]; then
+    echo "${LOG_PREFIX} Initiating controlled reboot..."
+    echo "${LOG_PREFIX} Reboot reason: Scheduled maintenance (IAS-Ansible auto-update)"
+
+    # Log to syslog
+    logger -t IAS-Ansible "Controlled reboot initiated by auto-update schedule"
+
+    # Perform reboot with 1 minute warning
+    shutdown -r +1 "IAS-Ansible: Scheduled reboot for system updates"
+else
+    echo "${LOG_PREFIX} No reboot required. Skipping."
+fi

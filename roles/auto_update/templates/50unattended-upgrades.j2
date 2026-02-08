@@ -1,0 +1,50 @@
+// =============================================================================
+// IAS-Ansible: Unattended Upgrades Configuration
+// Managed by Ansible - DO NOT EDIT MANUALLY
+// =============================================================================
+
+Unattended-Upgrade::Allowed-Origins {
+{% if auto_update_type == "security" %}
+    // Security updates only
+    "${distro_id}:${distro_codename}-security";
+    "${distro_id}ESMApps:${distro_codename}-apps-security";
+    "${distro_id}ESM:${distro_codename}-infra-security";
+{% else %}
+    // All updates
+    "${distro_id}:${distro_codename}";
+    "${distro_id}:${distro_codename}-security";
+    "${distro_id}:${distro_codename}-updates";
+    "${distro_id}ESMApps:${distro_codename}-apps-security";
+    "${distro_id}ESM:${distro_codename}-infra-security";
+{% endif %}
+};
+
+{% if auto_update_blacklist | length > 0 %}
+Unattended-Upgrade::Package-Blacklist {
+{% for pkg in auto_update_blacklist %}
+    "{{ pkg }}";
+{% endfor %}
+};
+{% endif %}
+
+// Automatically fix interrupted dpkg
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+
+// Remove unused automatically installed kernel-related packages
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "{{ 'true' if auto_update_remove_old_kernels | bool else 'false' }}";
+
+// Remove unused dependencies
+Unattended-Upgrade::Remove-Unused-Dependencies "{{ 'true' if auto_update_autoremove | bool else 'false' }}";
+
+// Do NOT automatically reboot (handled by our reboot cron)
+Unattended-Upgrade::Automatic-Reboot "false";
+
+{% if auto_update_mail_to %}
+// Email notifications
+Unattended-Upgrade::Mail "{{ auto_update_mail_to }}";
+Unattended-Upgrade::MailReport "{{ 'on-error' if auto_update_mail_on_error | bool else 'always' }}";
+{% endif %}
+
+// Logging
+Unattended-Upgrade::SyslogEnable "true";
+Unattended-Upgrade::SyslogFacility "daemon";

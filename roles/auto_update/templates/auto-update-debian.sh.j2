@@ -1,0 +1,55 @@
+#!/bin/bash
+# =============================================================================
+# IAS-Ansible: Automatic System Update Script (Debian/Ubuntu)
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+set -euo pipefail
+
+LOG_PREFIX="[IAS-AutoUpdate]"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "${LOG_PREFIX} ${TIMESTAMP} Starting system update..."
+echo "${LOG_PREFIX} Update type: {{ auto_update_type }}"
+echo "${LOG_PREFIX} Host: $(hostname -f)"
+
+# Update package lists
+echo "${LOG_PREFIX} Updating package lists..."
+apt-get update -qq
+
+{% if auto_update_type == "security" %}
+# Security updates only
+echo "${LOG_PREFIX} Installing security updates only..."
+apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+  -t "$(lsb_release -cs)-security" 2>/dev/null || \
+  unattended-upgrade --minimal_upgrade_steps
+{% else %}
+# Full system upgrade
+echo "${LOG_PREFIX} Installing all available updates..."
+apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+apt-get dist-upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+{% endif %}
+
+{% if auto_update_autoremove | bool %}
+# Remove unused packages
+echo "${LOG_PREFIX} Removing unused packages..."
+apt-get autoremove -y
+apt-get autoclean -y
+{% endif %}
+
+{% if auto_update_remove_old_kernels | bool %}
+# Remove old kernels (keep current + one previous)
+echo "${LOG_PREFIX} Cleaning old kernels..."
+apt-get autoremove --purge -y 2>/dev/null || true
+{% endif %}
+
+# Check if reboot is required
+if [ -f /var/run/reboot-required ]; then
+    echo "${LOG_PREFIX} NOTICE: System reboot required"
+    echo "${LOG_PREFIX} Reboot will be handled by scheduled reboot cron"
+else
+    echo "${LOG_PREFIX} No reboot required"
+fi
+
+TIMESTAMP_END=$(date '+%Y-%m-%d %H:%M:%S')
+echo "${LOG_PREFIX} ${TIMESTAMP_END} Update completed successfully"

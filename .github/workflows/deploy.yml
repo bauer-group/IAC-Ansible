@@ -1,0 +1,51 @@
+---
+name: Deploy Configuration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'roles/**'
+      - 'playbooks/**'
+      - 'inventory/**'
+      - 'filter_plugins/**'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target hosts (limit pattern)'
+        required: false
+        default: 'all'
+
+# This workflow notifies managed hosts to pull updates.
+# Requires SSH_PRIVATE_KEY secret with access to managed hosts.
+# Enable this workflow once you have set up the secret.
+
+jobs:
+  notify:
+    name: Notify Hosts to Pull Updates
+    runs-on: ubuntu-latest
+    if: false  # Set to true once SSH_PRIVATE_KEY secret is configured
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python & Ansible
+        run: |
+          pip install ansible
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $(grep -oP '[\w.-]+\.[\w.-]+' inventory/production/hosts.yml | sort -u) >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Trigger ansible-pull on hosts
+        run: |
+          TARGET="${{ github.event.inputs.target || 'all' }}"
+          ansible -i inventory/production/hosts.yml "${TARGET}" \
+            -m ansible.builtin.systemd \
+            -a "name=ansible-pull.service state=started" \
+            --become \
+            || echo "Some hosts may be unreachable - they will pull on next scheduled run"

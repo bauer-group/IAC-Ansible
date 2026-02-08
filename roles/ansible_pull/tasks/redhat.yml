@@ -1,0 +1,16 @@
+---
+# =============================================================================
+# Ansible-Pull - RedHat/CentOS: Install Ansible
+# =============================================================================
+
+- name: "[RedHat] Install EPEL repository"
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+
+- name: "[RedHat] Install Ansible"
+  ansible.builtin.yum:
+    name:
+      - ansible
+      - git
+    state: present

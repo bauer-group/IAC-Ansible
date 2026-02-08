@@ -1,0 +1,66 @@
+---
+# =============================================================================
+# IAS-Ansible: Master Playbook (site.yml)
+# =============================================================================
+# This is the main entry point for all configuration management.
+# It applies roles based on group membership.
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml                          # All hosts
+#   ansible-playbook playbooks/site.yml --limit "host1"          # Specific host
+#   ansible-playbook playbooks/site.yml --limit "*.bauer-group.com"  # Wildcard
+#   ansible-playbook playbooks/site.yml --tags "update"          # Specific tags
+#   make deploy LIMIT="0046-20.cloud.bauer-group.com"            # Via Makefile
+# =============================================================================
+
+# --- Phase 1: Common baseline for all hosts ---
+- name: "Phase 1: Common baseline configuration"
+  hosts: all
+  become: true
+  gather_facts: true
+  tags: [common, always-gather]
+
+  pre_tasks:
+    - name: Validate Ansible version
+      ansible.builtin.assert:
+        that: ansible_version.full is version('2.14', '>=')
+        msg: "Ansible 2.14+ required. Found: {{ ansible_version.full }}"
+      run_once: true
+
+    - name: Display target information
+      ansible.builtin.debug:
+        msg: "Configuring {{ inventory_hostname }} ({{ ansible_distribution }} {{ ansible_distribution_version }})"
+
+    # Dynamic label/service filtering
+    - name: Skip host if label filter doesn't match
+      ansible.builtin.meta: end_host
+      when:
+        - filter_label is defined
+        - labels is defined
+        - filter_label not in labels
+
+  roles:
+    - role: common
+      tags: [common]
+
+# --- Phase 2: ansible-pull setup (all hosts) ---
+- name: "Phase 2: ansible-pull configuration"
+  hosts: all
+  become: true
+  gather_facts: false
+  tags: [ansible-pull, pull]
+
+  roles:
+    - role: ansible_pull
+      tags: [ansible-pull, pull]
+
+# --- Phase 3: Auto-update for designated hosts ---
+- name: "Phase 3: Automatic updates"
+  hosts: auto_update
+  become: true
+  gather_facts: true
+  tags: [update, auto-update]
+
+  roles:
+    - role: auto_update
+      tags: [update, auto-update]

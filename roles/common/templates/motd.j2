@@ -1,0 +1,14 @@
+
+===============================================================================
+  {{ motd_organization }} - Managed by IAS-Ansible
+===============================================================================
+  Hostname:     {{ ansible_hostname }}
+  FQDN:         {{ ansible_fqdn }}
+  OS:           {{ ansible_distribution }} {{ ansible_distribution_version }}
+  Kernel:       {{ ansible_kernel }}
+  Architecture: {{ ansible_architecture }}
+  IPv4:         {{ ansible_default_ipv4.address | default('N/A') }}
+===============================================================================
+  This system is managed by Ansible. Manual changes may be overwritten.
+  Repository:   {{ ias_repo_url }}
+===============================================================================

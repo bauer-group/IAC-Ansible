@@ -1,0 +1,49 @@
+---
+# =============================================================================
+# Auto-Update Role - Debian/Ubuntu Tasks
+# =============================================================================
+
+- name: "[Debian] Install unattended-upgrades"
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+      - needrestart
+    state: present
+
+- name: "[Debian] Deploy update script"
+  ansible.builtin.template:
+    src: auto-update-debian.sh.j2
+    dest: /usr/local/sbin/auto-update.sh
+    mode: "0755"
+
+- name: "[Debian] Configure unattended-upgrades"
+  ansible.builtin.template:
+    src: 50unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    mode: "0644"
+  notify: Restart unattended-upgrades
+
+- name: "[Debian] Configure auto-upgrades trigger"
+  ansible.builtin.template:
+    src: 20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: "0644"
+  notify: Restart unattended-upgrades
+
+- name: "[Debian] Configure update cron job"
+  ansible.builtin.cron:
+    name: "IAS-Ansible: Auto system update"
+    minute: "{{ auto_update_cron_minute }}"
+    hour: "{{ auto_update_cron_hour }}"
+    day: "{{ auto_update_cron_day }}"
+    month: "{{ auto_update_cron_month }}"
+    weekday: "{{ auto_update_cron_weekday }}"
+    job: "/usr/local/sbin/auto-update.sh >> {{ auto_update_log_file }} 2>&1"
+    user: root
+
+- name: "[Debian] Enable unattended-upgrades service"
+  ansible.builtin.systemd:
+    name: unattended-upgrades
+    state: started
+    enabled: true

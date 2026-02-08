@@ -1,0 +1,28 @@
+---
+# =============================================================================
+# Auto-Update Role - RedHat/CentOS Tasks
+# =============================================================================
+
+- name: "[RedHat] Install dnf-automatic"
+  ansible.builtin.yum:
+    name:
+      - dnf-automatic
+      - yum-utils
+    state: present
+
+- name: "[RedHat] Deploy update script"
+  ansible.builtin.template:
+    src: auto-update-redhat.sh.j2
+    dest: /usr/local/sbin/auto-update.sh
+    mode: "0755"
+
+- name: "[RedHat] Configure update cron job"
+  ansible.builtin.cron:
+    name: "IAS-Ansible: Auto system update"
+    minute: "{{ auto_update_cron_minute }}"
+    hour: "{{ auto_update_cron_hour }}"
+    day: "{{ auto_update_cron_day }}"
+    month: "{{ auto_update_cron_month }}"
+    weekday: "{{ auto_update_cron_weekday }}"
+    job: "/usr/local/sbin/auto-update.sh >> {{ auto_update_log_file }} 2>&1"
+    user: root

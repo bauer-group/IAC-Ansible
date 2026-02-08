@@ -1,0 +1,16 @@
+---
+# =============================================================================
+# Common Role - RedHat/CentOS Tasks
+# =============================================================================
+
+- name: "[RedHat] Install common packages"
+  ansible.builtin.yum:
+    name: "{{ common_packages }}"
+    state: present
+  when: common_packages_install | bool
+
+- name: "[RedHat] Ensure crond service is running"
+  ansible.builtin.systemd:
+    name: crond
+    state: started
+    enabled: true

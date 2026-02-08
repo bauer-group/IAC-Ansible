@@ -1,0 +1,57 @@
+---
+# =============================================================================
+# Common Role - Main Tasks
+# =============================================================================
+# Platform detection and delegation to OS-specific tasks
+
+- name: Gather OS family variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Display detected platform
+  ansible.builtin.debug:
+    msg: >
+      Host: {{ inventory_hostname }}
+      | OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+      | Family: {{ ansible_os_family }}
+      | Architecture: {{ ansible_architecture }}
+
+- name: Include Debian/Ubuntu tasks
+  ansible.builtin.include_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Include RedHat/CentOS tasks
+  ansible.builtin.include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Fail on unsupported platform
+  ansible.builtin.fail:
+    msg: "Unsupported OS family: {{ ansible_os_family }}. Supported: Debian, RedHat"
+  when: ansible_os_family not in ["Debian", "RedHat"]
+
+# --- Common tasks (all platforms) ---
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ system_timezone }}"
+  when: common_timezone_configure | bool
+
+- name: Enable and start NTP service
+  ansible.builtin.systemd:
+    name: "{{ ntp_service }}"
+    state: started
+    enabled: true
+  when: common_ntp_configure | bool and ntp_enabled | bool
+
+- name: Create Ansible log directory
+  ansible.builtin.file:
+    path: /var/log/ansible
+    state: directory
+    mode: "0755"
+  when: common_logdir_configure | bool
+
+- name: Deploy MOTD
+  ansible.builtin.template:
+    src: motd.j2
+    dest: /etc/motd
+    mode: "0644"
+  when: common_motd_configure | bool and motd_enabled | bool

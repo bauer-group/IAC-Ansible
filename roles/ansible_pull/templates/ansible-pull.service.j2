@@ -1,0 +1,27 @@
+# =============================================================================
+# IAS-Ansible: ansible-pull systemd service
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+[Unit]
+Description=IAS-Ansible Pull Configuration from Git
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ansible-pull \
+  --url {{ ansible_pull_repo_url }} \
+  --checkout {{ ansible_pull_branch }} \
+  --directory {{ ansible_pull_workdir }} \
+  --full \
+  --accept-host-key \
+  {{ ansible_pull_playbook }} \
+  {{ ansible_pull_extra_args }}
+StandardOutput=append:{{ ansible_pull_log_file }}
+StandardError=append:{{ ansible_pull_log_file }}
+Environment="ANSIBLE_LOG_PATH={{ ansible_pull_log_file }}"
+Environment="HOME=/root"
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,57 @@
+---
+# =============================================================================
+# Auto-Update Role - Main Tasks
+# =============================================================================
+
+- name: Display auto-update configuration
+  ansible.builtin.debug:
+    msg: >
+      Auto-Update Config for {{ inventory_hostname }}:
+      enabled={{ auto_update_enabled }}
+      | type={{ auto_update_type }}
+      | reboot={{ auto_update_reboot_enabled }}
+      | update_schedule={{ auto_update_cron_minute }} {{ auto_update_cron_hour }} {{ auto_update_cron_day }} {{ auto_update_cron_month }} {{ auto_update_cron_weekday }}
+      | reboot_schedule={{ auto_update_reboot_cron_minute }} {{ auto_update_reboot_cron_hour }} {{ auto_update_reboot_cron_day }} {{ auto_update_reboot_cron_month }} {{ auto_update_reboot_cron_weekday }}
+
+- name: Include Debian/Ubuntu auto-update tasks
+  ansible.builtin.include_tasks: debian.yml
+  when: ansible_os_family == "Debian" and auto_update_enabled | bool
+
+- name: Include RedHat/CentOS auto-update tasks
+  ansible.builtin.include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat" and auto_update_enabled | bool
+
+# --- Reboot scheduling (all platforms) ---
+
+- name: Deploy controlled reboot script
+  ansible.builtin.template:
+    src: auto-reboot.sh.j2
+    dest: /usr/local/sbin/auto-reboot.sh
+    mode: "0755"
+  when: auto_update_enabled | bool and auto_update_reboot_enabled | bool
+
+- name: Configure reboot cron job
+  ansible.builtin.cron:
+    name: "IAS-Ansible: Controlled reboot"
+    minute: "{{ auto_update_reboot_cron_minute }}"
+    hour: "{{ auto_update_reboot_cron_hour }}"
+    day: "{{ auto_update_reboot_cron_day }}"
+    month: "{{ auto_update_reboot_cron_month }}"
+    weekday: "{{ auto_update_reboot_cron_weekday }}"
+    job: "/usr/local/sbin/auto-reboot.sh >> {{ auto_update_log_file }} 2>&1"
+    user: root
+    state: "{{ 'present' if (auto_update_enabled | bool and auto_update_reboot_enabled | bool) else 'absent' }}"
+
+- name: Remove reboot cron when disabled
+  ansible.builtin.cron:
+    name: "IAS-Ansible: Controlled reboot"
+    state: absent
+  when: not (auto_update_enabled | bool) or not (auto_update_reboot_enabled | bool)
+
+# --- Disable tasks when auto_update is off ---
+
+- name: Remove update cron when disabled
+  ansible.builtin.cron:
+    name: "IAS-Ansible: Auto system update"
+    state: absent
+  when: not (auto_update_enabled | bool)
