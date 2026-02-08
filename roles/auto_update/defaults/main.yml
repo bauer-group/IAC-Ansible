@@ -43,5 +43,20 @@ auto_update_remove_old_kernels: true
 auto_update_mail_to: ""
 auto_update_mail_on_error: true
 
+# --- Status Monitor Integration ---
+# Modular integration for status monitoring tools (Uptime Kuma, etc.)
+# Opens maintenance window before updates, closes after completion/reboot.
+# Monitors are discovered automatically by FQDN hostname.
+#
+# Credentials are stored in /etc/iac-ansible/status-monitor.env (NOT in git).
+# Deploy via Ansible Vault vars below, or create the .env file manually.
+auto_update_statusmon_enabled: false
+# Provider: "uptime-kuma" (add new providers in files/providers/)
+auto_update_statusmon_provider: "uptime-kuma"
+# Optional: set these to deploy .env via Ansible (use vault for api_key!)
+# If empty, the .env file must be created manually on each host.
+auto_update_statusmon_url: ""
+auto_update_statusmon_api_key: ""
+
 # --- Logging ---
 auto_update_log_file: "/var/log/auto-update.log"

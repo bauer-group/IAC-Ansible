@@ -14,6 +14,7 @@
       | chain_ansible_pull={{ auto_update_chain_ansible_pull }}
       | reboot={{ auto_update_reboot_enabled }} (weekday={{ auto_update_reboot_cron_weekday }})
       | schedule={{ auto_update_cron_minute }} {{ auto_update_cron_hour }} {{ auto_update_cron_day }} {{ auto_update_cron_month }} {{ auto_update_cron_weekday }}
+      | statusmon={{ auto_update_statusmon_enabled }} ({{ auto_update_statusmon_provider }})
 
 - name: Include Debian/Ubuntu auto-update tasks
   ansible.builtin.include_tasks: debian.yml
@@ -34,6 +35,86 @@
   ansible.builtin.file:
     path: /usr/local/sbin/auto-reboot.sh
     state: absent
+
+# --- Cleanup legacy Kuma-specific script ---
+
+- name: Remove legacy Kuma script (replaced by modular provider)
+  ansible.builtin.file:
+    path: /usr/local/sbin/iac-kuma-maintenance.py
+    state: absent
+
+# --- Status Monitor Integration (modular, provider-based) ---
+
+- name: Create IAC directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /var/lib/iac-ansible
+    - /etc/iac-ansible
+    - /usr/local/lib/iac-ansible/providers
+  when: auto_update_statusmon_enabled | bool
+
+- name: Deploy status monitor wrapper script
+  ansible.builtin.template:
+    src: iac-status-monitor.sh.j2
+    dest: /usr/local/sbin/iac-status-monitor.sh
+    mode: "0755"
+  when: auto_update_statusmon_enabled | bool
+
+- name: Deploy status monitor provider ({{ auto_update_statusmon_provider }})
+  ansible.builtin.copy:
+    src: "providers/{{ auto_update_statusmon_provider }}.py"
+    dest: "/usr/local/lib/iac-ansible/providers/{{ auto_update_statusmon_provider }}.py"
+    mode: "0644"
+  when: auto_update_statusmon_enabled | bool
+
+- name: Create status monitor Python venv
+  ansible.builtin.command:
+    cmd: python3 -m venv /opt/iac-ansible/statusmon-venv
+    creates: /opt/iac-ansible/statusmon-venv/bin/python3
+  when: auto_update_statusmon_enabled | bool
+
+- name: Install provider dependencies (uptime-kuma-api)
+  ansible.builtin.pip:
+    name: uptime-kuma-api
+    virtualenv: /opt/iac-ansible/statusmon-venv
+  when: auto_update_statusmon_enabled | bool and auto_update_statusmon_provider == "uptime-kuma"
+
+- name: Deploy status-monitor.env from Ansible Vault
+  ansible.builtin.template:
+    src: status-monitor.env.j2
+    dest: /etc/iac-ansible/status-monitor.env
+    mode: "0600"
+  when:
+    - auto_update_statusmon_enabled | bool
+    - auto_update_statusmon_url | length > 0
+    - auto_update_statusmon_api_key | length > 0
+
+- name: Deploy post-reboot maintenance close service
+  ansible.builtin.template:
+    src: iac-maintenance-close.service.j2
+    dest: /etc/systemd/system/iac-maintenance-close.service
+    mode: "0644"
+  notify: Reload systemd
+  when: auto_update_statusmon_enabled | bool
+
+- name: Flush handlers for systemd reload
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable post-reboot maintenance close service
+  ansible.builtin.systemd:
+    name: iac-maintenance-close.service
+    enabled: true
+  when: auto_update_statusmon_enabled | bool
+
+- name: Disable post-reboot service when status monitor disabled
+  ansible.builtin.systemd:
+    name: iac-maintenance-close.service
+    enabled: false
+  when: not (auto_update_statusmon_enabled | bool)
+  failed_when: false
 
 # --- Disable tasks when auto_update is off ---
 

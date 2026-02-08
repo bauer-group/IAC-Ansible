@@ -47,3 +47,23 @@ auto_update_remove_old_kernels: true
 
 # Auto-remove unused dependencies
 auto_update_autoremove: true
+
+# --- Status Monitor Integration ---
+# Modular integration for status monitoring (Uptime Kuma, etc.)
+# Opens maintenance window before updates, closes after completion/reboot.
+# Monitors are discovered automatically by server FQDN hostname.
+# Only activates when updates are actually available.
+auto_update_statusmon_enabled: false
+auto_update_statusmon_provider: "uptime-kuma"
+#
+# Credentials: stored in /etc/iac-ansible/status-monitor.env (NOT in git)
+# Option A: Deploy .env via Ansible Vault (set both vars below)
+# Option B: Create /etc/iac-ansible/status-monitor.env manually on each host
+#
+# auto_update_statusmon_url: "https://status.bauer-group.com"
+# auto_update_statusmon_api_key: "{{ vault_statusmon_api_key }}"
+#
+# Vault example:
+#   ansible-vault encrypt_string 'uk1_...' --name 'vault_statusmon_api_key'
+auto_update_statusmon_url: ""
+auto_update_statusmon_api_key: ""

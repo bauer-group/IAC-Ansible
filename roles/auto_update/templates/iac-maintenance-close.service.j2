@@ -1,0 +1,21 @@
+# =============================================================================
+# IAC-Ansible: Close status monitor maintenance window after reboot
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+# This oneshot service runs on boot and closes any maintenance window
+# that was left open before a reboot. Provider-agnostic.
+
+[Unit]
+Description=IAC-Ansible: Close maintenance window after reboot
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/var/lib/iac-ansible/maintenance-state
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/iac-status-monitor.sh stop
+RemainAfterExit=no
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

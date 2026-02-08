@@ -1,0 +1,83 @@
+#!/bin/bash
+# =============================================================================
+# IAC-Ansible: Status Monitor Integration (Generic Wrapper)
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+# Pluggable status monitor integration. Reads credentials from a local .env
+# file (NOT stored in git). Discovers providers from /usr/local/lib/iac-ansible/
+#
+# Usage: iac-status-monitor.sh start|stop
+#
+# Supported providers:
+#   - uptime-kuma   (Uptime Kuma via uptime-kuma-api)
+#
+# Configuration: /etc/iac-ansible/status-monitor.env
+# =============================================================================
+
+set -uo pipefail
+
+LOG_PREFIX="[IAC-StatusMonitor]"
+CONFIG_FILE="/etc/iac-ansible/status-monitor.env"
+STATE_FILE="/var/lib/iac-ansible/maintenance-state"
+VENV_PYTHON="/opt/iac-ansible/statusmon-venv/bin/python3"
+
+# --- Pre-flight checks ---
+
+if [ $# -lt 1 ] || [[ "$1" != "start" && "$1" != "stop" ]]; then
+    echo "${LOG_PREFIX} Usage: $0 start|stop"
+    exit 1
+fi
+
+ACTION="$1"
+
+# No config file → silently skip (status monitor not configured on this host)
+if [ ! -f "${CONFIG_FILE}" ]; then
+    echo "${LOG_PREFIX} No config at ${CONFIG_FILE}, skipping"
+    exit 0
+fi
+
+# Source the .env file
+# shellcheck source=/dev/null
+source "${CONFIG_FILE}"
+
+# Validate required variables
+if [ -z "${STATUS_MONITOR_URL:-}" ]; then
+    echo "${LOG_PREFIX} STATUS_MONITOR_URL not set, skipping"
+    exit 0
+fi
+
+if [ -z "${STATUS_MONITOR_API_KEY:-}" ]; then
+    echo "${LOG_PREFIX} STATUS_MONITOR_API_KEY not set, skipping"
+    exit 0
+fi
+
+PROVIDER="${STATUS_MONITOR_PROVIDER:-uptime-kuma}"
+
+# --- Resolve provider script ---
+
+PROVIDER_SCRIPT="/usr/local/lib/iac-ansible/providers/${PROVIDER}.py"
+
+if [ ! -f "${PROVIDER_SCRIPT}" ]; then
+    echo "${LOG_PREFIX} Provider '${PROVIDER}' not found at ${PROVIDER_SCRIPT}, skipping"
+    exit 0
+fi
+
+# --- Resolve Python interpreter ---
+
+PYTHON="${VENV_PYTHON}"
+if [ ! -x "${PYTHON}" ]; then
+    PYTHON="python3"
+fi
+
+# --- Export env vars for the provider ---
+
+export STATUS_MONITOR_URL
+export STATUS_MONITOR_API_KEY
+export STATUS_MONITOR_HOSTNAME="${STATUS_MONITOR_HOSTNAME:-}"
+export STATUS_MONITOR_STATE_FILE="${STATE_FILE}"
+
+# --- Execute provider ---
+
+echo "${LOG_PREFIX} Provider: ${PROVIDER} | Action: ${ACTION}"
+"${PYTHON}" "${PROVIDER_SCRIPT}" "${ACTION}"
+exit $?
