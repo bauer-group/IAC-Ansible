@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.0...v0.2.1) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* Correct formatting in ansible-deploy.yml for Python setup step ([1c6a5fe](https://github.com/bauer-group/IAC-Ansible/commit/1c6a5fe6393c76f6973fd4dd2a12d60f1ddba8f0))
+* Update playbooks and roles with improved error handling and consistent variable naming ([bb86674](https://github.com/bauer-group/IAC-Ansible/commit/bb86674200a9b0de6becc021d519c3333d65aefe))
+
 ## [0.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.1.1...v0.2.0) (2026-02-08)
 
 ### 🚀 Features
