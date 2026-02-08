@@ -94,6 +94,7 @@ auto_update_type: "security"  # Security updates only
 ## Documentation
 
 - [Architecture](docs/architecture.md)
+- [Server Naming & Coding Scheme](docs/server-naming.md)
 - [Quickstart](docs/quickstart.md)
 - [Filtering](docs/filtering.md)
 - [Auto-Updates](docs/auto-updates.md)

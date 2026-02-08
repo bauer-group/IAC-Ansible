@@ -1,10 +1,21 @@
 ---
 # =============================================================================
-# Host-specific variables: 0046-20.cloud.bauer-group.com
+# Host: 0046-20.cloud.bauer-group.com
+# Asset: 0046 | Group: 20 (Public Cloud VM)
 # =============================================================================
 
 # Platform
 platform: ubuntu_2404
+
+# Asset metadata (auto-derivable from hostname, explicit for clarity)
+asset_id: "0046"
+group_code: "20"
+asset_type: public_cloud_vm
+
+# Labels
+labels:
+  - public-cloud
+  - production
 
 # Auto-update overrides (defaults from group_vars/all/update_settings.yml)
 # Uncomment to override:

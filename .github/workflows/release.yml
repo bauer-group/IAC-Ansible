@@ -1,5 +1,5 @@
 # =============================================================================
-# NocoDB - Release Workflow
+# IAC-Ansible - Release Workflow
 # =============================================================================
 # Triggers:
 #   - Push to main branch (excluding docs/markdown changes)
