@@ -1,5 +1,5 @@
 ---
-name: Ansible Lint
+name: 🔍 Ansible Lint
 
 on:
   push:
@@ -9,26 +9,26 @@ on:
 
 jobs:
   lint:
-    name: Ansible Lint
+    name: 🧹 Lint & Validate
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           pip install ansible ansible-lint yamllint
 
-      - name: Run yamllint
+      - name: 📋 Run yamllint
         run: |
           yamllint -d "{extends: default, rules: {line-length: {max: 200}, truthy: disable}}" .
 
-      - name: Run ansible-lint
+      - name: 🔎 Run ansible-lint
         run: |
           ansible-lint playbooks/ roles/
