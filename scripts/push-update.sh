@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# IAS-Ansible: Push Update Trigger
+# IAC-Ansible: Push Update Trigger
 # =============================================================================
 # Remotely trigger ansible-pull on specified hosts via SSH.
 #
@@ -30,8 +30,8 @@ fi
 TARGET="$1"
 shift
 
-echo "[IAS-Ansible] Triggering ansible-pull on: ${TARGET}"
-echo "[IAS-Ansible] Inventory: ${INVENTORY}"
+echo "[IAC-Ansible] Triggering ansible-pull on: ${TARGET}"
+echo "[IAC-Ansible] Inventory: ${INVENTORY}"
 echo ""
 
 ansible -i "${INVENTORY}" "${TARGET}" \
@@ -41,5 +41,5 @@ ansible -i "${INVENTORY}" "${TARGET}" \
     "$@"
 
 echo ""
-echo "[IAS-Ansible] Push update triggered successfully on: ${TARGET}"
-echo "[IAS-Ansible] Hosts will pull and apply latest configuration from Git."
+echo "[IAC-Ansible] Push update triggered successfully on: ${TARGET}"
+echo "[IAC-Ansible] Hosts will pull and apply latest configuration from Git."

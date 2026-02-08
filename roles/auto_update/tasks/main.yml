@@ -32,7 +32,7 @@
 
 - name: Configure reboot cron job
   ansible.builtin.cron:
-    name: "IAS-Ansible: Controlled reboot"
+    name: "IAC-Ansible: Controlled reboot"
     minute: "{{ auto_update_reboot_cron_minute }}"
     hour: "{{ auto_update_reboot_cron_hour }}"
     day: "{{ auto_update_reboot_cron_day }}"
@@ -44,7 +44,7 @@
 
 - name: Remove reboot cron when disabled
   ansible.builtin.cron:
-    name: "IAS-Ansible: Controlled reboot"
+    name: "IAC-Ansible: Controlled reboot"
     state: absent
   when: not (auto_update_enabled | bool) or not (auto_update_reboot_enabled | bool)
 
@@ -52,6 +52,6 @@
 
 - name: Remove update cron when disabled
   ansible.builtin.cron:
-    name: "IAS-Ansible: Auto system update"
+    name: "IAC-Ansible: Auto system update"
     state: absent
   when: not (auto_update_enabled | bool)

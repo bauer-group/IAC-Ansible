@@ -1,4 +1,4 @@
-# IAS-Ansible
+# IAC-Ansible
 
 Infrastructure as Code mit Ansible - Git-basierte Konfigurationsverwaltung fur die Bauer Group.
 
@@ -7,7 +7,7 @@ Infrastructure as Code mit Ansible - Git-basierte Konfigurationsverwaltung fur d
 ### Server bootstrappen (One-Liner)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
 ### Cloud-Init
@@ -15,14 +15,14 @@ curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/script
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
 ### Control Machine
 
 ```bash
-git clone https://github.com/bauer-group/IAS-Ansible.git
-cd IAS-Ansible
+git clone https://github.com/bauer-group/IAC-Ansible.git
+cd IAC-Ansible
 make setup
 make deploy
 ```

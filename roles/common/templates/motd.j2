@@ -1,6 +1,6 @@
 
 ===============================================================================
-  {{ motd_organization }} - Managed by IAS-Ansible
+  {{ motd_organization }} - Managed by IAC-Ansible
 ===============================================================================
   Hostname:     {{ ansible_hostname }}
   FQDN:         {{ ansible_fqdn }}
@@ -8,7 +8,10 @@
   Kernel:       {{ ansible_kernel }}
   Architecture: {{ ansible_architecture }}
   IPv4:         {{ ansible_default_ipv4.address | default('N/A') }}
+  IPv6:         {{ ansible_default_ipv6.address | default('N/A') }}
+  Uptime:       {{ ansible_uptime_seconds | int // 86400 }}d {{ (ansible_uptime_seconds | int % 86400) // 3600 }}h {{ (ansible_uptime_seconds | int % 3600) // 60 }}m
 ===============================================================================
   This system is managed by Ansible. Manual changes may be overwritten.
   Repository:   {{ ias_repo_url }}
+
 ===============================================================================

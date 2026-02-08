@@ -3,12 +3,12 @@
 # Staging Global Variables
 # =============================================================================
 
-ias_repo_url: "https://github.com/bauer-group/IAS-Ansible.git"
+ias_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
 ias_repo_branch: "staging"
 
 ansible_pull_schedule: "*-*-* 02:00:00"
 ansible_pull_playbook: "playbooks/site.yml"
 
-system_timezone: "Europe/Berlin"
+system_timezone: "Etc/UTC"
 motd_enabled: true
 motd_organization: "Bauer Group (STAGING)"

@@ -18,7 +18,7 @@
 
 - name: "[RedHat] Configure update cron job"
   ansible.builtin.cron:
-    name: "IAS-Ansible: Auto system update"
+    name: "IAC-Ansible: Auto system update"
     minute: "{{ auto_update_cron_minute }}"
     hour: "{{ auto_update_cron_hour }}"
     day: "{{ auto_update_cron_day }}"

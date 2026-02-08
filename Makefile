@@ -1,4 +1,4 @@
-# IAS-Ansible Makefile
+# IAC-Ansible Makefile
 # Usage: make <target> [LIMIT=<pattern>] [TAGS=<tags>] [ENV=<environment>]
 
 SHELL := /bin/bash
@@ -13,7 +13,7 @@ EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG) $(SERVICE_ARG)
 .PHONY: help setup deploy update reboot ping facts lint check
 
 help: ## Show this help
-	@echo "IAS-Ansible - Infrastructure as Code"
+	@echo "IAC-Ansible - Infrastructure as Code"
 	@echo ""
 	@echo "Usage: make <target> [OPTIONS]"
 	@echo ""

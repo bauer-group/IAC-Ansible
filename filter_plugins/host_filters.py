@@ -1,5 +1,5 @@
 """
-IAS-Ansible: Custom Filter Plugins for Host Filtering
+IAC-Ansible: Custom Filter Plugins for Host Filtering
 ======================================================
 These filters enable advanced host selection and data transformation
 in playbooks and templates.

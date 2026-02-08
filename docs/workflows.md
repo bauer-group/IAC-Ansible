@@ -61,7 +61,7 @@ git add . && git commit -m "Disable auto-update on problem-host" && git push
 
 ```bash
 # Option A: One-line installer (run ON the server)
-curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 
 # Option B: Push setup from control machine
 ansible-playbook -i inventory/production/hosts.yml playbooks/setup.yml \

@@ -2,12 +2,12 @@
 
 ## Overview
 
-IAS-Ansible uses a **Git-based pull model** where each managed server periodically checks this repository for configuration changes and applies them automatically.
+IAC-Ansible uses a **Git-based pull model** where each managed server periodically checks this repository for configuration changes and applies them automatically.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                   GitHub Repository                      │
-│                (bauer-group/IAS-Ansible)                 │
+│                (bauer-group/IAC-Ansible)                 │
 │                                                          │
 │  inventory/ ─ playbooks/ ─ roles/ ─ scripts/            │
 └───────────────┬────────────────────┬────────────────────┘

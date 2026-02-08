@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Git repository for ansible-pull
-ias_repo_url: "https://github.com/bauer-group/IAS-Ansible.git"
+ias_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
 ias_repo_branch: "main"
 
 # ansible-pull schedule (systemd timer OnCalendar format)
@@ -43,7 +43,7 @@ common_packages_redhat:
   - epel-release
 
 # Timezone
-system_timezone: "Europe/Berlin"
+system_timezone: "Etc/UTC"
 
 # NTP
 ntp_enabled: true
@@ -57,4 +57,4 @@ firewall_enabled: false
 
 # MOTD
 motd_enabled: true
-motd_organization: "Bauer Group"
+motd_organization: "BAUER GROUP"

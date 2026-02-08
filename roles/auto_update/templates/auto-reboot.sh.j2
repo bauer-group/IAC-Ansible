@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# IAS-Ansible: Controlled Reboot Script
+# IAC-Ansible: Controlled Reboot Script
 # Managed by Ansible - DO NOT EDIT MANUALLY
 # =============================================================================
 
 set -euo pipefail
 
-LOG_PREFIX="[IAS-AutoReboot]"
+LOG_PREFIX="[IAC-AutoReboot]"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
 echo "${LOG_PREFIX} ${TIMESTAMP} Checking if reboot is required..."
@@ -33,13 +33,13 @@ fi
 
 if [ "${NEEDS_REBOOT}" = true ]; then
     echo "${LOG_PREFIX} Initiating controlled reboot..."
-    echo "${LOG_PREFIX} Reboot reason: Scheduled maintenance (IAS-Ansible auto-update)"
+    echo "${LOG_PREFIX} Reboot reason: Scheduled maintenance (IAC-Ansible auto-update)"
 
     # Log to syslog
-    logger -t IAS-Ansible "Controlled reboot initiated by auto-update schedule"
+    logger -t IAC-Ansible "Controlled reboot initiated by auto-update schedule"
 
     # Perform reboot with 1 minute warning
-    shutdown -r +1 "IAS-Ansible: Scheduled reboot for system updates"
+    shutdown -r +1 "IAC-Ansible: Scheduled reboot for system updates"
 else
     echo "${LOG_PREFIX} No reboot required. Skipping."
 fi

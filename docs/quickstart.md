@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Git access to `https://github.com/bauer-group/IAS-Ansible.git`
+- Git access to `https://github.com/bauer-group/IAC-Ansible.git`
 - SSH access to target servers (root or sudo)
 
 ## 1. Bootstrap a New Server
@@ -10,13 +10,13 @@
 ### One-Line Installer
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
 ### With Custom Options
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | \
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
   BRANCH=main SCHEDULE="*-*-* 02:00:00" bash
 ```
 
@@ -27,7 +27,7 @@ Add to your cloud-init user-data:
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
 ## 2. Add Server to Inventory

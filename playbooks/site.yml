@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# IAS-Ansible: Master Playbook (site.yml)
+# IAC-Ansible: Master Playbook (site.yml)
 # =============================================================================
 # This is the main entry point for all configuration management.
 # It applies roles based on group membership.

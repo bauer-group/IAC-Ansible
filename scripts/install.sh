@@ -1,25 +1,25 @@
 #!/bin/bash
 # =============================================================================
-# IAS-Ansible: One-Line Installer / Cloud-Init Bootstrap
+# IAC-Ansible: One-Line Installer / Cloud-Init Bootstrap
 # =============================================================================
 #
 # Quick install:
-#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 #
 # With options:
-#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | \
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
 #     BRANCH=main PLAYBOOK=playbooks/site.yml bash
 #
 # Cloud-Init (in user-data):
 #   runcmd:
-#     - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+#     - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 #
 # =============================================================================
 
 set -euo pipefail
 
 # --- Configuration (override via environment variables) ---
-REPO_URL="${REPO_URL:-https://github.com/bauer-group/IAS-Ansible.git}"
+REPO_URL="${REPO_URL:-https://github.com/bauer-group/IAC-Ansible.git}"
 BRANCH="${BRANCH:-main}"
 WORKDIR="${WORKDIR:-/opt/ias-ansible}"
 PLAYBOOK="${PLAYBOOK:-playbooks/site.yml}"
@@ -33,9 +33,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-log()  { echo -e "${GREEN}[IAS-Ansible]${NC} $*"; }
-warn() { echo -e "${YELLOW}[IAS-Ansible WARN]${NC} $*"; }
-err()  { echo -e "${RED}[IAS-Ansible ERROR]${NC} $*" >&2; }
+log()  { echo -e "${GREEN}[IAC-Ansible]${NC} $*"; }
+warn() { echo -e "${YELLOW}[IAC-Ansible WARN]${NC} $*"; }
+err()  { echo -e "${RED}[IAC-Ansible ERROR]${NC} $*" >&2; }
 
 # --- Pre-flight checks ---
 if [ "$(id -u)" -ne 0 ]; then
@@ -43,7 +43,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-log "=== IAS-Ansible Bootstrap Installer ==="
+log "=== IAC-Ansible Bootstrap Installer ==="
 log "Repository: ${REPO_URL}"
 log "Branch:     ${BRANCH}"
 log "Playbook:   ${PLAYBOOK}"
@@ -123,7 +123,7 @@ setup_systemd() {
 
     cat > /etc/systemd/system/ansible-pull.service << SVCEOF
 [Unit]
-Description=IAS-Ansible Pull Configuration from Git
+Description=IAC-Ansible Pull Configuration from Git
 After=network-online.target
 Wants=network-online.target
 
@@ -147,7 +147,7 @@ SVCEOF
 
     cat > /etc/systemd/system/ansible-pull.timer << TMREOF
 [Unit]
-Description=IAS-Ansible Pull Timer
+Description=IAC-Ansible Pull Timer
 
 [Timer]
 OnCalendar=${SCHEDULE}

@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# IAS-Ansible: System Update Playbook
+# IAC-Ansible: System Update Playbook
 # =============================================================================
 # Manually trigger system updates on hosts.
 #

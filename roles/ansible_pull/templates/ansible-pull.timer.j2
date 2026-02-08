@@ -1,10 +1,10 @@
 # =============================================================================
-# IAS-Ansible: ansible-pull systemd timer
+# IAC-Ansible: ansible-pull systemd timer
 # Managed by Ansible - DO NOT EDIT MANUALLY
 # =============================================================================
 
 [Unit]
-Description=IAS-Ansible Pull Timer - Check for configuration updates
+Description=IAC-Ansible Pull Timer - Check for configuration updates
 
 [Timer]
 OnCalendar={{ ansible_pull_schedule }}

@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# IAS-Ansible: System Cleanup Playbook
+# IAC-Ansible: System Cleanup Playbook
 # =============================================================================
 # Clean temporary files, old logs, and unused packages.
 #

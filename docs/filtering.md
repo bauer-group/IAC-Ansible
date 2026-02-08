@@ -1,6 +1,6 @@
 # Host Filtering Guide
 
-IAS-Ansible supports multiple filtering methods to target specific servers.
+IAC-Ansible supports multiple filtering methods to target specific servers.
 
 ## Ansible Native Patterns (`--limit`)
 

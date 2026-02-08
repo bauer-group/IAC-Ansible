@@ -5,7 +5,7 @@
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+  - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
 ## Full Cloud-Init User Data
@@ -14,17 +14,17 @@ runcmd:
 #cloud-config
 
 # Set timezone
-timezone: Europe/Berlin
+timezone: Etc/UTC
 
 # Ensure prerequisites
 packages:
   - curl
   - git
 
-# Bootstrap IAS-Ansible
+# Bootstrap IAC-Ansible
 runcmd:
   - |
-    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | \
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
       BRANCH=main \
       SCHEDULE="*-*-* 02:00:00" \
       bash
@@ -49,7 +49,7 @@ resource "hcloud_server" "web" {
   user_data = <<-EOF
     #cloud-config
     runcmd:
-      - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAS-Ansible/main/scripts/install.sh | bash
+      - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
   EOF
 }
 ```
