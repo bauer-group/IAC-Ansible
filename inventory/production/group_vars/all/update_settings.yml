@@ -11,26 +11,25 @@ auto_update_enabled: true
 # Update type: "all" = all packages, "security" = security updates only
 auto_update_type: "all"
 
-# Automatic reboot after updates
-auto_update_reboot_enabled: true
+# --- Maintenance Chain ---
+# Single cron triggers sequential chain: ansible-pull → update → reboot
+# Set to false to skip ansible-pull phase in the chain
+auto_update_chain_ansible_pull: true
 
-# Reboot schedule (cron format)
-# Default: Sunday at 03:00 AM
-auto_update_reboot_cron_minute: "0"
-auto_update_reboot_cron_hour: "3"
-auto_update_reboot_cron_day: "*"
-auto_update_reboot_cron_month: "*"
-auto_update_reboot_cron_weekday: "0"
-
-# Full cron expression for reference: 0 3 * * 0 (Sunday 03:00)
-
-# Update schedule (cron format)
+# --- Schedule (cron format) ---
+# Single trigger for the entire maintenance chain
 # Default: Daily at 02:00 AM
 auto_update_cron_minute: "0"
 auto_update_cron_hour: "2"
 auto_update_cron_day: "*"
 auto_update_cron_month: "*"
 auto_update_cron_weekday: "*"
+
+# --- Reboot Settings ---
+# Reboot runs at the END of the maintenance chain (not a separate cron)
+# Only on the configured weekday (0 = Sunday)
+auto_update_reboot_enabled: true
+auto_update_reboot_cron_weekday: "0"
 
 # Packages to exclude from updates (blacklist)
 auto_update_blacklist: []

@@ -13,7 +13,15 @@ auto_update_enabled: true
 # Update type: "all" or "security"
 auto_update_type: "all"
 
-# --- Update Schedule (cron) ---
+# --- Maintenance Chain ---
+# The maintenance chain runs sequentially: ansible-pull → update → reboot
+# Set to false to skip the ansible-pull phase (e.g., if running standalone)
+# Note: When enabled, consider setting ansible_pull_enabled=false in the
+# ansible_pull role to disable its standalone timer (avoids duplicate runs).
+auto_update_chain_ansible_pull: true
+
+# --- Schedule (cron) ---
+# Single cron trigger for the entire maintenance chain
 auto_update_cron_minute: "0"
 auto_update_cron_hour: "2"
 auto_update_cron_day: "*"
@@ -21,11 +29,9 @@ auto_update_cron_month: "*"
 auto_update_cron_weekday: "*"
 
 # --- Reboot Settings ---
+# Reboot runs at the END of the maintenance chain (no separate cron)
+# Only the weekday controls when reboots are allowed
 auto_update_reboot_enabled: true
-auto_update_reboot_cron_minute: "0"
-auto_update_reboot_cron_hour: "3"
-auto_update_reboot_cron_day: "*"
-auto_update_reboot_cron_month: "*"
 auto_update_reboot_cron_weekday: "0"
 
 # --- Package Management ---

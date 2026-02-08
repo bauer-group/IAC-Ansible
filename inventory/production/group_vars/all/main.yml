@@ -8,8 +8,8 @@ iac_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
 iac_repo_branch: "main"
 
 # ansible-pull schedule (systemd timer OnCalendar format)
-# Default: every day at 02:00
-ansible_pull_schedule: "*-*-* 02:00:00"
+# Runs BEFORE auto-update (01:00) to sync config first
+ansible_pull_schedule: "*-*-* 01:00:00"
 
 # ansible-pull playbook to run
 ansible_pull_playbook: "playbooks/site.yml"

@@ -1,41 +1,104 @@
 #!/bin/bash
 # =============================================================================
-# IAC-Ansible: Automatic System Update Script (RedHat/CentOS)
+# IAC-Ansible: Maintenance Chain Script (RedHat/Rocky/Alma)
 # Managed by Ansible - DO NOT EDIT MANUALLY
 # =============================================================================
+# Chain: ansible-pull → system update → conditional reboot
+# Single trigger, sequential execution, no coordination issues.
 
 set -euo pipefail
 
-LOG_PREFIX="[IAC-AutoUpdate]"
+LOG_PREFIX="[IAC-Maintenance]"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-echo "${LOG_PREFIX} ${TIMESTAMP} Starting system update..."
-echo "${LOG_PREFIX} Update type: {{ auto_update_type }}"
+echo "${LOG_PREFIX} ${TIMESTAMP} Starting maintenance chain..."
 echo "${LOG_PREFIX} Host: $(hostname -f)"
+
+# =============================================================================
+# Phase 1: Sync configuration from Git (ansible-pull)
+# =============================================================================
+{% if auto_update_chain_ansible_pull | bool %}
+if systemctl is-enabled ansible-pull.service &>/dev/null; then
+    echo "${LOG_PREFIX} Phase 1: Triggering ansible-pull to sync configuration..."
+    if systemctl start ansible-pull.service; then
+        echo "${LOG_PREFIX} Phase 1: ansible-pull completed successfully"
+    else
+        echo "${LOG_PREFIX} Phase 1: ansible-pull failed (exit $?), continuing with updates..."
+        logger -t IAC-Ansible "ansible-pull failed during maintenance chain"
+    fi
+else
+    echo "${LOG_PREFIX} Phase 1: ansible-pull service not found, skipping..."
+fi
+{% else %}
+echo "${LOG_PREFIX} Phase 1: ansible-pull chain disabled, skipping..."
+{% endif %}
+
+# =============================================================================
+# Phase 2: System Update
+# =============================================================================
+echo "${LOG_PREFIX} Phase 2: Starting system update..."
+echo "${LOG_PREFIX} Update type: {{ auto_update_type }}"
 
 {% if auto_update_type == "security" %}
 # Security updates only
 echo "${LOG_PREFIX} Installing security updates only..."
-dnf update -y --security 2>/dev/null || yum update -y --security
+dnf update -y --security
 {% else %}
 # Full system update
 echo "${LOG_PREFIX} Installing all available updates..."
-dnf update -y 2>/dev/null || yum update -y
+dnf update -y
 {% endif %}
 
 {% if auto_update_autoremove | bool %}
 # Remove unused packages
 echo "${LOG_PREFIX} Removing unused packages..."
-dnf autoremove -y 2>/dev/null || yum autoremove -y 2>/dev/null || true
+dnf autoremove -y
 {% endif %}
 
-# Check if reboot is required
-if needs-restarting -r &>/dev/null; then
-    echo "${LOG_PREFIX} No reboot required"
+echo "${LOG_PREFIX} Phase 2: System update completed"
+
+# =============================================================================
+# Phase 3: Conditional Reboot
+# =============================================================================
+{% if auto_update_reboot_enabled | bool %}
+REBOOT_WEEKDAY="{{ auto_update_reboot_cron_weekday }}"
+CURRENT_WEEKDAY=$(date +%w)
+
+# Check if today is the configured reboot day (* = any day)
+if [ "${REBOOT_WEEKDAY}" = "*" ] || [ "${CURRENT_WEEKDAY}" = "${REBOOT_WEEKDAY}" ]; then
+    echo "${LOG_PREFIX} Phase 3: Checking if reboot is required..."
+
+    if ! needs-restarting -r &>/dev/null; then
+        echo "${LOG_PREFIX} Reboot required (needs-restarting reports pending restart)"
+
+        echo "${LOG_PREFIX} Running pre-reboot health checks..."
+
+        # Check: no rpm transaction in progress
+        if [ -f /var/lib/rpm/.rpm.lock ] && fuser /var/lib/rpm/.rpm.lock &>/dev/null; then
+            echo "${LOG_PREFIX} ABORT reboot: rpm lock held"
+            logger -t IAC-Ansible "Reboot ABORTED: rpm lock held"
+        else
+            # Check system load
+            LOAD=$(awk '{print $1}' /proc/loadavg)
+            CPUS=$(nproc)
+            if awk "BEGIN {exit !(${LOAD} > ${CPUS} * 3)}"; then
+                echo "${LOG_PREFIX} ABORT reboot: system load too high (${LOAD}, ${CPUS} CPUs)"
+                logger -t IAC-Ansible "Reboot ABORTED: high load (${LOAD})"
+            else
+                echo "${LOG_PREFIX} Health checks passed. Initiating controlled reboot..."
+                logger -t IAC-Ansible "Controlled reboot initiated by maintenance chain"
+                shutdown -r +1 "IAC-Ansible: Scheduled reboot after system updates"
+            fi
+        fi
+    else
+        echo "${LOG_PREFIX} Phase 3: No reboot required"
+    fi
 else
-    echo "${LOG_PREFIX} NOTICE: System reboot required"
-    echo "${LOG_PREFIX} Reboot will be handled by scheduled reboot cron"
+    echo "${LOG_PREFIX} Phase 3: Not a reboot day (today=${CURRENT_WEEKDAY}, configured=${REBOOT_WEEKDAY}), skipping"
 fi
+{% else %}
+echo "${LOG_PREFIX} Phase 3: Reboot disabled, skipping"
+{% endif %}
 
 TIMESTAMP_END=$(date '+%Y-%m-%d %H:%M:%S')
-echo "${LOG_PREFIX} ${TIMESTAMP_END} Update completed successfully"
+echo "${LOG_PREFIX} ${TIMESTAMP_END} Maintenance chain completed"

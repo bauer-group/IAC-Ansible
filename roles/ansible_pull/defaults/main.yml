@@ -18,7 +18,7 @@ ansible_pull_playbook: "playbooks/site.yml"
 #   "*-*-* 02:00:00"       = Daily at 02:00
 #   "*-*-* *:00/30:00"     = Every 30 minutes
 #   "hourly"               = Every hour
-ansible_pull_schedule: "*-*-* 02:00:00"
+ansible_pull_schedule: "*-*-* 01:00:00"
 
 # Randomized delay to prevent thundering herd
 ansible_pull_random_delay_sec: 900
