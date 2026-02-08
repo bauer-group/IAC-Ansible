@@ -7,14 +7,12 @@
 
 - name: Display auto-update configuration
   ansible.builtin.debug:
-    msg: >
-      Auto-Update Config for {{ inventory_hostname }}:
-      enabled={{ auto_update_enabled }}
+    msg: >-
+      Auto-Update: {{ inventory_hostname }}
       | type={{ auto_update_type }}
-      | chain_ansible_pull={{ auto_update_chain_ansible_pull }}
-      | reboot={{ auto_update_reboot_enabled }} (weekday={{ auto_update_reboot_cron_weekday }})
-      | schedule={{ auto_update_cron_minute }} {{ auto_update_cron_hour }} {{ auto_update_cron_day }} {{ auto_update_cron_month }} {{ auto_update_cron_weekday }}
-      | statusmon={{ auto_update_statusmon_enabled }} ({{ auto_update_statusmon_provider }})
+      | reboot={{ auto_update_reboot_enabled }} (wd={{ auto_update_reboot_cron_weekday }})
+      | cron={{ auto_update_cron_hour }}:{{ auto_update_cron_minute }}
+      | statusmon={{ auto_update_statusmon_enabled }}
 
 - name: Include Debian/Ubuntu auto-update tasks
   ansible.builtin.include_tasks: debian.yml

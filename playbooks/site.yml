@@ -20,6 +20,8 @@
   gather_facts: true
   tags: [common, always-gather]
 
+  strategy: linear
+
   pre_tasks:
     - name: Validate Ansible version
       ansible.builtin.assert:

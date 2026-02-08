@@ -16,5 +16,5 @@ common_packages:
   - apt-transport-https
   - cron
 
-ntp_package: "systemd-timesyncd"
-ntp_service: "systemd-timesyncd"
+common_ntp_package: "systemd-timesyncd"
+common_ntp_service: "systemd-timesyncd"

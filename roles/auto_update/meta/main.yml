@@ -3,6 +3,7 @@ galaxy_info:
   role_name: auto_update
   author: BAUER GROUP
   description: Automatic system updates with controlled reboot scheduling
+  license: MIT
   min_ansible_version: "2.18"
   platforms:
     - name: Ubuntu

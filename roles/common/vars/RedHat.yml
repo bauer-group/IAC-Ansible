@@ -13,5 +13,5 @@ common_packages:
   - epel-release
   - cronie
 
-ntp_package: "chrony"
-ntp_service: "chronyd"
+common_ntp_package: "chrony"
+common_ntp_service: "chronyd"
