@@ -31,7 +31,7 @@ runcmd:
 
 # Optional: Write custom host vars before first pull
 write_files:
-  - path: /etc/ias-ansible-labels
+  - path: /etc/iac-ansible-labels
     content: |
       cloud
       production

@@ -10,7 +10,7 @@ LABEL_ARG := $(if $(LABEL),-e "filter_label=$(LABEL)",)
 SERVICE_ARG := $(if $(SERVICE),-e "filter_service=$(SERVICE)",)
 EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG) $(SERVICE_ARG)
 
-.PHONY: help setup deploy update reboot ping facts lint check
+.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create
 
 help: ## Show this help
 	@echo "IAC-Ansible - Infrastructure as Code"
@@ -71,7 +71,7 @@ push: ## Trigger immediate update on remote hosts via SSH
 		echo "ERROR: LIMIT required for push. Usage: make push LIMIT=<host>"; \
 		exit 1; \
 	fi
-	ansible -i $(INVENTORY) "$(LIMIT)" -m shell -a "systemctl start ansible-pull.service" $(LABEL_ARG)
+	ansible -i $(INVENTORY) "$(LIMIT)" -m ansible.builtin.systemd -a "name=ansible-pull.service state=started" --become $(LABEL_ARG)
 
 vault-edit: ## Edit vault secrets
 	ansible-vault edit inventory/$(ENV)/group_vars/all/secrets.yml

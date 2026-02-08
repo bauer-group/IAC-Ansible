@@ -15,11 +15,11 @@ ExecStart=/usr/bin/ansible-pull \
   --checkout {{ ansible_pull_branch }} \
   --directory {{ ansible_pull_workdir }} \
   --full \
-  --accept-host-key \
   {{ ansible_pull_playbook }} \
   {{ ansible_pull_extra_args }}
 StandardOutput=append:{{ ansible_pull_log_file }}
 StandardError=append:{{ ansible_pull_log_file }}
+TimeoutStartSec=1800
 Environment="ANSIBLE_LOG_PATH={{ ansible_pull_log_file }}"
 Environment="HOME=/root"
 

@@ -18,11 +18,17 @@ echo "${LOG_PREFIX} Updating package lists..."
 apt-get update -qq
 
 {% if auto_update_type == "security" %}
-# Security updates only
+# Security updates only via unattended-upgrades (reliable method)
 echo "${LOG_PREFIX} Installing security updates only..."
-apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-  -t "$(lsb_release -cs)-security" 2>/dev/null || \
-  unattended-upgrade --minimal_upgrade_steps
+unattended-upgrade -v 2>&1 || {
+    echo "${LOG_PREFIX} Fallback: using apt with security pocket..."
+    DISTRO=$(lsb_release -cs 2>/dev/null || . /etc/os-release && echo "${VERSION_CODENAME}")
+    apt-get upgrade -y \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold" \
+        -o Dir::Etc::sourcelist="/etc/apt/sources.list" \
+        -t "${DISTRO}-security" 2>/dev/null || true
+}
 {% else %}
 # Full system upgrade
 echo "${LOG_PREFIX} Installing all available updates..."
