@@ -1,3 +1,9 @@
+## [0.2.2](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.1...v0.2.2) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* Replace shell command with service facts for NTP detection and set active state fact ([cd1e514](https://github.com/bauer-group/IAC-Ansible/commit/cd1e5146ac7c329d08a4d2d77979edeb91c8f30b))
+
 ## [0.2.1](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.0...v0.2.1) (2026-02-08)
 
 ### 🐛 Bug Fixes
