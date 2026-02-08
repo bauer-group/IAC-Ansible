@@ -57,13 +57,17 @@ auto_update_statusmon_enabled: false
 auto_update_statusmon_provider: "uptime-kuma"
 #
 # Credentials: stored in /etc/iac-ansible/status-monitor.env (NOT in git)
-# Option A: Deploy .env via Ansible Vault (set both vars below)
+# Option A: Deploy .env via Ansible Vault (set all vars below)
 # Option B: Create /etc/iac-ansible/status-monitor.env manually on each host
 #
+# Note: Uptime Kuma uses username/password via Socket.IO API.
+#
 # auto_update_statusmon_url: "https://status.bauer-group.com"
-# auto_update_statusmon_api_key: "{{ vault_statusmon_api_key }}"
+# auto_update_statusmon_username: "iac-ansible"
+# auto_update_statusmon_password: "{{ vault_statusmon_password }}"
 #
 # Vault example:
-#   ansible-vault encrypt_string 'uk1_...' --name 'vault_statusmon_api_key'
+#   ansible-vault encrypt_string 'your-password' --name 'vault_statusmon_password'
 auto_update_statusmon_url: ""
-auto_update_statusmon_api_key: ""
+auto_update_statusmon_username: ""
+auto_update_statusmon_password: ""

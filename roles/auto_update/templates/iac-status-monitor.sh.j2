@@ -46,8 +46,13 @@ if [ -z "${STATUS_MONITOR_URL:-}" ]; then
     exit 0
 fi
 
-if [ -z "${STATUS_MONITOR_API_KEY:-}" ]; then
-    echo "${LOG_PREFIX} STATUS_MONITOR_API_KEY not set, skipping"
+if [ -z "${STATUS_MONITOR_USERNAME:-}" ]; then
+    echo "${LOG_PREFIX} STATUS_MONITOR_USERNAME not set, skipping"
+    exit 0
+fi
+
+if [ -z "${STATUS_MONITOR_PASSWORD:-}" ]; then
+    echo "${LOG_PREFIX} STATUS_MONITOR_PASSWORD not set, skipping"
     exit 0
 fi
 
@@ -72,7 +77,8 @@ fi
 # --- Export env vars for the provider ---
 
 export STATUS_MONITOR_URL
-export STATUS_MONITOR_API_KEY
+export STATUS_MONITOR_USERNAME
+export STATUS_MONITOR_PASSWORD
 export STATUS_MONITOR_HOSTNAME="${STATUS_MONITOR_HOSTNAME:-}"
 export STATUS_MONITOR_STATE_FILE="${STATE_FILE}"
 

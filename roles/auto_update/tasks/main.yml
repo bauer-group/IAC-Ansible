@@ -56,6 +56,13 @@
     - /usr/local/lib/iac-ansible/providers
   when: auto_update_statusmon_enabled | bool
 
+- name: Deploy status-monitor.env.example
+  ansible.builtin.copy:
+    src: status-monitor.env.example
+    dest: /etc/iac-ansible/status-monitor.env.example
+    mode: "0644"
+  when: auto_update_statusmon_enabled | bool
+
 - name: Deploy status monitor wrapper script
   ansible.builtin.template:
     src: iac-status-monitor.sh.j2
@@ -90,7 +97,8 @@
   when:
     - auto_update_statusmon_enabled | bool
     - auto_update_statusmon_url | length > 0
-    - auto_update_statusmon_api_key | length > 0
+    - auto_update_statusmon_username | length > 0
+    - auto_update_statusmon_password | length > 0
 
 - name: Deploy post-reboot maintenance close service
   ansible.builtin.template:
