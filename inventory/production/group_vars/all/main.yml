@@ -4,8 +4,8 @@
 # =============================================================================
 
 # Git repository for ansible-pull
-ias_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
-ias_repo_branch: "main"
+iac_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
+iac_repo_branch: "main"
 
 # ansible-pull schedule (systemd timer OnCalendar format)
 # Default: every day at 02:00
@@ -45,8 +45,18 @@ common_packages_redhat:
 # Timezone
 system_timezone: "Etc/UTC"
 
-# NTP
+# NTP (primary: internal + DE pool, fallback: PTB + global pool)
 ntp_enabled: true
+ntp_servers:
+  - time.bauer-group.com
+  - 0.de.pool.ntp.org
+  - 1.de.pool.ntp.org
+ntp_fallback_servers:
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+  - ptbtime1.ptb.de
+  - ptbtime2.ptb.de
+  - ptbtime3.ptb.de
 
 # SSH hardening
 ssh_permit_root_login: "prohibit-password"

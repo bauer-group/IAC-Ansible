@@ -8,3 +8,8 @@
   ansible.builtin.systemd:
     name: "{{ 'cron' if ansible_os_family == 'Debian' else 'crond' }}"
     state: restarted
+
+- name: Restart timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted

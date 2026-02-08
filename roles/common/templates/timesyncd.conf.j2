@@ -1,0 +1,10 @@
+# =============================================================================
+# IAC-Ansible: systemd-timesyncd configuration
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+[Time]
+NTP={{ ntp_servers | join(' ') }}
+{% if ntp_fallback_servers is defined and ntp_fallback_servers | length > 0 %}
+FallbackNTP={{ ntp_fallback_servers | join(' ') }}
+{% endif %}

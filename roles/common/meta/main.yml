@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   role_name: common
-  author: Bauer Group
+  author: BAUER GROUP
   description: Common base configuration for all managed hosts
   min_ansible_version: "2.18"
   platforms:

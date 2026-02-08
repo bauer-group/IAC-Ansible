@@ -32,7 +32,42 @@ fi
 {% endif %}
 
 if [ "${NEEDS_REBOOT}" = true ]; then
-    echo "${LOG_PREFIX} Initiating controlled reboot..."
+    echo "${LOG_PREFIX} Reboot required. Running pre-reboot health checks..."
+
+{% if ansible_os_family == "Debian" %}
+    # Check: dpkg in consistent state (no interrupted installs)
+    if dpkg --audit 2>&1 | grep -q .; then
+        echo "${LOG_PREFIX} ABORT: dpkg audit found inconsistencies. Fix manually:"
+        dpkg --audit
+        logger -t IAC-Ansible "Reboot ABORTED: dpkg audit failed"
+        exit 1
+    fi
+
+    # Check: no dpkg lock held (update still running)
+    if fuser /var/lib/dpkg/lock-frontend &>/dev/null; then
+        echo "${LOG_PREFIX} ABORT: dpkg lock held, package operation in progress"
+        logger -t IAC-Ansible "Reboot ABORTED: dpkg lock held"
+        exit 1
+    fi
+{% else %}
+    # Check: no rpm transaction in progress
+    if [ -f /var/lib/rpm/.rpm.lock ] && fuser /var/lib/rpm/.rpm.lock &>/dev/null; then
+        echo "${LOG_PREFIX} ABORT: rpm lock held, package operation in progress"
+        logger -t IAC-Ansible "Reboot ABORTED: rpm lock held"
+        exit 1
+    fi
+{% endif %}
+
+    # Check: system load not critical (avoid reboot during high load)
+    LOAD=$(awk '{print $1}' /proc/loadavg)
+    CPUS=$(nproc)
+    if awk "BEGIN {exit !(${LOAD} > ${CPUS} * 3)}"; then
+        echo "${LOG_PREFIX} ABORT: System load too high (${LOAD}, ${CPUS} CPUs)"
+        logger -t IAC-Ansible "Reboot ABORTED: high load (${LOAD})"
+        exit 1
+    fi
+
+    echo "${LOG_PREFIX} Health checks passed. Initiating controlled reboot..."
     echo "${LOG_PREFIX} Reboot reason: Scheduled maintenance (IAC-Ansible auto-update)"
 
     # Log to syslog

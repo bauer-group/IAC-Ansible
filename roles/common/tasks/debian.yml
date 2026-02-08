@@ -3,10 +3,10 @@
 # Common Role - Debian/Ubuntu Tasks
 # =============================================================================
 
-- name: "[Debian] Update apt cache"
+- name: "[Debian] Update apt cache (once per day)"
   ansible.builtin.apt:
     update_cache: true
-    cache_valid_time: 3600
+    cache_valid_time: 86400
 
 - name: "[Debian] Install common packages"
   ansible.builtin.apt:

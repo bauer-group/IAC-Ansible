@@ -4,10 +4,10 @@
 # =============================================================================
 
 # Git repository URL
-ansible_pull_repo_url: "{{ ias_repo_url }}"
+ansible_pull_repo_url: "{{ iac_repo_url }}"
 
 # Branch to track
-ansible_pull_branch: "{{ ias_repo_branch | default('main') }}"
+ansible_pull_branch: "{{ iac_repo_branch | default('main') }}"
 
 # Playbook to execute
 ansible_pull_playbook: "playbooks/site.yml"
@@ -24,7 +24,7 @@ ansible_pull_schedule: "*-*-* 02:00:00"
 ansible_pull_random_delay_sec: 900
 
 # Local checkout directory
-ansible_pull_workdir: "/opt/ias-ansible"
+ansible_pull_workdir: "/opt/iac-ansible"
 
 # Log file
 ansible_pull_log_file: "/var/log/ansible/ansible-pull.log"

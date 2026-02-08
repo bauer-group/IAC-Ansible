@@ -13,5 +13,5 @@
   Uptime:       {{ ansible_uptime_seconds | int // 86400 }}d {{ (ansible_uptime_seconds | int % 86400) // 3600 }}h {{ (ansible_uptime_seconds | int % 3600) // 60 }}m
 ===============================================================================
   This system is managed by Ansible. Manual changes may be overwritten.
-  Repository:   {{ ias_repo_url }}
+  Repository:   {{ iac_repo_url }}
 ===============================================================================

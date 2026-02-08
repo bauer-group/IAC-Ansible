@@ -35,12 +35,36 @@
     name: "{{ system_timezone }}"
   when: common_timezone_configure | bool
 
+- name: Check for existing NTP services
+  ansible.builtin.shell:
+    cmd: >
+      systemctl is-active chronyd chrony ntpd ntp 2>/dev/null | grep -q '^active$'
+      && echo "found" || echo "none"
+  register: existing_ntp
+  changed_when: false
+  when: common_ntp_configure | bool and ntp_enabled | bool
+
+- name: Deploy timesyncd configuration
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf
+    mode: "0644"
+  notify: Restart timesyncd
+  when:
+    - common_ntp_configure | bool
+    - ntp_enabled | bool
+    - ntp_servers is defined
+    - existing_ntp.stdout | default('none') == 'none'
+
 - name: Enable and start NTP service
   ansible.builtin.systemd:
     name: "{{ ntp_service }}"
     state: started
     enabled: true
-  when: common_ntp_configure | bool and ntp_enabled | bool
+  when:
+    - common_ntp_configure | bool
+    - ntp_enabled | bool
+    - existing_ntp.stdout | default('none') == 'none'
 
 - name: Create Ansible log directory
   ansible.builtin.file:

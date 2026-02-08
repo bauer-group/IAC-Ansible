@@ -93,7 +93,7 @@ For flexible filtering:
 label_cloud:       # Cloud-hosted servers
 label_production:  # Production environment
 label_staging:     # Staging environment
-label_bauer_group: # Bauer Group owned
+label_bauer_group: # BAUER GROUP owned
 ```
 
 ## Variable Precedence
