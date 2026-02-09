@@ -31,6 +31,26 @@
     mode: "0644"
   notify: Restart unattended-upgrades
 
+- name: "[Debian] Disable OS apt-daily timer (chain handles apt-get update)"
+  ansible.builtin.systemd:
+    name: apt-daily.timer
+    state: stopped
+    enabled: false
+
+- name: "[Debian] Disable OS apt-daily-upgrade timer (chain handles upgrades)"
+  ansible.builtin.systemd:
+    name: apt-daily-upgrade.timer
+    state: stopped
+    enabled: false
+
+- name: "[Debian] Configure needrestart for non-interactive mode"
+  ansible.builtin.copy:
+    dest: /etc/needrestart/conf.d/iac-auto-restart.conf
+    content: |
+      # IAC-Ansible: Auto-restart services after updates (no interactive prompts)
+      $nrconf{restart} = 'a';
+    mode: "0644"
+
 - name: "[Debian] Configure update cron job"
   ansible.builtin.cron:
     name: "IAC-Ansible: Auto system update"

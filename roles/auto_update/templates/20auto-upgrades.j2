@@ -1,16 +1,19 @@
 // =============================================================================
-// IAC-Ansible: APT Auto-Upgrades Trigger
+// IAC-Ansible: APT Periodic Configuration
 // Managed by Ansible - DO NOT EDIT MANUALLY
 // =============================================================================
+// The maintenance chain script handles updates, upgrades, and cleanup.
+// OS apt-daily timers are DISABLED to prevent conflicts.
+// These settings only apply if the timers are re-enabled manually.
 
-// Enable package list updates
-APT::Periodic::Update-Package-Lists "1";
+// Disable automatic package list updates (chain runs apt-get update)
+APT::Periodic::Update-Package-Lists "0";
 
-// Enable unattended upgrades
-APT::Periodic::Unattended-Upgrade "1";
+// Disable automatic unattended upgrades (chain handles upgrades)
+APT::Periodic::Unattended-Upgrade "0";
+
+// Disable automatic downloads (chain handles everything)
+APT::Periodic::Download-Upgradeable-Packages "0";
 
 // Clean download archive every 7 days
 APT::Periodic::AutocleanInterval "7";
-
-// Download upgradeable packages
-APT::Periodic::Download-Upgradeable-Packages "1";
