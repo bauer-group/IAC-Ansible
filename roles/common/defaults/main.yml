@@ -7,8 +7,17 @@ common_motd_configure: true
 common_logdir_configure: true
 
 # SSH hardening (disabled by default - enable per host only!)
-# Will REFUSE to harden if no authorized_keys are found for the target user.
+# Will REFUSE to harden if no SSH keys are deployed for the target user.
 common_ssh_hardening: false
 common_ssh_permit_root_login: "prohibit-password"
 common_ssh_password_authentication: "no"
 common_ssh_authorized_keys_user: "root"
+
+# SSH key sources (combined: GitHub + Vault)
+# GitHub: list of GitHub usernames - keys fetched from github.com/<user>.keys
+common_ssh_github_users: []
+# Vault: list of additional public keys (use ansible-vault for encryption)
+common_ssh_extra_keys: []
+# Example:
+#   common_ssh_github_users: ["karl-bauer", "ops-team-member"]
+#   common_ssh_extra_keys: ["{{ vault_ssh_key_deploy_bot }}"]

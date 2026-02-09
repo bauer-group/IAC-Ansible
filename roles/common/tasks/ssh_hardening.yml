@@ -1,39 +1,110 @@
 ---
 # =============================================================================
-# SSH Hardening (idiot-proof)
+# SSH Key Deployment + Hardening (idiot-proof)
 # =============================================================================
-# Safety: REFUSES to disable password auth if no SSH keys are deployed.
-# This prevents locking yourself out of the server.
+# Flow:
+#   1. Fetch SSH keys from GitHub profiles
+#   2. Combine with vault-encrypted extra keys
+#   3. Deploy to authorized_keys
+#   4. VERIFY keys are actually present
+#   5. Only THEN harden sshd_config
+#
+# Safety: REFUSES to harden if no keys end up in authorized_keys.
 
-- name: "[SSH] Check authorized_keys exist for {{ common_ssh_authorized_keys_user }}"
-  ansible.builtin.stat:
-    path: "/{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys"
-  register: common_ssh_authkeys_file
+# --- Step 1: Determine home directory ---
 
-- name: "[SSH] Count authorized keys"
-  ansible.builtin.command:
-    cmd: "grep -c '^ssh-' /{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys"
-  register: common_ssh_key_count
-  changed_when: false
-  failed_when: false
-  when: common_ssh_authkeys_file.stat.exists
-
-- name: "[SSH] Set key count fact"
+- name: "[SSH] Determine home directory"
   ansible.builtin.set_fact:
-    common_ssh_keys_found: "{{ (common_ssh_key_count.stdout | default('0') | int) if common_ssh_authkeys_file.stat.exists else 0 }}"
+    common_ssh_home: >-
+      {{ '/root' if common_ssh_authorized_keys_user == 'root'
+      else '/home/' + common_ssh_authorized_keys_user }}
 
-- name: "[SSH] ABORT - No SSH keys found, refusing to harden"
+# --- Step 2: Fetch GitHub keys ---
+
+- name: "[SSH] Fetch keys from GitHub"
+  ansible.builtin.uri:
+    url: "https://github.com/{{ item }}.keys"
+    return_content: true
+    timeout: 10
+  register: common_ssh_github_results
+  loop: "{{ common_ssh_github_users }}"
+  failed_when: false
+  when: common_ssh_github_users | length > 0
+
+- name: "[SSH] Collect GitHub keys"
+  ansible.builtin.set_fact:
+    common_ssh_collected_github_keys: >-
+      {{ common_ssh_github_results.results | default([])
+         | selectattr('status', 'defined')
+         | selectattr('status', 'equalto', 200)
+         | map(attribute='content')
+         | map('trim')
+         | select()
+         | list }}
+
+- name: "[SSH] Report GitHub key fetch results"
+  ansible.builtin.debug:
+    msg: >-
+      GitHub keys: {{ common_ssh_github_users | length }} user(s) requested,
+      {{ common_ssh_collected_github_keys | length }} responded with keys
+  when: common_ssh_github_users | length > 0
+
+# --- Step 3: Build final key list ---
+
+- name: "[SSH] Build authorized_keys content"
+  ansible.builtin.set_fact:
+    common_ssh_all_keys: >-
+      {{ (common_ssh_collected_github_keys | default([]))
+         + (common_ssh_extra_keys | default([])) }}
+
+- name: "[SSH] ABORT - No SSH keys from any source"
   ansible.builtin.fail:
     msg: >-
       SSH hardening ABORTED for {{ inventory_hostname }}!
-      No authorized_keys found for user '{{ common_ssh_authorized_keys_user }}'.
+      No SSH keys found from GitHub users ({{ common_ssh_github_users | join(', ') }})
+      and no extra keys configured (common_ssh_extra_keys).
       Deploy SSH keys first, then enable common_ssh_hardening.
-      File checked: /{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys
-  when: (common_ssh_keys_found | int) == 0
+  when: common_ssh_all_keys | length == 0
 
-- name: "[SSH] Display key count confirmation"
+# --- Step 4: Deploy keys ---
+
+- name: "[SSH] Ensure .ssh directory exists"
+  ansible.builtin.file:
+    path: "{{ common_ssh_home }}/.ssh"
+    state: directory
+    owner: "{{ common_ssh_authorized_keys_user }}"
+    mode: "0700"
+
+- name: "[SSH] Deploy authorized_keys"
+  ansible.builtin.template:
+    src: authorized_keys.j2
+    dest: "{{ common_ssh_home }}/.ssh/authorized_keys"
+    owner: "{{ common_ssh_authorized_keys_user }}"
+    mode: "0600"
+
+# --- Step 5: Verify keys are present ---
+
+- name: "[SSH] Verify authorized_keys not empty"
+  ansible.builtin.command:
+    cmd: "grep -c '^ssh-' {{ common_ssh_home }}/.ssh/authorized_keys"
+  register: common_ssh_verify_count
+  changed_when: false
+
+- name: "[SSH] ABORT - authorized_keys empty after deploy"
+  ansible.builtin.fail:
+    msg: >-
+      SSH hardening ABORTED for {{ inventory_hostname }}!
+      authorized_keys file exists but contains no valid keys.
+      This should not happen - check GitHub usernames and extra keys.
+  when: (common_ssh_verify_count.stdout | int) == 0
+
+- name: "[SSH] Keys verified"
   ansible.builtin.debug:
-    msg: "SSH hardening: {{ common_ssh_keys_found }} authorized key(s) found for '{{ common_ssh_authorized_keys_user }}', proceeding"
+    msg: >-
+      SSH: {{ common_ssh_verify_count.stdout }} key(s) deployed
+      for '{{ common_ssh_authorized_keys_user }}', proceeding with hardening
+
+# --- Step 6: Harden sshd ---
 
 - name: "[SSH] Check sshd_config.d support"
   ansible.builtin.stat:

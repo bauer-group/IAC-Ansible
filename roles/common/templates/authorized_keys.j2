@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+# IAC-Ansible: Managed SSH authorized keys
+# Sources: GitHub profiles + Vault extra keys
+# DO NOT EDIT MANUALLY - changes will be overwritten by Ansible
+{% for key_block in common_ssh_collected_github_keys | default([]) %}
+{% for key in key_block.splitlines() %}
+{% if key | trim | length > 0 %}
+{{ key | trim }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% for key in common_ssh_extra_keys | default([]) %}
+{% if key | trim | length > 0 %}
+{{ key | trim }}
+{% endif %}
+{% endfor %}
