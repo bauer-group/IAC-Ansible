@@ -5,7 +5,7 @@
 The `auto_update` role manages automatic system updates via a **maintenance chain**: a single cron job that runs all steps sequentially.
 
 ```text
-02:00 Maintenance Chain (daily)
+03:00 Maintenance Chain (daily, completes by ~03:30)
   ├── Phase 1: ansible-pull (sync config from Git)
   ├── Pre-Check: updates available?
   │     NO → exit (nothing to do)
@@ -30,9 +30,9 @@ Edit `inventory/production/group_vars/all/update_settings.yml`:
 # Update type: "all" or "security"
 auto_update_type: "all"
 
-# Maintenance chain schedule (cron format): Daily at 02:00
+# Maintenance chain schedule (cron format): Daily at 03:00
 auto_update_cron_minute: "0"
-auto_update_cron_hour: "2"
+auto_update_cron_hour: "3"
 auto_update_cron_day: "*"
 auto_update_cron_month: "*"
 auto_update_cron_weekday: "*"
@@ -123,8 +123,8 @@ If any check fails, the reboot is aborted and logged.
 ### Cron Job
 
 ```text
-# Maintenance chain: daily at 02:00
-0 2 * * * /usr/local/sbin/auto-update.sh >> /var/log/auto-update.log 2>&1
+# Maintenance chain: daily at 03:00
+0 3 * * * /usr/local/sbin/auto-update.sh >> /var/log/auto-update.log 2>&1
 ```
 
 ## Status Monitor Integration

@@ -79,6 +79,12 @@ if [ "${UPDATES_AVAILABLE}" = true ]; then
     dnf autoremove -y
 {% endif %}
 
+{% if auto_update_remove_old_kernels | bool %}
+    # Remove old kernels (keep current + one previous)
+    echo "${LOG_PREFIX} Cleaning old kernels..."
+    dnf remove -y --oldinstallonly --setopt installonly_limit=2 2>/dev/null || true
+{% endif %}
+
     echo "${LOG_PREFIX} Phase 2: System update completed"
 
     # =========================================================================

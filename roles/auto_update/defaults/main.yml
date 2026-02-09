@@ -23,7 +23,7 @@ auto_update_chain_ansible_pull: true
 # --- Schedule (cron) ---
 # Single cron trigger for the entire maintenance chain
 auto_update_cron_minute: "0"
-auto_update_cron_hour: "2"
+auto_update_cron_hour: "3"
 auto_update_cron_day: "*"
 auto_update_cron_month: "*"
 auto_update_cron_weekday: "*"

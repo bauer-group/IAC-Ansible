@@ -16,6 +16,20 @@
     dest: /usr/local/sbin/auto-update.sh
     mode: "0755"
 
+- name: "[RedHat] Disable dnf-automatic timer (chain handles updates)"
+  ansible.builtin.systemd:
+    name: dnf-automatic.timer
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: "[RedHat] Disable dnf-automatic-install timer (chain handles updates)"
+  ansible.builtin.systemd:
+    name: dnf-automatic-install.timer
+    state: stopped
+    enabled: false
+  failed_when: false
+
 - name: "[RedHat] Configure update cron job"
   ansible.builtin.cron:
     name: "IAC-Ansible: Auto system update"

@@ -18,9 +18,9 @@ auto_update_chain_ansible_pull: true
 
 # --- Schedule (cron format) ---
 # Single trigger for the entire maintenance chain
-# Default: Daily at 02:00 AM
+# Default: Daily at 03:00 AM (all tasks finish by ~03:30)
 auto_update_cron_minute: "0"
-auto_update_cron_hour: "2"
+auto_update_cron_hour: "3"
 auto_update_cron_day: "*"
 auto_update_cron_month: "*"
 auto_update_cron_weekday: "*"
