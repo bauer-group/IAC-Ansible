@@ -1,3 +1,11 @@
+## [0.5.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.4.0...v0.5.0) (2026-02-09)
+
+### 🚀 Features
+
+* Add SSH hardening documentation with automatic key deployment instructions ([c9bcb21](https://github.com/bauer-group/IAC-Ansible/commit/c9bcb21a187ba8534799fb7241903923913b3905))
+* Update Debian auto-update configuration and disable unnecessary timers ([dcfd63c](https://github.com/bauer-group/IAC-Ansible/commit/dcfd63cfc114d85a0d3cffcbdd13e18d4854942a))
+* Update maintenance chain schedule to 03:00 and disable unnecessary timers for RedHat ([dbe09af](https://github.com/bauer-group/IAC-Ansible/commit/dbe09afb0c344e6b83d77cf0536139ceff6b5d54))
+
 ## [0.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.3.0...v0.4.0) (2026-02-09)
 
 ### 🚀 Features
