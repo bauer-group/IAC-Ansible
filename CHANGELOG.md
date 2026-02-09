@@ -1,3 +1,9 @@
+## [0.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.3.0...v0.4.0) (2026-02-09)
+
+### 🚀 Features
+
+* Enhance SSH key deployment and hardening with GitHub integration ([9a15d41](https://github.com/bauer-group/IAC-Ansible/commit/9a15d4189667ced1cee619d8d929dabcbf0c4ea8))
+
 ## [0.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.3...v0.3.0) (2026-02-09)
 
 ### 🚀 Features
