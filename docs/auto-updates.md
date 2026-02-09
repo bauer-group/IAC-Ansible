@@ -12,6 +12,7 @@ The `auto_update` role manages automatic system updates via a **maintenance chai
   │     YES ↓
   ├── Status Monitor: open maintenance window (optional)
   ├── Phase 2: install updates
+  ├── Cleanup: autoremove unused packages + old kernel removal
   ├── Phase 3: conditional reboot (weekday check + health checks)
   │     ├── Reboot → maintenance window closed after boot
   │     └── No reboot → maintenance window closed immediately
@@ -87,17 +88,19 @@ Existing configuration files are always preserved (`--force-confold`).
 
 ### Flow
 
-1. Cron fires at scheduled time (default: daily 02:00)
+1. Cron fires at scheduled time (default: daily 03:00)
 2. Phase 1: `ansible-pull` syncs latest config from Git (optional)
 3. Package lists are updated (`apt-get update` / `dnf check-update`)
 4. If no updates available → exit early (no maintenance window opened)
 5. If updates available → open status monitor maintenance window (optional)
 6. Phase 2: Updates are installed
-7. Phase 3: If reboot is needed AND today is the configured reboot day:
+7. Unused dependencies are removed (`apt-get autoremove` / `dnf autoremove`)
+8. Old kernels are cleaned up (keep current + one previous)
+9. Phase 3: If reboot is needed AND today is the configured reboot day:
    - Pre-reboot health checks (dpkg/rpm audit, lock check, system load)
    - If all checks pass → `shutdown -r +1`
    - Maintenance window closed automatically after boot
-8. If no reboot → maintenance window closed immediately
+10. If no reboot → maintenance window closed immediately
 
 ### Pre-Reboot Health Checks
 
@@ -111,14 +114,54 @@ Before any reboot, the script verifies:
 
 If any check fails, the reboot is aborted and logged.
 
+### Disabled OS Timers
+
+The maintenance chain handles all update operations. To prevent conflicts (double updates, race conditions), the role **disables the native OS update timers**:
+
+**Debian/Ubuntu:**
+
+- `apt-daily.timer` — stopped and disabled (chain runs `apt-get update`)
+- `apt-daily-upgrade.timer` — stopped and disabled (chain runs upgrades)
+- `APT::Periodic::*` values set to `"0"` in `/etc/apt/apt.conf.d/20auto-upgrades`
+
+**RedHat/Rocky/Alma:**
+
+- `dnf-automatic.timer` — stopped and disabled
+- `dnf-automatic-install.timer` — stopped and disabled
+
+This ensures all updates happen exclusively through the maintenance chain at the configured time.
+
+### needrestart (Debian/Ubuntu)
+
+The `needrestart` package is installed and configured for non-interactive mode to prevent interactive prompts during automated updates:
+
+```text
+/etc/needrestart/conf.d/iac-auto-restart.conf:
+  $nrconf{restart} = 'a';
+```
+
+Services that need restarting after library updates are restarted automatically.
+
 ### Files Deployed
+
+**All distributions:**
 
 | File | Purpose |
 | --- | --- |
 | `/usr/local/sbin/auto-update.sh` | Maintenance chain script |
-| `/etc/apt/apt.conf.d/50unattended-upgrades` | Debian/Ubuntu upgrade config |
-| `/etc/apt/apt.conf.d/20auto-upgrades` | Debian/Ubuntu auto trigger |
 | `/var/log/auto-update.log` | Maintenance chain log |
+
+**Debian/Ubuntu:**
+
+| File | Purpose |
+| --- | --- |
+| `/etc/apt/apt.conf.d/50unattended-upgrades` | Unattended-upgrades config |
+| `/etc/apt/apt.conf.d/20auto-upgrades` | APT periodic config (all `"0"`) |
+| `/etc/needrestart/conf.d/iac-auto-restart.conf` | Auto-restart services after updates |
+
+**RedHat/Rocky/Alma:**
+
+No additional config files — `dnf-automatic` and `dnf-utils` packages are installed, but their timers are disabled (chain handles everything).
 
 ### Cron Job
 
