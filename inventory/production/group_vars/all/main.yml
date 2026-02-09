@@ -58,6 +58,11 @@ ntp_fallback_servers:
   - ptbtime2.ptb.de
   - ptbtime3.ptb.de
 
+# SSH hardening (OFF globally - enable per host in host_vars!)
+# SAFETY: Refuses to harden if no authorized_keys exist for the target user.
+# Enable per host: common_ssh_hardening: true (in host_vars/<hostname>.yml)
+common_ssh_hardening: false
+
 # Firewall
 firewall_enabled: false
 

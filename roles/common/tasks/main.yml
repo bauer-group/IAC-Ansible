@@ -85,3 +85,7 @@
     dest: /etc/motd
     mode: "0644"
   when: common_motd_configure | bool and motd_enabled | bool
+
+- name: Include SSH hardening
+  ansible.builtin.include_tasks: ssh_hardening.yml
+  when: common_ssh_hardening | bool

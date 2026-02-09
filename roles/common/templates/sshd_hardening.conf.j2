@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+# IAC-Ansible: SSH hardening (drop-in config)
+# Only applied when common_ssh_hardening: true AND authorized_keys exist
+
+PermitRootLogin {{ common_ssh_permit_root_login }}
+PasswordAuthentication {{ common_ssh_password_authentication }}

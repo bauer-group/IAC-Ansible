@@ -1,0 +1,64 @@
+---
+# =============================================================================
+# SSH Hardening (idiot-proof)
+# =============================================================================
+# Safety: REFUSES to disable password auth if no SSH keys are deployed.
+# This prevents locking yourself out of the server.
+
+- name: "[SSH] Check authorized_keys exist for {{ common_ssh_authorized_keys_user }}"
+  ansible.builtin.stat:
+    path: "/{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys"
+  register: common_ssh_authkeys_file
+
+- name: "[SSH] Count authorized keys"
+  ansible.builtin.command:
+    cmd: "grep -c '^ssh-' /{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys"
+  register: common_ssh_key_count
+  changed_when: false
+  failed_when: false
+  when: common_ssh_authkeys_file.stat.exists
+
+- name: "[SSH] Set key count fact"
+  ansible.builtin.set_fact:
+    common_ssh_keys_found: "{{ (common_ssh_key_count.stdout | default('0') | int) if common_ssh_authkeys_file.stat.exists else 0 }}"
+
+- name: "[SSH] ABORT - No SSH keys found, refusing to harden"
+  ansible.builtin.fail:
+    msg: >-
+      SSH hardening ABORTED for {{ inventory_hostname }}!
+      No authorized_keys found for user '{{ common_ssh_authorized_keys_user }}'.
+      Deploy SSH keys first, then enable common_ssh_hardening.
+      File checked: /{{ 'root' if common_ssh_authorized_keys_user == 'root' else 'home/' + common_ssh_authorized_keys_user }}/.ssh/authorized_keys
+  when: (common_ssh_keys_found | int) == 0
+
+- name: "[SSH] Display key count confirmation"
+  ansible.builtin.debug:
+    msg: "SSH hardening: {{ common_ssh_keys_found }} authorized key(s) found for '{{ common_ssh_authorized_keys_user }}', proceeding"
+
+- name: "[SSH] Check sshd_config.d support"
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config.d
+  register: common_ssh_confd
+
+- name: "[SSH] Deploy hardening config (drop-in)"
+  ansible.builtin.template:
+    src: sshd_hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/99-iac-hardening.conf
+    mode: "0644"
+    validate: "sshd -t -f %s"
+  notify: Restart sshd
+  when: common_ssh_confd.stat.isdir | default(false)
+
+- name: "[SSH] Deploy hardening config (legacy sshd_config)"
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    validate: "sshd -t -f %s"
+  loop:
+    - regexp: "^#?PermitRootLogin"
+      line: "PermitRootLogin {{ common_ssh_permit_root_login }}"
+    - regexp: "^#?PasswordAuthentication"
+      line: "PasswordAuthentication {{ common_ssh_password_authentication }}"
+  notify: Restart sshd
+  when: not (common_ssh_confd.stat.isdir | default(false))
