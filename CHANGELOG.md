@@ -1,3 +1,13 @@
+## [0.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.3...v0.3.0) (2026-02-09)
+
+### 🚀 Features
+
+* Implement SSH hardening configuration with conditional checks and templates ([7dc959c](https://github.com/bauer-group/IAC-Ansible/commit/7dc959c7f72c9cd1559e5a06b360167e760b02f4))
+
+### 🐛 Bug Fixes
+
+* Remove SSH hardening settings and restart handler from main.yml ([01c2418](https://github.com/bauer-group/IAC-Ansible/commit/01c241878760d59ff27f904baf7b1e683e003d8a))
+
 ## [0.2.3](https://github.com/bauer-group/IAC-Ansible/compare/v0.2.2...v0.2.3) (2026-02-08)
 
 ### 🐛 Bug Fixes
