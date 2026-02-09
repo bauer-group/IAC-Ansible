@@ -58,10 +58,6 @@ ntp_fallback_servers:
   - ptbtime2.ptb.de
   - ptbtime3.ptb.de
 
-# SSH hardening
-ssh_permit_root_login: "prohibit-password"
-ssh_password_authentication: "no"
-
 # Firewall
 firewall_enabled: false
 
