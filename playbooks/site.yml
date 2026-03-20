@@ -74,3 +74,14 @@
   roles:
     - role: docker
       tags: [docker]
+
+# --- Phase 5: SMART monitoring for physical servers ---
+- name: "Phase 5: Disk health monitoring"
+  hosts: physical_servers
+  become: true
+  gather_facts: true
+  tags: [smartmon, monitoring]
+
+  roles:
+    - role: smartmon
+      tags: [smartmon, monitoring]

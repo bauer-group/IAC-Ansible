@@ -1,0 +1,19 @@
+---
+# =============================================================================
+# SMART Monitoring Role Defaults
+# =============================================================================
+
+smartmon_enabled: true
+
+# Alert email address
+smartmon_alert_email: "support@support.bauer-group.com"
+
+# Auto-detect disks (recommended) or specify manually
+# When true: scans for /dev/sd* and /dev/nvme* block devices
+# When false: uses smartmon_disks list below
+smartmon_auto_detect: true
+
+# Manual disk list (only used when smartmon_auto_detect is false)
+# smartmon_disks:
+#   - { device: "/dev/nvme0n1", type: "nvme" }
+#   - { device: "/dev/sda", type: "auto" }

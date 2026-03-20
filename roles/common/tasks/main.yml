@@ -89,6 +89,26 @@
     - ntp_enabled | bool
     - not (common_ntp_already_active | default(false) | bool)
 
+# --- Mail relay (msmtp) ---
+- name: Install msmtp
+  ansible.builtin.package:
+    name:
+      - msmtp
+      - msmtp-mta
+    state: present
+  when:
+    - common_msmtp_enabled | bool
+    - common_msmtp_password | length > 0
+
+- name: Deploy msmtp configuration
+  ansible.builtin.template:
+    src: msmtprc.j2
+    dest: /etc/msmtprc
+    mode: "0600"
+  when:
+    - common_msmtp_enabled | bool
+    - common_msmtp_password | length > 0
+
 # --- DNS resolver hardening ---
 - name: Deploy resolved.conf (disable mDNS + stub listener)
   ansible.builtin.template:

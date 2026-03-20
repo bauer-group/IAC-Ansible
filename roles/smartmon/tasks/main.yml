@@ -1,0 +1,67 @@
+---
+# =============================================================================
+# SMART Monitoring Role - Main Tasks
+# =============================================================================
+
+- name: Install smartmontools
+  ansible.builtin.package:
+    name: smartmontools
+    state: present
+
+- name: Auto-detect block devices for SMART monitoring
+  ansible.builtin.shell: |
+    set -euo pipefail
+    for dev in /dev/sd[a-z] /dev/nvme[0-9]n[0-9]; do
+      [ -b "$dev" ] || continue
+      if echo "$dev" | grep -q nvme; then
+        echo "${dev}:nvme"
+      else
+        echo "${dev}:auto"
+      fi
+    done
+  register: smartmon_detected_raw
+  changed_when: false
+  when: smartmon_auto_detect | bool
+
+- name: Build detected disk list
+  ansible.builtin.set_fact:
+    smartmon_detected_disks: >-
+      {{ smartmon_detected_raw.stdout_lines | default([]) | map('split', ':') |
+         map('zip', ['device', 'type']) | map('map', 'reverse') | map('community.general.dict') | list }}
+  when: smartmon_auto_detect | bool
+
+- name: Set final disk list
+  ansible.builtin.set_fact:
+    smartmon_final_disks: "{{ smartmon_detected_disks if smartmon_auto_detect | bool else smartmon_disks }}"
+
+- name: Display monitored disks
+  ansible.builtin.debug:
+    msg: "SMART monitoring: {{ smartmon_final_disks | map(attribute='device') | list | join(', ') }}"
+  when: smartmon_final_disks | length > 0
+
+- name: Deploy smartd.conf
+  ansible.builtin.template:
+    src: smartd.conf.j2
+    dest: /etc/smartd.conf
+    mode: "0644"
+    backup: true
+  notify: Restart smartmontools
+  when: smartmon_final_disks | length > 0
+
+- name: Deploy smartcheck utility script
+  ansible.builtin.template:
+    src: smartcheck.sh.j2
+    dest: /usr/local/sbin/smartcheck
+    mode: "0755"
+
+- name: Enable and start smartmontools
+  ansible.builtin.systemd:
+    name: smartmontools
+    state: started
+    enabled: true
+  when: smartmon_final_disks | length > 0
+
+- name: Warn if no disks detected
+  ansible.builtin.debug:
+    msg: "WARNING: No SMART-capable disks detected on {{ inventory_hostname }}"
+  when: smartmon_final_disks | length == 0

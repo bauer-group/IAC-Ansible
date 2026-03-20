@@ -45,6 +45,17 @@ ntp_poll_interval_max_sec: 2048
 ntp_connection_retry_sec: 30
 ntp_save_interval_sec: 60
 
+# Mail relay (msmtp) - used by smartd, fail2ban, cron etc.
+common_msmtp_enabled: true
+common_msmtp_host: "mx1.simply-send.com"
+common_msmtp_port: 465
+common_msmtp_tls_starttls: "off"
+common_msmtp_user: "no-reply@simply-send.com"
+common_msmtp_from: "no-reply@simply-send.com"
+# Password MUST be set via Ansible Vault:
+#   common_msmtp_password: "{{ vault_msmtp_password }}"
+common_msmtp_password: ""
+
 # SSH hardening (disabled by default - enable per host only!)
 # Will REFUSE to harden if no SSH keys are deployed for the target user.
 common_ssh_hardening: false

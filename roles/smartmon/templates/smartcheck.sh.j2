@@ -1,0 +1,22 @@
+#!/bin/bash
+# =============================================================================
+# IAC-Ansible: Quick SMART health check
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+# Usage: smartcheck
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+for disk in /dev/nvme[0-9]n[0-9] /dev/sd[a-z]; do
+    [ -b "$disk" ] || continue
+    status=$(smartctl -H "$disk" 2>/dev/null | grep -i "overall-health\|SMART Health" | awk -F: '{print $2}' | xargs)
+    if [ -z "$status" ]; then
+        echo -e "${disk}: ${RED}UNKNOWN (not SMART capable?)${NC}"
+    elif echo "$status" | grep -qi "PASSED\|OK"; then
+        echo -e "${disk}: ${GREEN}${status}${NC}"
+    else
+        echo -e "${disk}: ${RED}${status}${NC}"
+    fi
+done

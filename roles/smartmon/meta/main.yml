@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: smartmon
+  author: BAUER GROUP
+  description: SMART disk health monitoring with email alerts
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Ubuntu
+      versions: [jammy, noble]
+    - name: Debian
+      versions: [bookworm, trixie]
+    - name: EL
+      versions: [8, 9, 10]
+
+dependencies: []

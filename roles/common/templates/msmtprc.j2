@@ -1,0 +1,24 @@
+# =============================================================================
+# IAC-Ansible: msmtp mail relay configuration
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+# Default settings
+defaults
+auth           on
+tls            on
+tls_certcheck  on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+
+# SMTP server configuration
+account        default
+host           {{ common_msmtp_host }}
+port           {{ common_msmtp_port }}
+tls            on
+tls_starttls   {{ common_msmtp_tls_starttls }}
+tls_certcheck  on
+auth           on
+user           "{{ common_msmtp_user }}"
+password       "{{ common_msmtp_password }}"
+from           "{{ common_msmtp_from }}"

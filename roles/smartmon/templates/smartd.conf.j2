@@ -1,0 +1,14 @@
+# =============================================================================
+# IAC-Ansible: smartd configuration
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+# Monitors disk health, error logs, self-test results.
+# Sends alerts to {{ smartmon_alert_email }}
+
+{% for disk in smartmon_final_disks %}
+{% if disk.type == 'nvme' %}
+{{ disk.device }} -d nvme -a -H -l error -l selftest -f -m {{ smartmon_alert_email }}
+{% else %}
+{{ disk.device }} -a -H -l error -l selftest -f -m {{ smartmon_alert_email }}
+{% endif %}
+{% endfor %}
