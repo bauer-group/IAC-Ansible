@@ -1,3 +1,9 @@
+## [0.5.1](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.0...v0.5.1) (2026-03-20)
+
+### ♻️ Refactoring
+
+* **ansible:** moved software-properties-common to Ubuntu-only ([b8af008](https://github.com/bauer-group/IAC-Ansible/commit/b8af0084037d1a95ad98d61364817986c8dc4ad8))
+
 ## [0.5.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.4.0...v0.5.0) (2026-02-09)
 
 ### 🚀 Features
