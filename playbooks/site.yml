@@ -63,3 +63,14 @@
   roles:
     - role: auto_update
       tags: [update, auto-update]
+
+# --- Phase 4: Docker for designated hosts ---
+- name: "Phase 4: Docker runtime"
+  hosts: docker_hosts
+  become: true
+  gather_facts: true
+  tags: [docker]
+
+  roles:
+    - role: docker
+      tags: [docker]

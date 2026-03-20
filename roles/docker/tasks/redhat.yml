@@ -1,0 +1,31 @@
+---
+# =============================================================================
+# Docker Role - RedHat/CentOS Tasks
+# =============================================================================
+
+- name: "[RedHat] Remove conflicting packages"
+  ansible.builtin.dnf:
+    name: "{{ docker_conflicting_packages }}"
+    state: absent
+  failed_when: false
+
+- name: "[RedHat] Install Docker prerequisites"
+  ansible.builtin.dnf:
+    name:
+      - dnf-plugins-core
+      - ip6tables
+    state: present
+
+- name: "[RedHat] Add Docker repository"
+  ansible.builtin.yum_repository:
+    name: docker-ce
+    description: Docker CE Stable
+    baseurl: "https://download.docker.com/linux/{{ (ansible_distribution == 'Fedora') | ternary('fedora', 'rhel') }}/$releasever/$basearch/stable"
+    gpgcheck: true
+    gpgkey: "https://download.docker.com/linux/{{ (ansible_distribution == 'Fedora') | ternary('fedora', 'rhel') }}/gpg"
+    enabled: true
+
+- name: "[RedHat] Install Docker packages"
+  ansible.builtin.dnf:
+    name: "{{ docker_packages }}"
+    state: present

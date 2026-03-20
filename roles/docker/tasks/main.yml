@@ -1,0 +1,89 @@
+---
+# =============================================================================
+# Docker Role - Main Tasks
+# =============================================================================
+
+- name: Include Debian/Ubuntu Docker tasks
+  ansible.builtin.include_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Include RedHat/CentOS Docker tasks
+  ansible.builtin.include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Fail on unsupported platform
+  ansible.builtin.fail:
+    msg: "Unsupported OS family for Docker: {{ ansible_os_family }}"
+  when: ansible_os_family not in ["Debian", "RedHat"]
+
+# --- Common tasks (all platforms) ---
+
+- name: Create Docker config directory
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: "0755"
+
+- name: Deploy Docker daemon configuration
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: "0644"
+  notify: Restart Docker
+
+- name: Deploy sysctl settings for Docker
+  ansible.builtin.template:
+    src: 98-docker.conf.j2
+    dest: /etc/sysctl.d/98-docker.conf
+    mode: "0644"
+  notify: Apply sysctl
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Deploy IPv6 NAT support service
+  ansible.builtin.template:
+    src: docker-support.service.j2
+    dest: /etc/systemd/system/docker-support.service
+    mode: "0644"
+  notify: Reload systemd
+  when: docker_ipv6_nat_enabled | bool
+
+- name: Flush handlers for systemd reload
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start Docker IPv6 NAT service
+  ansible.builtin.systemd:
+    name: docker-support
+    state: started
+    enabled: true
+  when: docker_ipv6_nat_enabled | bool
+
+- name: Disable Docker IPv6 NAT service when not needed
+  ansible.builtin.systemd:
+    name: docker-support
+    state: stopped
+    enabled: false
+  when: not (docker_ipv6_nat_enabled | bool)
+  failed_when: false
+
+- name: Verify Docker installation
+  ansible.builtin.command: docker version --format '{{ '{{' }}.Server.Version{{ '}}' }}'
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "Docker {{ docker_version.stdout }} installed on {{ inventory_hostname }}"
+
+- name: Configure weekly Docker prune cron job
+  ansible.builtin.cron:
+    name: "IAC-Ansible: Docker system prune"
+    minute: "{{ docker_prune_cron_minute }}"
+    hour: "{{ docker_prune_cron_hour }}"
+    weekday: "{{ docker_prune_cron_weekday }}"
+    job: "docker system prune -af --volumes > /dev/null 2>&1"
+    state: "{{ 'present' if docker_prune_enabled | bool else 'absent' }}"

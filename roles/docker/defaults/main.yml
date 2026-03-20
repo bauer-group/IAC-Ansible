@@ -1,0 +1,58 @@
+---
+# =============================================================================
+# Docker Role Defaults
+# =============================================================================
+
+# Enable/disable Docker installation
+docker_enabled: true
+
+# Docker edition: "ce" (Community) or "ee" (Enterprise)
+docker_edition: "ce"
+
+# Docker packages to install
+docker_packages:
+  - "docker-{{ docker_edition }}"
+  - "docker-{{ docker_edition }}-cli"
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# Conflicting packages to remove before installation
+docker_conflicting_packages:
+  - docker.io
+  - docker-doc
+  - docker-compose
+  - docker-compose-v2
+  - podman-docker
+  - containerd
+  - runc
+
+# Docker daemon configuration
+docker_daemon_options:
+  bip: "10.0.0.1/9"
+  ipv6: true
+  fixed-cidr-v6: "fdff::/17"
+  default-address-pools:
+    - base: "10.128.0.0/9"
+      size: 24
+    - base: "fdff:8000::/17"
+      size: 64
+  log-driver: "json-file"
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+  storage-driver: "overlay2"
+
+# IPv6 NAT masquerading for Docker containers
+docker_ipv6_nat_enabled: true
+docker_ipv6_nat_subnet: "fdff::/16"
+
+# Sysctl settings for Docker workloads
+docker_sysctl:
+  vm.max_map_count: 4194304
+
+# Prune unused resources on a schedule (cron)
+docker_prune_enabled: true
+docker_prune_cron_hour: "4"
+docker_prune_cron_minute: "30"
+docker_prune_cron_weekday: "0"

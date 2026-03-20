@@ -1,0 +1,7 @@
+# =============================================================================
+# IAC-Ansible: Docker Engine sysctl values
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+{% for key, value in docker_sysctl.items() %}
+{{ key }}={{ value }}
+{% endfor %}

@@ -1,0 +1,18 @@
+# =============================================================================
+# IAC-Ansible: IPv6 NAT for Docker containers
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+[Unit]
+Description=IPv6 Setup for Docker Network
+BindsTo=docker.service
+ReloadPropagatedFrom=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ip6tables -t nat -A POSTROUTING -s {{ docker_ipv6_nat_subnet }} ! -o docker0 -j MASQUERADE
+ExecStop=/usr/sbin/ip6tables -t nat -D POSTROUTING -s {{ docker_ipv6_nat_subnet }} ! -o docker0 -j MASQUERADE
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
