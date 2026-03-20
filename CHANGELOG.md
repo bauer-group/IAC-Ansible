@@ -1,3 +1,9 @@
+## [0.6.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.2...v0.6.0) (2026-03-20)
+
+### 🚀 Features
+
+* **staging:** added staging host with inventory groups ([b615452](https://github.com/bauer-group/IAC-Ansible/commit/b615452c618a9fb9a9497cd6fdc96845c93624f3))
+
 ## [0.5.2](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.1...v0.5.2) (2026-03-20)
 
 ### 🐛 Bug Fixes
