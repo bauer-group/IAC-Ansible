@@ -1,3 +1,9 @@
+## [0.5.2](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.1...v0.5.2) (2026-03-20)
+
+### 🐛 Bug Fixes
+
+* **security:** hardened security posture and reliability ([fc6729c](https://github.com/bauer-group/IAC-Ansible/commit/fc6729c2dd961000f12f5bfdd9053548a07a353e))
+
 ## [0.5.1](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.0...v0.5.1) (2026-03-20)
 
 ### ♻️ Refactoring
