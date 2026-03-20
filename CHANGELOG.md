@@ -1,3 +1,9 @@
+## [0.7.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.6.0...v0.7.0) (2026-03-20)
+
+### 🚀 Features
+
+* **common:** separated Ubuntu-specific packages ([62c4d35](https://github.com/bauer-group/IAC-Ansible/commit/62c4d35e3d1ea41f53d61b2b77c633f2f846503e))
+
 ## [0.6.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.5.2...v0.6.0) (2026-03-20)
 
 ### 🚀 Features
