@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.1.0...v1.2.0) (2026-03-20)
+
+### 🚀 Features
+
+* **monitoring:** added SMART disk monitoring ([6ec2ff0](https://github.com/bauer-group/IAC-Ansible/commit/6ec2ff0bba29cd6165590dce1ac1ca13b100ec45))
+
 ## [1.1.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.2...v1.1.0) (2026-03-20)
 
 ### 🚀 Features
