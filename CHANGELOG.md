@@ -1,3 +1,13 @@
+## [1.0.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.7.0...v1.0.0) (2026-03-20)
+
+### ⚠ BREAKING CHANGES
+
+* **common:** motd.j2 template no longer used; MOTD now handled via platform-specific dynamic scripts.
+
+### 🚀 Features
+
+* **common:** added platform-specific dynamic MOTD scripts ([2742c14](https://github.com/bauer-group/IAC-Ansible/commit/2742c14632332f28947a4786fff719629cc2f6ec))
+
 ## [0.7.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.6.0...v0.7.0) (2026-03-20)
 
 ### 🚀 Features
