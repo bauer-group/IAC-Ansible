@@ -1,0 +1,11 @@
+# =============================================================================
+# IAC-Ansible: fail2ban SSH jail
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+
+[sshd]
+enabled = true
+
+bantime = {{ common_fail2ban_sshd_bantime }}
+findtime = {{ common_fail2ban_sshd_findtime }}
+maxretry = {{ common_fail2ban_sshd_maxretry }}

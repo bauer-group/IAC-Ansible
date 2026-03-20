@@ -30,6 +30,23 @@
 
 # --- Common tasks (all platforms) ---
 
+# --- Locale ---
+- name: Generate locale
+  community.general.locale_gen:
+    name: "{{ common_locale }}"
+    state: present
+  when:
+    - common_locale_configure | bool
+    - ansible_os_family == "Debian"
+
+- name: Set default locale
+  ansible.builtin.copy:
+    content: "LANG={{ common_locale }}\n"
+    dest: /etc/default/locale
+    mode: "0644"
+  when: common_locale_configure | bool
+
+# --- Timezone ---
 - name: Set timezone
   community.general.timezone:
     name: "{{ system_timezone }}"
@@ -72,6 +89,77 @@
     - ntp_enabled | bool
     - not (common_ntp_already_active | default(false) | bool)
 
+# --- DNS resolver hardening ---
+- name: Deploy resolved.conf (disable mDNS + stub listener)
+  ansible.builtin.template:
+    src: resolved.conf.j2
+    dest: /etc/systemd/resolved.conf
+    mode: "0644"
+  notify: Restart resolved
+  when: common_resolved_configure | bool
+
+# --- fail2ban ---
+- name: Install fail2ban
+  ansible.builtin.package:
+    name: fail2ban
+    state: present
+  when: common_fail2ban_enabled | bool
+
+- name: Deploy fail2ban SSH jail configuration
+  ansible.builtin.template:
+    src: jail-sshd.conf.j2
+    dest: /etc/fail2ban/jail.d/01-sshd.conf
+    mode: "0644"
+  notify: Restart fail2ban
+  when: common_fail2ban_enabled | bool
+
+- name: Enable and start fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: common_fail2ban_enabled | bool
+
+# --- Open file limits ---
+- name: Create systemd system.conf.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/system.conf.d
+    state: directory
+    mode: "0755"
+  when: common_nofile_limit_configure | bool
+
+- name: Create systemd user.conf.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/user.conf.d
+    state: directory
+    mode: "0755"
+  when: common_nofile_limit_configure | bool
+
+- name: Deploy system-wide nofile limit
+  ansible.builtin.template:
+    src: systemd-nofile.conf.j2
+    dest: /etc/systemd/system.conf.d/01-nofile.conf
+    mode: "0644"
+  when: common_nofile_limit_configure | bool
+
+- name: Deploy user-wide nofile limit
+  ansible.builtin.template:
+    src: systemd-nofile.conf.j2
+    dest: /etc/systemd/user.conf.d/01-nofile.conf
+    mode: "0644"
+  when: common_nofile_limit_configure | bool
+
+- name: Set ulimit in root profile
+  ansible.builtin.lineinfile:
+    path: /root/.profile
+    line: "ulimit -n {{ common_nofile_limit }}"
+    regexp: "^ulimit -n"
+    state: present
+    create: true
+    mode: "0644"
+  when: common_nofile_limit_configure | bool
+
+# --- Logging ---
 - name: Create Ansible log directory
   ansible.builtin.file:
     path: /var/log/ansible

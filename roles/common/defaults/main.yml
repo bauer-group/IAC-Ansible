@@ -6,6 +6,32 @@ common_ntp_configure: true
 common_motd_configure: true
 common_logdir_configure: true
 
+# Locale
+common_locale: "de_DE.UTF-8"
+common_locale_configure: true
+
+# DNS resolver hardening
+common_resolved_configure: true
+common_resolved_multicast_dns: "no"
+common_resolved_dns_stub_listener: "no"
+
+# fail2ban
+common_fail2ban_enabled: true
+common_fail2ban_sshd_bantime: 86400
+common_fail2ban_sshd_findtime: 900
+common_fail2ban_sshd_maxretry: 5
+
+# Open file limits (important for Docker, databases, etc.)
+common_nofile_limit_configure: true
+common_nofile_limit: 1048576
+
+# NTP tuning
+ntp_root_distance_max_sec: 3
+ntp_poll_interval_min_sec: 32
+ntp_poll_interval_max_sec: 2048
+ntp_connection_retry_sec: 30
+ntp_save_interval_sec: 60
+
 # SSH hardening (disabled by default - enable per host only!)
 # Will REFUSE to harden if no SSH keys are deployed for the target user.
 common_ssh_hardening: false
