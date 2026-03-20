@@ -111,9 +111,10 @@ install_ansible_debian() {
     export DEBIAN_FRONTEND=noninteractive
 
     apt-get update -qq
-    apt-get install -y -qq software-properties-common git curl
+    apt-get install -y -qq git curl
 
     if [ "${OS_ID}" = "ubuntu" ]; then
+        apt-get install -y -qq software-properties-common
         apt-add-repository -y ppa:ansible/ansible 2>/dev/null || true
         apt-get update -qq
     fi
