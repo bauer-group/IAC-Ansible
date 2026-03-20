@@ -1,3 +1,11 @@
+## [1.1.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.2...v1.1.0) (2026-03-20)
+
+### 🚀 Features
+
+* **common:** added DNS server configuration for systemd-resolved ([e025c83](https://github.com/bauer-group/IAC-Ansible/commit/e025c83900ad74a027ff917714240ff8ffec2d5e))
+* **common:** added system hardening and resource limits ([d474a69](https://github.com/bauer-group/IAC-Ansible/commit/d474a6971ec007af227ddac1bf438c921a8e3545))
+* **docker:** added Docker deployment phase ([5936981](https://github.com/bauer-group/IAC-Ansible/commit/593698181c4801ea68d344c2f04f9973ced26076))
+
 ## [1.0.2](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.1...v1.0.2) (2026-03-20)
 
 ### 🐛 Bug Fixes
