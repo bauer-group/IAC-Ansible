@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.1...v1.0.2) (2026-03-20)
+
+### 🐛 Bug Fixes
+
+* **ansible-pull:** removed restrictive security options ([4fcc9d5](https://github.com/bauer-group/IAC-Ansible/commit/4fcc9d5d83719bed1e5dc7c86f080b1922fb75ba))
+
 ## [1.0.1](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.0...v1.0.1) (2026-03-20)
 
 ### 🐛 Bug Fixes
