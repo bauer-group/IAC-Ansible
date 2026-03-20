@@ -1,0 +1,65 @@
+#!/bin/bash
+# =============================================================================
+# IAC-Ansible: Dynamic MOTD
+# Managed by Ansible - DO NOT EDIT MANUALLY
+# =============================================================================
+# Executed at every login via /etc/update-motd.d/ or /etc/profile.d/
+
+# Colors
+BOLD='\033[1m'
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Gather live system info
+HOSTNAME_SHORT=$(hostname -s 2>/dev/null || echo "unknown")
+FQDN=$(hostname -f 2>/dev/null || echo "unknown")
+OS=$(. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME}" || echo "unknown")
+KERNEL=$(uname -r)
+ARCH=$(uname -m)
+IPV4=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
+IPV6=$(ip -6 route get 2001:4860:4860::8888 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
+UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime)
+UPTIME_DAYS=$((UPTIME_SEC / 86400))
+UPTIME_HOURS=$(( (UPTIME_SEC % 86400) / 3600 ))
+UPTIME_MINS=$(( (UPTIME_SEC % 3600) / 60 ))
+LOAD=$(awk '{print $1, $2, $3}' /proc/loadavg)
+CPUS=$(nproc 2>/dev/null || echo "?")
+MEM_TOTAL=$(free -m 2>/dev/null | awk '/^Mem:/{print $2}')
+MEM_USED=$(free -m 2>/dev/null | awk '/^Mem:/{print $3}')
+MEM_PCT=$( (( MEM_TOTAL > 0 )) && echo "$((MEM_USED * 100 / MEM_TOTAL))%" || echo "N/A")
+DISK_PCT=$(df -h / 2>/dev/null | awk 'NR==2{print $5}')
+
+{% if inventory_hostname is defined %}
+ASSET_ID="{{ inventory_hostname | asset_id | default('N/A') }}"
+GROUP_CODE="{{ inventory_hostname | group_code | default('N/A') }}"
+ASSET_TYPE="{{ inventory_hostname | asset_type | default('N/A') }}"
+{% else %}
+ASSET_ID="N/A"
+GROUP_CODE="N/A"
+ASSET_TYPE="N/A"
+{% endif %}
+
+echo ""
+echo -e "${BOLD}===============================================================================${NC}"
+echo -e "  ${CYAN}{{ motd_organization }}${NC} - Managed by IAC-Ansible"
+echo -e "${BOLD}===============================================================================${NC}"
+echo -e "  Hostname:     ${BOLD}${HOSTNAME_SHORT}${NC}"
+echo -e "  FQDN:         ${FQDN}"
+echo -e "  Asset:        ${ASSET_ID} | Group: ${GROUP_CODE} (${ASSET_TYPE})"
+echo -e "  OS:           ${OS}"
+echo -e "  Kernel:       ${KERNEL}"
+echo -e "  Architecture: ${ARCH}"
+echo -e "  IPv4:         ${IPV4:-N/A}"
+echo -e "  IPv6:         ${IPV6:-N/A}"
+echo -e "${BOLD}  ─────────────────────────────────────────────────────────────────────────${NC}"
+echo -e "  Uptime:       ${GREEN}${UPTIME_DAYS}d ${UPTIME_HOURS}h ${UPTIME_MINS}m${NC}"
+echo -e "  Load:         ${LOAD}  (${CPUS} CPUs)"
+echo -e "  Memory:       ${MEM_USED}M / ${MEM_TOTAL}M (${MEM_PCT})"
+echo -e "  Disk /:       ${DISK_PCT} used"
+echo -e "${BOLD}===============================================================================${NC}"
+echo -e "  ${YELLOW}This system is managed by Ansible. Manual changes may be overwritten.${NC}"
+echo -e "  Repository:   {{ iac_repo_url }}"
+echo -e "${BOLD}===============================================================================${NC}"
+echo ""

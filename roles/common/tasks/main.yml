@@ -79,12 +79,47 @@
     mode: "0755"
   when: common_logdir_configure | bool
 
-- name: Deploy MOTD
-  ansible.builtin.template:
-    src: motd.j2
+- name: Clear static MOTD (replaced by dynamic)
+  ansible.builtin.copy:
+    content: ""
     dest: /etc/motd
     mode: "0644"
   when: common_motd_configure | bool and motd_enabled | bool
+
+- name: Ensure update-motd.d directory exists (Debian)
+  ansible.builtin.file:
+    path: /etc/update-motd.d
+    state: directory
+    mode: "0755"
+  when:
+    - common_motd_configure | bool and motd_enabled | bool
+    - ansible_os_family == "Debian"
+
+- name: Remove default Debian MOTD scripts
+  ansible.builtin.shell: |
+    find /etc/update-motd.d -maxdepth 1 -type f ! -name '50-iac-ansible' -exec chmod -x {} \;
+  changed_when: false
+  when:
+    - common_motd_configure | bool and motd_enabled | bool
+    - ansible_os_family == "Debian"
+
+- name: Deploy dynamic MOTD script (Debian)
+  ansible.builtin.template:
+    src: motd-dynamic.sh.j2
+    dest: /etc/update-motd.d/50-iac-ansible
+    mode: "0755"
+  when:
+    - common_motd_configure | bool and motd_enabled | bool
+    - ansible_os_family == "Debian"
+
+- name: Deploy dynamic MOTD script (RedHat)
+  ansible.builtin.template:
+    src: motd-dynamic.sh.j2
+    dest: /etc/profile.d/iac-motd.sh
+    mode: "0755"
+  when:
+    - common_motd_configure | bool and motd_enabled | bool
+    - ansible_os_family == "RedHat"
 
 - name: Include SSH hardening
   ansible.builtin.include_tasks: ssh_hardening.yml
