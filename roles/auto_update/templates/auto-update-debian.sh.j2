@@ -63,12 +63,19 @@ if [ "${UPDATES_AVAILABLE}" -gt 0 ]; then
     echo "${LOG_PREFIX} Installing security updates only..."
     unattended-upgrade -v 2>&1 || {
         echo "${LOG_PREFIX} Fallback: using apt with security pocket..."
-        DISTRO=$(lsb_release -cs 2>/dev/null || . /etc/os-release && echo "${VERSION_CODENAME}")
-        apt-get upgrade -y \
-            -o Dpkg::Options::="--force-confdef" \
-            -o Dpkg::Options::="--force-confold" \
-            -o Dir::Etc::sourcelist="/etc/apt/sources.list" \
-            -t "${DISTRO}-security" 2>/dev/null || true
+        DISTRO=$(lsb_release -cs 2>/dev/null || ( . /etc/os-release && echo "${VERSION_CODENAME:-}" ))
+        if [ -n "${DISTRO}" ]; then
+            apt-get upgrade -y \
+                -o Dpkg::Options::="--force-confdef" \
+                -o Dpkg::Options::="--force-confold" \
+                -o Dir::Etc::sourcelist="/etc/apt/sources.list" \
+                -t "${DISTRO}-security" 2>/dev/null || true
+        else
+            echo "${LOG_PREFIX} WARNING: Could not determine distro codename, falling back to full upgrade"
+            apt-get upgrade -y \
+                -o Dpkg::Options::="--force-confdef" \
+                -o Dpkg::Options::="--force-confold"
+        fi
     }
 {% else %}
     # Full system upgrade
@@ -112,13 +119,16 @@ if [ "${UPDATES_AVAILABLE}" -gt 0 ]; then
 
             echo "${LOG_PREFIX} Running pre-reboot health checks..."
 
-            # Check: dpkg in consistent state
-            if dpkg --audit 2>&1 | grep -q .; then
+            # Check: dpkg in consistent state (exit code != 0 means real issues)
+            if ! dpkg --audit > /dev/null 2>&1; then
                 echo "${LOG_PREFIX} ABORT reboot: dpkg audit found inconsistencies"
-                dpkg --audit
+                dpkg --audit 2>&1 || true
                 logger -t IAC-Ansible "Reboot ABORTED: dpkg audit failed"
-            elif fuser /var/lib/dpkg/lock-frontend &>/dev/null; then
+            elif command -v fuser &>/dev/null && fuser /var/lib/dpkg/lock-frontend &>/dev/null; then
                 echo "${LOG_PREFIX} ABORT reboot: dpkg lock held"
+                logger -t IAC-Ansible "Reboot ABORTED: dpkg lock held"
+            elif [ -f /var/lib/dpkg/lock-frontend ] && lsof /var/lib/dpkg/lock-frontend &>/dev/null; then
+                echo "${LOG_PREFIX} ABORT reboot: dpkg lock held (lsof)"
                 logger -t IAC-Ansible "Reboot ABORTED: dpkg lock held"
             else
                 # Check system load

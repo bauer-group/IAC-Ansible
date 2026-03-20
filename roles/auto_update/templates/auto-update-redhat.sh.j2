@@ -98,13 +98,40 @@ if [ "${UPDATES_AVAILABLE}" = true ]; then
     if [ "${REBOOT_WEEKDAY}" = "*" ] || [ "${CURRENT_WEEKDAY}" = "${REBOOT_WEEKDAY}" ]; then
         echo "${LOG_PREFIX} Phase 3: Checking if reboot is required..."
 
-        if ! needs-restarting -r &>/dev/null; then
-            echo "${LOG_PREFIX} Reboot required (needs-restarting reports pending restart)"
+        if ! command -v needs-restarting &>/dev/null; then
+            echo "${LOG_PREFIX} WARNING: needs-restarting not found, installing dnf-plugins-core..."
+            dnf install -y dnf-plugins-core &>/dev/null || true
+        fi
+
+        REBOOT_NEEDED=false
+        if command -v needs-restarting &>/dev/null; then
+            if ! needs-restarting -r &>/dev/null; then
+                REBOOT_NEEDED=true
+            fi
+        else
+            # Fallback: check if kernel was updated
+            RUNNING_KERNEL=$(uname -r)
+            INSTALLED_KERNEL=$(rpm -q --last kernel 2>/dev/null | head -1 | awk '{print $1}' | sed 's/kernel-//')
+            if [ "${RUNNING_KERNEL}" != "${INSTALLED_KERNEL}" ] 2>/dev/null; then
+                REBOOT_NEEDED=true
+            fi
+        fi
+
+        if [ "${REBOOT_NEEDED}" = true ]; then
+            echo "${LOG_PREFIX} Reboot required"
 
             echo "${LOG_PREFIX} Running pre-reboot health checks..."
 
             # Check: no rpm transaction in progress
-            if [ -f /var/lib/rpm/.rpm.lock ] && fuser /var/lib/rpm/.rpm.lock &>/dev/null; then
+            RPM_LOCKED=false
+            if [ -f /var/lib/rpm/.rpm.lock ]; then
+                if command -v fuser &>/dev/null && fuser /var/lib/rpm/.rpm.lock &>/dev/null; then
+                    RPM_LOCKED=true
+                elif command -v lsof &>/dev/null && lsof /var/lib/rpm/.rpm.lock &>/dev/null; then
+                    RPM_LOCKED=true
+                fi
+            fi
+            if [ "${RPM_LOCKED}" = true ]; then
                 echo "${LOG_PREFIX} ABORT reboot: rpm lock held"
                 logger -t IAC-Ansible "Reboot ABORTED: rpm lock held"
             else

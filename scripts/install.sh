@@ -42,6 +42,7 @@ err()  { echo -e "${RED}[IAC-Ansible ERROR]${NC} $*" >&2; }
 # --- Cleanup on exit ---
 cleanup() {
     rm -f "${LOCK_FILE}"
+    rm -rf "${LOCK_FILE}.d"
 }
 trap cleanup EXIT
 
@@ -51,15 +52,16 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Prevent concurrent execution
-if [ -f "${LOCK_FILE}" ]; then
+# Prevent concurrent execution (atomic lock via mkdir)
+if ! mkdir "${LOCK_FILE}.d" 2>/dev/null; then
     LOCK_PID=$(cat "${LOCK_FILE}" 2>/dev/null || true)
     if [ -n "${LOCK_PID}" ] && kill -0 "${LOCK_PID}" 2>/dev/null; then
         err "Another instance is already running (PID: ${LOCK_PID})"
         exit 1
     fi
-    warn "Stale lock file found, removing"
-    rm -f "${LOCK_FILE}"
+    warn "Stale lock found, reclaiming"
+    rm -rf "${LOCK_FILE}.d"
+    mkdir "${LOCK_FILE}.d"
 fi
 echo $$ > "${LOCK_FILE}"
 
@@ -76,6 +78,22 @@ log "Branch:     ${BRANCH}"
 log "Playbook:   ${PLAYBOOK}"
 log "Schedule:   ${SCHEDULE}"
 log ""
+
+# --- Validate environment ---
+validate_environment() {
+    # Check systemd is available
+    if ! command -v systemctl &>/dev/null; then
+        err "systemd is required but not found (systemctl not in PATH)"
+        exit 1
+    fi
+
+    # Check git connectivity to repo
+    if command -v git &>/dev/null; then
+        if ! git ls-remote --exit-code "${REPO_URL}" &>/dev/null; then
+            warn "Cannot reach repository: ${REPO_URL} (will retry after git install)"
+        fi
+    fi
+}
 
 # --- Detect OS ---
 detect_os() {
@@ -163,11 +181,11 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/ansible-pull \\
-  --url ${REPO_URL} \\
-  --checkout ${BRANCH} \\
-  --directory ${WORKDIR} \\
+  --url "${REPO_URL}" \\
+  --checkout "${BRANCH}" \\
+  --directory "${WORKDIR}" \\
   --full \\
-  ${PLAYBOOK}
+  "${PLAYBOOK}"
 StandardOutput=append:${LOG_FILE}
 StandardError=append:${LOG_FILE}
 TimeoutStartSec=1800
@@ -213,20 +231,24 @@ LREOF
 # --- Run initial pull ---
 run_initial_pull() {
     log "Running initial ansible-pull (this may take a few minutes)..."
-    if ansible-pull \
+    local rc=0
+    ansible-pull \
         --url "${REPO_URL}" \
         --checkout "${BRANCH}" \
         --directory "${WORKDIR}" \
         --full \
-        "${PLAYBOOK}" 2>&1 | tee -a "${LOG_FILE}"; then
+        "${PLAYBOOK}" > >(tee -a "${LOG_FILE}") 2>&1 || rc=$?
+
+    if [ "${rc}" -eq 0 ]; then
         log "Initial pull completed successfully"
     else
-        warn "Initial pull completed with warnings. Check ${LOG_FILE} for details."
+        warn "Initial pull failed (exit code ${rc}). Check ${LOG_FILE} for details."
     fi
 }
 
 # --- Main ---
 main() {
+    validate_environment
     detect_os
 
     case "${OS_FAMILY}" in
@@ -240,7 +262,7 @@ main() {
 
     # Mark as bootstrapped
     echo "bootstrapped=$(date -u '+%Y-%m-%dT%H:%M:%SZ') branch=${BRANCH}" > "${MARKER_FILE}"
-    chmod 644 "${MARKER_FILE}"
+    chmod 600 "${MARKER_FILE}"
 
     log ""
     log "=== Bootstrap Complete ==="

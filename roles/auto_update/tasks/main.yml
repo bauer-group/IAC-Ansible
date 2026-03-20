@@ -83,7 +83,7 @@
 
 - name: Install provider dependencies (uptime-kuma-api)
   ansible.builtin.pip:
-    name: uptime-kuma-api
+    name: "uptime-kuma-api>=1.0,<2.0"
     virtualenv: /opt/iac-ansible/statusmon-venv
   when: auto_update_statusmon_enabled | bool and auto_update_statusmon_provider == "uptime-kuma"
 

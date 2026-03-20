@@ -23,5 +23,12 @@ TimeoutStartSec=1800
 Environment="ANSIBLE_LOG_PATH={{ ansible_pull_log_file }}"
 Environment="HOME=/root"
 
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+
 [Install]
 WantedBy=multi-user.target
