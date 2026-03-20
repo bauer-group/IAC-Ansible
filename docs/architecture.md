@@ -82,9 +82,11 @@ On every push to `main`, GitHub Actions can automatically trigger updates on all
 │       └── cleanup.yml            # System cleanup
 │
 ├── roles/
-│   ├── common/                    # Base OS configuration
-│   ├── auto_update/               # Automatic system updates
-│   └── ansible_pull/              # Git-based pull mechanism
+│   ├── common/                    # Base OS configuration (locale, NTP, DNS, fail2ban, msmtp, MOTD)
+│   ├── ansible_pull/              # Git-based pull mechanism
+│   ├── auto_update/               # Automatic system updates + maintenance chain
+│   ├── docker/                    # Docker CE + Compose + IPv6 networking
+│   └── smartmon/                  # SMART disk health monitoring
 │
 ├── scripts/
 │   ├── install.sh                 # One-line bootstrap installer
@@ -101,34 +103,50 @@ On every push to `main`, GitHub Actions can automatically trigger updates on all
 
 ```
 site.yml
-  ├── common           (all hosts)
-  │   ├── Platform detection
-  │   ├── Package installation (apt/yum)
-  │   ├── Timezone & NTP
-  │   └── MOTD
   │
-  ├── ansible_pull     (all hosts)
+  ├── Phase 1: common           (all hosts)
+  │   ├── Platform detection & packages
+  │   ├── Locale (de_DE.UTF-8)
+  │   ├── Timezone & NTP (with tuning)
+  │   ├── Mail relay (msmtp)
+  │   ├── DNS resolver hardening
+  │   ├── fail2ban (SSH jail)
+  │   ├── Open file limits (nofile)
+  │   ├── Dynamic MOTD
+  │   └── SSH hardening (opt-in)
+  │
+  ├── Phase 2: ansible_pull     (all hosts)
   │   ├── Install Ansible on host
   │   ├── systemd service + timer
   │   └── Logrotate
   │
-  └── auto_update      (auto_update group only)
-      ├── depends on: common
-      ├── Update scripts (Debian/RedHat)
-      ├── unattended-upgrades config
-      ├── Update cron job
-      └── Reboot cron job
+  ├── Phase 3: auto_update      (auto_update group)
+  │   ├── Maintenance chain script
+  │   ├── unattended-upgrades config
+  │   ├── Update cron job
+  │   └── Conditional reboot with health checks
+  │
+  ├── Phase 4: docker           (docker_hosts group)
+  │   ├── Docker CE + Compose plugin
+  │   ├── IPv6 dual-stack networking
+  │   ├── Docker daemon config (log rotation, storage)
+  │   ├── sysctl tuning (vm.max_map_count)
+  │   └── Weekly auto-prune
+  │
+  └── Phase 5: smartmon         (physical_servers group)
+      ├── smartmontools + auto-detect disks
+      ├── SMART health alerts via email
+      └── smartcheck utility
 ```
 
 ## Platform Support
 
 | Platform | Versions | Package Manager | Update Mechanism |
 |----------|----------|-----------------|------------------|
-| Ubuntu | 20.04, 22.04, 24.04 | apt | unattended-upgrades |
-| Debian | 11, 12 | apt | unattended-upgrades |
-| CentOS | 8, 9 | dnf/yum | dnf-automatic |
-| RHEL | 8, 9 | dnf/yum | dnf-automatic |
-| Rocky | 8, 9 | dnf/yum | dnf-automatic |
-| AlmaLinux | 8, 9 | dnf/yum | dnf-automatic |
+| Ubuntu | 22.04, 24.04 | apt | unattended-upgrades |
+| Debian | 12, 13 | apt | unattended-upgrades |
+| RHEL | 8, 9, 10 | dnf | dnf-automatic |
+| Rocky | 8, 9, 10 | dnf | dnf-automatic |
+| AlmaLinux | 8, 9, 10 | dnf | dnf-automatic |
 
 Platform is auto-detected via `ansible_os_family` and `ansible_distribution`.
