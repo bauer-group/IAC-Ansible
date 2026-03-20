@@ -4,5 +4,9 @@
 # =============================================================================
 
 [Resolve]
+DNS={{ (common_resolved_dns_servers + common_resolved_dns_servers_v6) | join(' ') }}
+{% if common_resolved_fallback_dns is defined and common_resolved_fallback_dns | length > 0 %}
+FallbackDNS={{ common_resolved_fallback_dns | join(' ') }}
+{% endif %}
 MulticastDNS={{ common_resolved_multicast_dns }}
 DNSStubListener={{ common_resolved_dns_stub_listener }}

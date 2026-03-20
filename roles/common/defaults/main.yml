@@ -14,6 +14,19 @@ common_locale_configure: true
 common_resolved_configure: true
 common_resolved_multicast_dns: "no"
 common_resolved_dns_stub_listener: "no"
+common_resolved_dns_servers:
+  - 1.1.1.1
+  - 1.0.0.1
+  - 8.8.8.8
+  - 8.8.4.4
+common_resolved_dns_servers_v6:
+  - 2606:4700:4700::1111
+  - 2606:4700:4700::1001
+  - 2001:4860:4860::8888
+  - 2001:4860:4860::8844
+common_resolved_fallback_dns:
+  - 9.9.9.9
+  - 149.112.112.112
 
 # fail2ban
 common_fail2ban_enabled: true
