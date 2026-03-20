@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/bauer-group/IAC-Ansible/compare/v1.0.0...v1.0.1) (2026-03-20)
+
+### 🐛 Bug Fixes
+
+* **ansible_pull:** fixed extra args handling in ansible-pull service ([4042175](https://github.com/bauer-group/IAC-Ansible/commit/4042175e1dfa0724ab67abd46c64180770a9bbb0))
+
 ## [1.0.0](https://github.com/bauer-group/IAC-Ansible/compare/v0.7.0...v1.0.0) (2026-03-20)
 
 ### ⚠ BREAKING CHANGES
