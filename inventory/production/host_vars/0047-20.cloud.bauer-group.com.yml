@@ -1,0 +1,47 @@
+---
+# =============================================================================
+# Host: 0047-20.cloud.bauer-group.com
+# Asset: 0047 | Group: 20 (Public Cloud)
+# =============================================================================
+# Purpose: Docker application host (Docker Compose workloads, no Coolify).
+#
+# This host is provisioned from scratch via Ansible. Running
+# `playbooks/site.yml --limit 0047-20.cloud.bauer-group.com` takes a blank
+# Ubuntu 24.04 LTS and converges it to the managed end state; re-runs are
+# idempotent no-ops.
+
+platform: ubuntu_2404
+
+asset_id: "0047"
+group_code: "20"
+asset_type: docker_host
+
+labels:
+  - production
+  - public-cloud
+  - ubuntu
+  - docker-host
+
+# --- Hostname: enforce inventory name ---
+common_hostname_configure: true
+
+# --- UFW: off (Docker manages iptables directly; UFW would conflict) ---
+common_firewall_ufw_state: "disabled"
+
+# --- AppArmor: stays at the global default (disabled + masked) ---
+
+# --- Netplan ---
+# The provider hands out a random IPv6 address from the /64 network, not the
+# statically booked ::1 / ::2. We therefore OVERRIDE the IPv6 address list
+# (replaces the random one) instead of just appending. The primary IPv4
+# address and its gateway are kept from the running configuration.
+#
+# Safety: the role backs up the current netplan, schedules a systemd
+# rollback timer, applies the change, runs a connectivity test and only
+# cancels the rollback on success.
+common_netplan_configure: true
+common_netplan_ipv6_addresses:
+  - "2a0a:4cc0:c1:76c5::1/64"
+  - "2a0a:4cc0:c1:76c5::2/64"
+common_netplan_ipv6_gateway: "fe80::1"
+common_netplan_ipv6_on_link: true
