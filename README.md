@@ -10,6 +10,21 @@ Infrastructure as Code with Ansible - Git-based configuration management for BAU
 curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
+### Bootstrap with Inventory Hostname
+
+For new hosts whose system hostname does not yet match the inventory entry
+(e.g. a fresh provider image), set `IAC_HOSTNAME` so `ansible-pull` finds the
+correct `host_vars/<name>.yml` on the first run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+The installer runs `hostnamectl`, updates `/etc/hosts` and writes
+`preserve_hostname: true` to `/etc/cloud/cloud.cfg` before the initial pull.
+Idempotent — re-running with the same value is a no-op.
+
 ### Cloud-Init
 
 ```yaml

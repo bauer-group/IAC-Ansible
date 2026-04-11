@@ -60,10 +60,18 @@ git add . && git commit -m "Disable auto-update on problem-host" && git push
 ### Bootstrap New Server
 
 ```bash
-# Option A: One-line installer (run ON the server)
+# Option A: One-line installer (run ON the server) — requires system hostname
+#          to already match the inventory key (e.g. via cloud-init).
 curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 
-# Option B: Push setup from control machine
+# Option A': One-liner that sets the inventory hostname as part of bootstrap.
+#           Use this on providers without cloud-init when the system still
+#           reports a generic hostname like "ubuntu" or "localhost".
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+
+# Option B: Push setup from control machine (matches by --limit, no local
+#          hostname dependency).
 ansible-playbook -i inventory/production/hosts.yml playbooks/setup.yml \
   --limit "new-server.example.com"
 ```

@@ -10,6 +10,10 @@
 #   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
 #     BRANCH=main PLAYBOOK=playbooks/site.yml bash
 #
+# Set inventory hostname during bootstrap (matches host_vars/<name>.yml):
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+#
 # Cloud-Init (in user-data):
 #   runcmd:
 #     - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
@@ -28,6 +32,12 @@ SCHEDULE="${SCHEDULE:-*-*-* 02:00:00}"
 RANDOM_DELAY="${RANDOM_DELAY:-900}"
 LOCK_FILE="/var/run/iac-ansible-install.lock"
 MARKER_FILE="/etc/iac-ansible-bootstrapped"
+
+# Optional: inventory hostname to set before ansible-pull self-identifies.
+# When set, the script writes it to hostnamectl, /etc/hosts and cloud-init
+# so ansible-pull finds the matching inventory entry (and its host_vars).
+# Leave empty to keep the previous, system-managed hostname.
+IAC_HOSTNAME="${IAC_HOSTNAME:-}"
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -77,6 +87,9 @@ log "Repository: ${REPO_URL}"
 log "Branch:     ${BRANCH}"
 log "Playbook:   ${PLAYBOOK}"
 log "Schedule:   ${SCHEDULE}"
+if [ -n "${IAC_HOSTNAME}" ]; then
+    log "Hostname:   ${IAC_HOSTNAME} (will be set before ansible-pull)"
+fi
 log ""
 
 # --- Validate environment ---
@@ -158,6 +171,43 @@ install_ansible_redhat() {
     local ansible_ver
     ansible_ver=$(ansible --version 2>/dev/null | head -1)
     log "Ansible installed: ${ansible_ver}"
+}
+
+# --- Configure inventory hostname (opt-in via IAC_HOSTNAME) ---
+# Mirrors roles/common/tasks/hostname.yml so ansible-pull finds the matching
+# inventory entry on first run. Idempotent: re-running with the same value
+# is a no-op.
+configure_hostname() {
+    if [ -z "${IAC_HOSTNAME}" ]; then
+        return 0
+    fi
+
+    local current short_host
+    current=$(hostname -f 2>/dev/null || hostname)
+    short_host="${IAC_HOSTNAME%%.*}"
+
+    if [ "${current}" = "${IAC_HOSTNAME}" ]; then
+        log "Hostname already set to ${IAC_HOSTNAME}"
+    else
+        log "Setting hostname to ${IAC_HOSTNAME} (was: ${current})"
+        hostnamectl set-hostname "${IAC_HOSTNAME}"
+    fi
+
+    # /etc/hosts: keep the 127.0.1.1 mapping in sync
+    if grep -qE '^127\.0\.1\.1[[:space:]]' /etc/hosts; then
+        sed -i "s|^127\.0\.1\.1[[:space:]].*|127.0.1.1 ${IAC_HOSTNAME} ${short_host}|" /etc/hosts
+    else
+        echo "127.0.1.1 ${IAC_HOSTNAME} ${short_host}" >> /etc/hosts
+    fi
+
+    # Prevent cloud-init from overwriting the hostname on next boot
+    if [ -f /etc/cloud/cloud.cfg ]; then
+        if grep -qE '^#?preserve_hostname:' /etc/cloud/cloud.cfg; then
+            sed -i 's|^#\?preserve_hostname:.*|preserve_hostname: true|' /etc/cloud/cloud.cfg
+        else
+            echo "preserve_hostname: true" >> /etc/cloud/cloud.cfg
+        fi
+    fi
 }
 
 # --- Setup directories ---
@@ -250,6 +300,7 @@ run_initial_pull() {
 main() {
     validate_environment
     detect_os
+    configure_hostname
 
     case "${OS_FAMILY}" in
         debian) install_ansible_debian ;;

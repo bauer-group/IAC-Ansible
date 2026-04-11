@@ -8,6 +8,22 @@ runcmd:
   - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
 ```
 
+## Without Cloud-Init (manual one-liner)
+
+Not every provider supports cloud-init. For those, SSH into the freshly
+installed box as root and run the installer with `IAC_HOSTNAME` set to the
+matching inventory key:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+The installer runs `hostnamectl`, updates `/etc/hosts` and writes
+`preserve_hostname: true` to `/etc/cloud/cloud.cfg` before the first
+`ansible-pull`, so the host finds its own `host_vars/<name>.yml` from
+inventory. Idempotent — safe to re-run.
+
 ## Full Cloud-Init User Data
 
 ```yaml

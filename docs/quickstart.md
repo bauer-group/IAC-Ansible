@@ -20,6 +20,29 @@ curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/script
   BRANCH=main SCHEDULE="*-*-* 02:00:00" bash
 ```
 
+### With Inventory Hostname (for new hosts without cloud-init)
+
+`ansible-pull` looks itself up in the inventory via the system's FQDN. On a
+fresh provider image the hostname is usually `ubuntu` or `localhost` and the
+match fails, so `host_vars/<name>.yml` is never loaded. Pass `IAC_HOSTNAME` to
+let the installer set the hostname (via `hostnamectl`, `/etc/hosts` and
+`preserve_hostname: true` in `/etc/cloud/cloud.cfg`) before the first pull:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+Combinable with the other variables:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com BRANCH=main bash
+```
+
+The step is idempotent — running the installer again with the same
+`IAC_HOSTNAME` value is a no-op.
+
 ### Cloud-Init
 
 Add to your cloud-init user-data:
