@@ -105,11 +105,11 @@ common_nofile_limit_configure: true
 common_nofile_limit: 1048576
 
 # NTP tuning
-ntp_root_distance_max_sec: 3
-ntp_poll_interval_min_sec: 32
-ntp_poll_interval_max_sec: 2048
-ntp_connection_retry_sec: 30
-ntp_save_interval_sec: 60
+common_ntp_root_distance_max_sec: 3
+common_ntp_poll_interval_min_sec: 32
+common_ntp_poll_interval_max_sec: 2048
+common_ntp_connection_retry_sec: 30
+common_ntp_save_interval_sec: 60
 
 # Mail relay (msmtp) - used by smartd, fail2ban, cron etc.
 common_msmtp_enabled: true

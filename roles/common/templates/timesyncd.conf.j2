@@ -9,8 +9,8 @@ NTP={{ ntp_servers | join(' ') }}
 FallbackNTP={{ ntp_fallback_servers | join(' ') }}
 {% endif %}
 
-RootDistanceMaxSec={{ ntp_root_distance_max_sec | default(5) }}
-PollIntervalMinSec={{ ntp_poll_interval_min_sec | default(32) }}
-PollIntervalMaxSec={{ ntp_poll_interval_max_sec | default(2048) }}
-ConnectionRetrySec={{ ntp_connection_retry_sec | default(30) }}
-SaveIntervalSec={{ ntp_save_interval_sec | default(60) }}
+RootDistanceMaxSec={{ common_ntp_root_distance_max_sec | default(5) }}
+PollIntervalMinSec={{ common_ntp_poll_interval_min_sec | default(32) }}
+PollIntervalMaxSec={{ common_ntp_poll_interval_max_sec | default(2048) }}
+ConnectionRetrySec={{ common_ntp_connection_retry_sec | default(30) }}
+SaveIntervalSec={{ common_ntp_save_interval_sec | default(60) }}

@@ -11,6 +11,7 @@ galaxy_info:
     - name: Debian
       versions: [bookworm, trixie]
     - name: EL
-      versions: [8, 9, 10]
+      versions:
+        - "all"
 
 dependencies: []
