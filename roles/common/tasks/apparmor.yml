@@ -1,0 +1,33 @@
+---
+# =============================================================================
+# Common Role - AppArmor management
+# =============================================================================
+# common_apparmor_state:
+#   "disabled"  → stop + mask service (default; causes too many Docker/Coolify issues)
+#   "enabled"   → enable + start service
+#   "unmanaged" → no-op (guarded by include in main.yml)
+
+- name: Check if apparmor unit exists
+  ansible.builtin.stat:
+    path: /lib/systemd/system/apparmor.service
+  register: common_apparmor_unit
+
+- name: Disable and mask AppArmor
+  ansible.builtin.systemd:
+    name: apparmor
+    state: stopped
+    enabled: false
+    masked: true
+  when:
+    - common_apparmor_unit.stat.exists
+    - common_apparmor_state == "disabled"
+
+- name: Enable and start AppArmor
+  ansible.builtin.systemd:
+    name: apparmor
+    state: started
+    enabled: true
+    masked: false
+  when:
+    - common_apparmor_unit.stat.exists
+    - common_apparmor_state == "enabled"

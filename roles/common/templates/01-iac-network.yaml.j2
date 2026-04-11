@@ -1,0 +1,38 @@
+# {{ ansible_managed }}
+network:
+  version: 2
+  renderer: {{ common_netplan_renderer }}
+  ethernets:
+    {{ netplan_effective_interface }}:
+{% if common_netplan_match_mac | length > 0 %}
+      match:
+        macaddress: "{{ common_netplan_match_mac }}"
+      set-name: {{ netplan_effective_interface }}
+{% endif %}
+      addresses:
+{% for addr in netplan_effective_ipv4 %}
+        - {{ addr }}
+{% endfor %}
+{% for addr in netplan_effective_ipv6 %}
+        - {{ addr }}
+{% endfor %}
+      routes:
+{% if netplan_effective_ipv4_gateway | length > 0 %}
+        - to: default
+          via: {{ netplan_effective_ipv4_gateway }}
+{% endif %}
+{% if netplan_effective_ipv6_gateway | length > 0 %}
+        - to: default
+          via: {{ netplan_effective_ipv6_gateway }}
+{% if common_netplan_ipv6_on_link | bool %}
+          on-link: true
+{% endif %}
+{% endif %}
+      nameservers:
+        addresses:
+{% for ns in common_netplan_nameservers_v4 %}
+          - {{ ns }}
+{% endfor %}
+{% for ns in common_netplan_nameservers_v6 %}
+          - {{ ns }}
+{% endfor %}

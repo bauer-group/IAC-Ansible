@@ -28,6 +28,13 @@
     msg: "Unsupported OS family: {{ ansible_os_family }}. Supported: Debian, RedHat"
   when: ansible_os_family not in ["Debian", "RedHat"]
 
+# --- AppArmor (Debian/Ubuntu only) ---
+- name: Manage AppArmor state
+  ansible.builtin.include_tasks: apparmor.yml
+  when:
+    - ansible_os_family == "Debian"
+    - common_apparmor_state != "unmanaged"
+
 # --- Common tasks (all platforms) ---
 
 # --- Locale ---
@@ -232,3 +239,10 @@
 - name: Include SSH hardening
   ansible.builtin.include_tasks: ssh_hardening.yml
   when: common_ssh_hardening | bool
+
+# --- Netplan (Debian/Ubuntu only, opt-in) ---
+- name: Manage Netplan configuration
+  ansible.builtin.include_tasks: netplan.yml
+  when:
+    - common_netplan_configure | bool
+    - ansible_os_family == "Debian"

@@ -85,3 +85,14 @@
   roles:
     - role: smartmon
       tags: [smartmon, monitoring]
+
+# --- Phase 6: Coolify for designated hosts ---
+- name: "Phase 6: Coolify platform"
+  hosts: coolify_hosts
+  become: true
+  gather_facts: true
+  tags: [coolify]
+
+  roles:
+    - role: coolify
+      tags: [coolify]

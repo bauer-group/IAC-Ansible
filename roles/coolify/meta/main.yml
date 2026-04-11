@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: coolify
+  author: BAUER GROUP
+  description: Install and manage Coolify application platform
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Ubuntu
+      versions: [jammy, noble]
+    - name: Debian
+      versions: [bookworm, trixie]
+
+dependencies:
+  - role: docker

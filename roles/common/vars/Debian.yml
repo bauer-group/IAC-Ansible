@@ -13,12 +13,32 @@ common_packages:
   - python3-pip
   - cron
   - psmisc
+  # Diagnostic / operator convenience tools
+  - ethtool
+  - iputils-ping
+  - net-tools
+  - mc
+  - p7zip-full
+  - nano
+  - apache2-utils
+  - telnet
+  - jq
 
 # Ubuntu-only packages (PPA support, etc.)
 common_packages_ubuntu:
   - software-properties-common
   - apt-transport-https
   - lsb-release
+
+# VM guest tools — installed only when host is a virtualization guest
+common_packages_vm_guest:
+  - open-vm-tools
+
+# Physical-host tools — installed only on bare metal
+# dmidecode reads DMI/SMBIOS from the mainboard; on VMs it only returns the
+# hypervisor stub, so it's not installed there.
+common_packages_physical:
+  - dmidecode
 
 common_ntp_package: "systemd-timesyncd"
 common_ntp_service: "systemd-timesyncd"

@@ -1,0 +1,22 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# IAC netplan auto-rollback helper.
+# Triggered by a systemd-run transient timer when the Ansible-side connectivity
+# test does not cancel it in time. Restores the pre-change configuration.
+
+set -e
+BACKUP_DIR="$1"
+LOG_TAG="iac-netplan-rollback"
+
+if [ -z "$BACKUP_DIR" ] || [ ! -d "$BACKUP_DIR" ]; then
+  logger -t "$LOG_TAG" "No backup directory provided — aborting rollback"
+  exit 1
+fi
+
+logger -t "$LOG_TAG" "Rolling back netplan from $BACKUP_DIR"
+rm -f /etc/netplan/*.yaml
+cp -a "$BACKUP_DIR"/*.yaml /etc/netplan/ 2>/dev/null || true
+chmod 0600 /etc/netplan/*.yaml || true
+netplan generate
+netplan apply
+logger -t "$LOG_TAG" "Rollback complete"

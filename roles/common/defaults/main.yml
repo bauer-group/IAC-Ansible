@@ -6,6 +6,59 @@ common_ntp_configure: true
 common_motd_configure: true
 common_logdir_configure: true
 
+# Hardware-specific package selection — auto-detected from facts, overridable per host.
+# ansible_virtualization_role values:
+#   "guest" → VM guest (KVM, VMware, Hyper-V, Xen, ...)
+#   "host"  → bare metal running hypervisors
+#   "NA"    → bare metal
+common_install_vm_tools: "{{ ansible_virtualization_role | default('NA') == 'guest' }}"
+common_install_physical_tools: "{{ ansible_virtualization_role | default('NA') != 'guest' }}"
+
+# AppArmor management
+# State: "disabled" (default — causes too many Docker/container/Coolify issues),
+#        "enabled", "unmanaged" (skip role entirely)
+common_apparmor_state: "disabled"
+
+# --- Optional Netplan management (Debian/Ubuntu) ---
+# Safety: default off. Enable per-host only.
+# Philosophy: specify only what needs to be added/corrected — everything else
+# is inherited from the currently running network configuration.
+common_netplan_configure: false
+common_netplan_remove_existing: true
+common_netplan_filename: "/etc/netplan/01-iac-network.yaml"
+
+# Interface: empty = auto-detect from current default route
+common_netplan_interface: ""
+# MAC match: optional — leave empty when only one NIC is present
+common_netplan_match_mac: ""
+common_netplan_renderer: "networkd"
+
+# IPv4 override — if empty, keep current primary address
+common_netplan_ipv4_addresses: []
+# IPv4 extra — ALWAYS appended (for booked additional addresses)
+common_netplan_ipv4_extra: []
+# IPv4 gateway — if empty, keep current default gateway
+common_netplan_ipv4_gateway: ""
+
+# IPv6 override — if empty, keep current global-scope addresses
+common_netplan_ipv6_addresses: []
+# IPv6 extra — ALWAYS appended
+common_netplan_ipv6_extra: []
+# IPv6 gateway — if empty, keep current default gateway
+common_netplan_ipv6_gateway: ""
+common_netplan_ipv6_on_link: true
+
+# Nameservers — default to DNS hardening lists
+common_netplan_nameservers_v4: "{{ common_resolved_dns_servers }}"
+common_netplan_nameservers_v6: "{{ common_resolved_dns_servers_v6 }}"
+
+# Rollback / connectivity test
+common_netplan_rollback_timeout: 120
+common_netplan_test_ipv4_target: "1.1.1.1"
+common_netplan_test_ipv6_target: "2606:4700:4700::1111"
+common_netplan_test_ipv6: true
+common_netplan_test_https: true
+
 # Locale
 common_locale: "de_DE.UTF-8"
 common_locale_configure: true

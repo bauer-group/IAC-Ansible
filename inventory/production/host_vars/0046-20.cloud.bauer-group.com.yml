@@ -1,23 +1,33 @@
 ---
 # =============================================================================
 # Host: 0046-20.cloud.bauer-group.com
-# Asset: 0046 | Group: 20 (Public Cloud VM)
+# Asset: 0046 | Group: 20 (Public Cloud)
 # =============================================================================
+# The host runs Coolify productively and is onboarded into IAC management.
+# Only deltas to the already-working manual configuration belong here.
 
-# Platform
 platform: ubuntu_2404
 
-# Asset metadata (auto-derivable from hostname, explicit for clarity)
 asset_id: "0046"
 group_code: "20"
-asset_type: public_cloud_vm
+asset_type: coolify_host
 
-# Labels
 labels:
-  - public-cloud
   - production
+  - public-cloud
+  - ubuntu
+  - docker-host
+  - coolify
 
-# Auto-update overrides (defaults from group_vars/all/update_settings.yml)
-# Uncomment to override:
-# auto_update_type: "security"
-# auto_update_reboot_cron_weekday: "6"  # Saturday instead of Sunday
+# --- AppArmor: stays at the global default (disabled) ---
+
+# --- Netplan: enable only if additional/missing IPs need to be set ---
+# Empty override lists keep the current running config active.
+# *_extra lists are always appended (e.g. booked additional IPs not set by the provider).
+# common_netplan_configure: true
+# common_netplan_ipv4_extra:
+#   - "<additional-ipv4>/<prefix>"
+# common_netplan_ipv6_extra:
+#   - "<additional-ipv6>/<prefix>"
+
+# --- Coolify: stays at the default (enabled, skipped when already installed) ---

@@ -1,0 +1,33 @@
+---
+# =============================================================================
+# Coolify Role - Main Tasks
+# =============================================================================
+# Idempotent installer: runs only when the install marker is missing. On
+# already-provisioned hosts the task is a no-op unless coolify_force_reinstall
+# is explicitly set.
+
+- name: Check if Coolify is already installed
+  ansible.builtin.stat:
+    path: "{{ coolify_install_marker }}"
+  register: coolify_marker
+
+- name: Run Coolify installer
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL {{ coolify_install_url }} | bash -s -- {{ coolify_install_flags }}
+  args:
+    executable: /bin/bash
+  register: coolify_install_result
+  when:
+    - coolify_enabled | bool
+    - (not coolify_marker.stat.exists) or (coolify_force_reinstall | bool)
+  changed_when: coolify_install_result.rc == 0
+
+- name: Show Coolify installation status
+  ansible.builtin.debug:
+    msg: >-
+      {% if coolify_marker.stat.exists and not coolify_force_reinstall %}
+      Coolify already installed at {{ coolify_install_marker }} — installer skipped.
+      {% else %}
+      Coolify installer executed. Check https://{{ inventory_hostname }} for the UI.
+      {% endif %}

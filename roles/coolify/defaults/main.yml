@@ -1,0 +1,18 @@
+---
+# =============================================================================
+# Coolify role defaults
+# =============================================================================
+
+coolify_enabled: true
+
+# Official BAUER GROUP installer
+# Runs with --coolify-only flag: assumes Docker is already installed and
+# only installs/configures the Coolify platform itself.
+coolify_install_url: "https://raw.githubusercontent.com/bauer-group/DC-Coolify/main/install.sh"
+coolify_install_flags: "--coolify-only"
+
+# Installation marker — the installer creates this directory
+coolify_install_marker: "/data/coolify"
+
+# Force reinstall even if marker exists (use with care on running hosts)
+coolify_force_reinstall: false
