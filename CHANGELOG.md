@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.0...v1.3.1) (2026-04-11)
+
+### 🐛 Bug Fixes
+
+* **lint:** fixed 26 ansible-lint violations ([0122f19](https://github.com/bauer-group/IAC-Ansible/commit/0122f1967cd6b475328559d15b497852f888add8))
+
 ## [1.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.2.0...v1.3.0) (2026-04-11)
 
 ### 🚀 Features
