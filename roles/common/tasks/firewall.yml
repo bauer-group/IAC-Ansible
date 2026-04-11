@@ -1,0 +1,44 @@
+---
+# =============================================================================
+# Common Role - UFW firewall management
+# =============================================================================
+# common_firewall_ufw_state:
+#   "unmanaged" → no-op (default — retrofit-safe for hosts using firewalld,
+#                        manual iptables, or cloud security groups)
+#   "disabled"  → stop + disable UFW (matches the manual Docker-host setup;
+#                 Docker manages its own iptables rules and UFW conflicts)
+#   "enabled"   → ensure UFW is running (user still has to define rules)
+#
+# Retrofit safety: we only touch UFW when the binary exists and only when the
+# current state differs from the target. On a correctly-configured host every
+# task below is a no-op.
+
+- name: Check whether ufw is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: common_ufw_binary
+
+- name: Check current ufw status
+  ansible.builtin.command: ufw status
+  register: common_ufw_status
+  changed_when: false
+  failed_when: false
+  when:
+    - common_ufw_binary.stat.exists
+    - common_firewall_ufw_state in ["disabled", "enabled"]
+
+- name: Disable ufw
+  community.general.ufw:
+    state: disabled
+  when:
+    - common_ufw_binary.stat.exists
+    - common_firewall_ufw_state == "disabled"
+    - "'Status: active' in (common_ufw_status.stdout | default(''))"
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+  when:
+    - common_ufw_binary.stat.exists
+    - common_firewall_ufw_state == "enabled"
+    - "'Status: inactive' in (common_ufw_status.stdout | default(''))"

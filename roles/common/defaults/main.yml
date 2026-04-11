@@ -14,6 +14,19 @@ common_logdir_configure: true
 common_install_vm_tools: "{{ ansible_virtualization_role | default('NA') == 'guest' }}"
 common_install_physical_tools: "{{ ansible_virtualization_role | default('NA') != 'guest' }}"
 
+# Hostname management
+# Idempotent: only changes the hostname when it differs from inventory_hostname.
+# Default ON because the inventory is authoritative. Disable per host for
+# systems where the hostname is set elsewhere (DHCP, external provisioning).
+common_hostname_configure: true
+
+# UFW firewall management
+# State: "unmanaged" (default — retrofit-safe for hosts using firewalld /
+#                     cloud security groups / manual iptables),
+#        "disabled"  (match Docker-host manual setup),
+#        "enabled"   (ensure UFW is running; rules managed elsewhere)
+common_firewall_ufw_state: "unmanaged"
+
 # AppArmor management
 # State: "disabled" (default — causes too many Docker/container/Coolify issues),
 #        "enabled", "unmanaged" (skip role entirely)

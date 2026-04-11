@@ -28,12 +28,24 @@
     msg: "Unsupported OS family: {{ ansible_os_family }}. Supported: Debian, RedHat"
   when: ansible_os_family not in ["Debian", "RedHat"]
 
+# --- Hostname ---
+- name: Manage system hostname
+  ansible.builtin.include_tasks: hostname.yml
+  when: common_hostname_configure | bool
+
 # --- AppArmor (Debian/Ubuntu only) ---
 - name: Manage AppArmor state
   ansible.builtin.include_tasks: apparmor.yml
   when:
     - ansible_os_family == "Debian"
     - common_apparmor_state != "unmanaged"
+
+# --- UFW firewall (Debian/Ubuntu only, opt-in) ---
+- name: Manage UFW firewall state
+  ansible.builtin.include_tasks: firewall.yml
+  when:
+    - ansible_os_family == "Debian"
+    - common_firewall_ufw_state != "unmanaged"
 
 # --- Common tasks (all platforms) ---
 

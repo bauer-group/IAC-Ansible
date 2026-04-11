@@ -1,0 +1,39 @@
+---
+# =============================================================================
+# Common Role - Hostname management
+# =============================================================================
+# Sets the system hostname to match inventory_hostname and prevents cloud-init
+# from overwriting it on reboot.
+#
+# Retrofit safety: the hostname module is idempotent — it only changes the
+# hostname when it actually differs from inventory_hostname. On a host that is
+# already correctly named, every task below is a no-op.
+
+- name: Set system hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  when: common_hostname_configure | bool
+
+- name: Ensure /etc/hosts contains the managed hostname
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ inventory_hostname }} {{ inventory_hostname_short }}"
+    state: present
+  when: common_hostname_configure | bool
+
+- name: Check whether cloud-init is present
+  ansible.builtin.stat:
+    path: /etc/cloud/cloud.cfg
+  register: common_cloud_init_cfg
+  when: common_hostname_configure | bool
+
+- name: Preserve hostname in cloud-init (prevent reboot override)
+  ansible.builtin.lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^#?preserve_hostname:'
+    line: "preserve_hostname: true"
+    state: present
+  when:
+    - common_hostname_configure | bool
+    - common_cloud_init_cfg.stat.exists
