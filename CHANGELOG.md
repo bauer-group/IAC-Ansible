@@ -1,3 +1,12 @@
+## [1.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.2.0...v1.3.0) (2026-04-11)
+
+### 🚀 Features
+
+* **bootstrap:** added IAC_HOSTNAME inventory hostname support ([dc383fb](https://github.com/bauer-group/IAC-Ansible/commit/dc383fb46fcc236c3a031e22a43276f07c5f329b))
+* **common:** added hostname and firewall management ([ed86dda](https://github.com/bauer-group/IAC-Ansible/commit/ed86ddaf66b5917a55efbff65e48b341f94030d0))
+* **coolify:** added Coolify platform support ([7adb6f1](https://github.com/bauer-group/IAC-Ansible/commit/7adb6f18fca3104e0de2e04e54ffdbcc2a81ad59))
+* **inventory:** provisioned Docker host 0047-20 ([4106663](https://github.com/bauer-group/IAC-Ansible/commit/41066631f7c06d61fd40db65ca8917045d65edb8))
+
 ## [1.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.1.0...v1.2.0) (2026-03-20)
 
 ### 🚀 Features
