@@ -1,3 +1,9 @@
+## [1.3.4](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.3...v1.3.4) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **netplan:** increased settle time after netplan apply to 15s ([6d870ea](https://github.com/bauer-group/IAC-Ansible/commit/6d870eaed4e10356e6e1c7a2df8f6db3f05c12de))
+
 ## [1.3.3](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.2...v1.3.3) (2026-04-12)
 
 ### 🐛 Bug Fixes
