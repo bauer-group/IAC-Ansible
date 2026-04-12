@@ -44,7 +44,3 @@ common_netplan_ipv6_addresses:
   - "2a0a:4cc0:c1:76c5::2/64"
 common_netplan_ipv6_gateway: "fe80::1"
 common_netplan_ipv6_on_link: true
-
-# IPv6 connectivity test disabled until provider-side IPv6 routing is
-# verified. IPv4 test still runs and protects against lockout.
-common_netplan_test_ipv6: false
