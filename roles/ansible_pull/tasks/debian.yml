@@ -6,7 +6,7 @@
 - name: "[Debian] Check if Ansible PPA is already configured"
   ansible.builtin.shell: >-
     grep -rqs 'ansible/ansible' /etc/apt/sources.list.d/ && echo "present" || echo "absent"
-  register: common_ansible_ppa_check
+  register: ansible_pull_ppa_check
   changed_when: false
   when: ansible_distribution == "Ubuntu"
 
@@ -16,7 +16,7 @@
     state: present
   when:
     - ansible_distribution == "Ubuntu"
-    - common_ansible_ppa_check.stdout | default('absent') == "absent"
+    - ansible_pull_ppa_check.stdout | default('absent') == "absent"
 
 - name: "[Debian] Update apt cache"
   ansible.builtin.apt:
