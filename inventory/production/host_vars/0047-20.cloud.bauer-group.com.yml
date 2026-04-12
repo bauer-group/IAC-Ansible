@@ -22,8 +22,7 @@ labels:
   - ubuntu
   - docker-host
 
-# --- Hostname: enforce inventory name ---
-common_hostname_configure: true
+# --- Hostname: already set during bootstrap (install.sh + IAC_HOSTNAME) ---
 
 # --- UFW: off (Docker manages iptables directly; UFW would conflict) ---
 common_firewall_ufw_state: "disabled"
