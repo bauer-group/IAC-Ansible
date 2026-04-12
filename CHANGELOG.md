@@ -1,3 +1,9 @@
+## [1.3.6](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.5...v1.3.6) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **config:** removed community.general.timer callback ([83b4827](https://github.com/bauer-group/IAC-Ansible/commit/83b48272983cadd1ae2e6b1bbe26b1c784ef7a13))
+
 ## [1.3.5](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.4...v1.3.5) (2026-04-12)
 
 ### 🐛 Bug Fixes
