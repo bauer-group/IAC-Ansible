@@ -1,3 +1,9 @@
+## [1.3.9](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.8...v1.3.9) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **config:** separated production and staging inventory loading ([ecb10e8](https://github.com/bauer-group/IAC-Ansible/commit/ecb10e85b878bb0c6271da4472bb833074c64f45))
+
 ## [1.3.8](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.7...v1.3.8) (2026-04-12)
 
 ### 🐛 Bug Fixes
