@@ -1,3 +1,9 @@
+## [1.3.2](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.1...v1.3.2) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **config:** replaced removed community.general.yaml callback ([1e0f3a8](https://github.com/bauer-group/IAC-Ansible/commit/1e0f3a89bbda33dfcfe305a0120ff87c7a24f171))
+
 ## [1.3.1](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.0...v1.3.1) (2026-04-11)
 
 ### 🐛 Bug Fixes
