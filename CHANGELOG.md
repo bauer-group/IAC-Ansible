@@ -1,3 +1,9 @@
+## [1.3.5](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.4...v1.3.5) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **netplan:** changed IPv6 test target from Cloudflare to Google ([332e254](https://github.com/bauer-group/IAC-Ansible/commit/332e2547cd5fee4cff459df72de72bad78056958))
+
 ## [1.3.4](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.3...v1.3.4) (2026-04-12)
 
 ### 🐛 Bug Fixes
