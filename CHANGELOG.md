@@ -1,3 +1,9 @@
+## [1.3.7](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.6...v1.3.7) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **ansible-pull:** prevented duplicate Ansible PPA registration ([5fe9708](https://github.com/bauer-group/IAC-Ansible/commit/5fe9708278f35b2618cdbecb68f6187501ee0466))
+
 ## [1.3.6](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.5...v1.3.6) (2026-04-12)
 
 ### 🐛 Bug Fixes
