@@ -7,8 +7,7 @@ INVENTORY := inventory/$(ENV)/hosts.yml
 LIMIT_ARG := $(if $(LIMIT),--limit "$(LIMIT)",)
 TAGS_ARG := $(if $(TAGS),--tags "$(TAGS)",)
 LABEL_ARG := $(if $(LABEL),-e "filter_label=$(LABEL)",)
-SERVICE_ARG := $(if $(SERVICE),-e "filter_service=$(SERVICE)",)
-EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG) $(SERVICE_ARG)
+EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG)
 
 .PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create
 
@@ -21,7 +20,6 @@ help: ## Show this help
 	@echo "  LIMIT=<pattern>    Filter hosts (supports wildcards: *.bauer-group.com)"
 	@echo "  TAGS=<tags>        Run only specific tags"
 	@echo "  LABEL=<label>      Filter by host label"
-	@echo "  SERVICE=<service>  Filter by running service"
 	@echo "  ENV=<env>          Environment (default: production)"
 	@echo ""
 	@echo "Targets:"
@@ -34,7 +32,6 @@ help: ## Show this help
 	@echo "  make deploy LIMIT='*.bauer-group.com'"
 	@echo "  make update LIMIT='192.168.1.*'"
 	@echo "  make deploy LABEL=webserver"
-	@echo "  make deploy SERVICE=nginx"
 	@echo "  make check                                     # Dry-run mode"
 
 setup: ## Initial setup - install requirements

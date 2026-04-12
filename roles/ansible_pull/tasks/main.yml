@@ -4,7 +4,7 @@
 # =============================================================================
 
 - name: Install Ansible on managed host
-  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_tasks: "{{ ansible_facts['os_family'] | lower }}.yml"
 
 - name: Create ansible-pull working directory
   ansible.builtin.file:

@@ -22,14 +22,14 @@
     common_netplan_effective_interface: >-
       {{ (common_netplan_interface
           if common_netplan_interface | length > 0
-          else ansible_default_ipv4.interface | default('eth0')) }}
+          else ansible_facts['default_ipv4'].interface | default('eth0')) }}
 
 - name: "[Netplan] Determine current IPv4 addresses"
   ansible.builtin.set_fact:
     common_netplan_current_ipv4: >-
-      {{ [ansible_default_ipv4.address ~ '/' ~
+      {{ [ansible_facts['default_ipv4'].address ~ '/' ~
            (ansible_facts[common_netplan_effective_interface].ipv4.prefix | default('24'))]
-         if (ansible_default_ipv4.address | default('')) | length > 0
+         if (ansible_facts['default_ipv4'].address | default('')) | length > 0
          else [] }}
 
 - name: "[Netplan] Compose effective IPv4 list"
@@ -42,7 +42,7 @@
     common_netplan_effective_ipv4_gateway: >-
       {{ (common_netplan_ipv4_gateway
           if common_netplan_ipv4_gateway | length > 0
-          else ansible_default_ipv4.gateway | default('')) }}
+          else ansible_facts['default_ipv4'].gateway | default('')) }}
 
 - name: "[Netplan] Determine current IPv6 addresses (global scope)"
   ansible.builtin.set_fact:
@@ -68,7 +68,7 @@
     common_netplan_effective_ipv6_gateway: >-
       {{ (common_netplan_ipv6_gateway
           if common_netplan_ipv6_gateway | length > 0
-          else ansible_default_ipv6.gateway | default('')) }}
+          else ansible_facts['default_ipv6'].gateway | default('')) }}
 
 - name: "[Netplan] Show effective configuration"
   ansible.builtin.debug:
@@ -81,7 +81,7 @@
 
 - name: "[Netplan] Create timestamped backup directory"
   ansible.builtin.file:
-    path: "/etc/netplan.backup-{{ ansible_date_time.epoch }}"
+    path: "/etc/netplan.backup-{{ ansible_facts['date_time'].epoch }}"
     state: directory
     mode: "0700"
   register: common_netplan_backup_dir
@@ -105,6 +105,8 @@
     src: netplan-rollback.sh.j2
     dest: /usr/local/sbin/iac-netplan-rollback
     mode: "0700"
+    owner: root
+    group: root
 
 - name: "[Netplan] Render managed netplan configuration"
   ansible.builtin.template:

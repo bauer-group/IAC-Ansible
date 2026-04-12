@@ -5,16 +5,16 @@
 
 - name: Include Debian/Ubuntu Docker tasks
   ansible.builtin.include_tasks: debian.yml
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Include RedHat/CentOS Docker tasks
   ansible.builtin.include_tasks: redhat.yml
-  when: ansible_os_family == "RedHat"
+  when: ansible_facts['os_family'] == "RedHat"
 
 - name: Fail on unsupported platform
   ansible.builtin.fail:
-    msg: "Unsupported OS family for Docker: {{ ansible_os_family }}"
-  when: ansible_os_family not in ["Debian", "RedHat"]
+    msg: "Unsupported OS family for Docker: {{ ansible_facts['os_family'] }}"
+  when: ansible_facts['os_family'] not in ["Debian", "RedHat"]
 
 # --- Common tasks (all platforms) ---
 

@@ -7,12 +7,12 @@ common_motd_configure: true
 common_logdir_configure: true
 
 # Hardware-specific package selection — auto-detected from facts, overridable per host.
-# ansible_virtualization_role values:
+# ansible_facts['virtualization_role'] values:
 #   "guest" → VM guest (KVM, VMware, Hyper-V, Xen, ...)
 #   "host"  → bare metal running hypervisors
 #   "NA"    → bare metal
-common_install_vm_tools: "{{ ansible_virtualization_role | default('NA') == 'guest' }}"
-common_install_physical_tools: "{{ ansible_virtualization_role | default('NA') != 'guest' }}"
+common_install_vm_tools: "{{ ansible_facts['virtualization_role'] | default('NA') == 'guest' }}"
+common_install_physical_tools: "{{ ansible_facts['virtualization_role'] | default('NA') != 'guest' }}"
 
 # Hostname management
 # Idempotent: only changes the hostname when it differs from inventory_hostname.

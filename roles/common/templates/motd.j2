@@ -1,16 +1,16 @@
 
 ===============================================================================
-  {{ motd_organization }} - Managed by IAC-Ansible
+  {{ common_motd_organization }} - Managed by IAC-Ansible
 ===============================================================================
-  Hostname:     {{ ansible_hostname }}
-  FQDN:         {{ ansible_fqdn }}
+  Hostname:     {{ ansible_facts['hostname'] }}
+  FQDN:         {{ ansible_facts['fqdn'] }}
   Asset:        {{ inventory_hostname | asset_id | default('N/A') }} | Group: {{ inventory_hostname | group_code | default('N/A') }} ({{ inventory_hostname | asset_type | default('N/A') }})
-  OS:           {{ ansible_distribution }} {{ ansible_distribution_version }}
-  Kernel:       {{ ansible_kernel }}
-  Architecture: {{ ansible_architecture }}
-  IPv4:         {{ ansible_default_ipv4.address | default('N/A') }}
-  IPv6:         {{ ansible_default_ipv6.address | default('N/A') }}
-  Uptime:       {{ ansible_uptime_seconds | int // 86400 }}d {{ (ansible_uptime_seconds | int % 86400) // 3600 }}h {{ (ansible_uptime_seconds | int % 3600) // 60 }}m
+  OS:           {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
+  Kernel:       {{ ansible_facts['kernel'] }}
+  Architecture: {{ ansible_facts['architecture'] }}
+  IPv4:         {{ ansible_facts['default_ipv4'].address | default('N/A') }}
+  IPv6:         {{ ansible_facts['default_ipv6'].address | default('N/A') }}
+  Uptime:       {{ ansible_facts['uptime_seconds'] | int // 86400 }}d {{ (ansible_facts['uptime_seconds'] | int % 86400) // 3600 }}h {{ (ansible_facts['uptime_seconds'] | int % 3600) // 60 }}m
 ===============================================================================
   This system is managed by Ansible. Manual changes may be overwritten.
   Repository:   {{ iac_repo_url }}

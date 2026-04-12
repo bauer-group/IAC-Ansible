@@ -9,6 +9,6 @@ iac_repo_branch: "staging"
 ansible_pull_schedule: "*-*-* 02:00:00"
 ansible_pull_playbook: "playbooks/site.yml"
 
-system_timezone: "Etc/UTC"
-motd_enabled: true
-motd_organization: "BAUER GROUP (STAGING)"
+common_system_timezone: "Etc/UTC"
+common_motd_enabled: true
+common_motd_organization: "BAUER GROUP (STAGING)"

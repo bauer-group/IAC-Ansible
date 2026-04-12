@@ -28,7 +28,7 @@
 
     - name: Display target information
       ansible.builtin.debug:
-        msg: "Configuring {{ inventory_hostname }} ({{ ansible_distribution }} {{ ansible_distribution_version }})"
+        msg: "Configuring {{ inventory_hostname }} ({{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }})"
 
     # Dynamic label/service filtering
     - name: Skip host if label filter doesn't match
@@ -46,7 +46,7 @@
 - name: "Phase 2: ansible-pull configuration"
   hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true
   tags: [ansible-pull, pull]
 
   roles:

@@ -20,7 +20,7 @@
     state: present
   when:
     - common_packages_install | bool
-    - ansible_distribution == "Ubuntu"
+    - ansible_facts['distribution'] == "Ubuntu"
 
 - name: "[Debian] Install VM guest packages (open-vm-tools)"
   ansible.builtin.apt:
