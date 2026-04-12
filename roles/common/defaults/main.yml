@@ -3,8 +3,20 @@
 common_packages_install: true
 common_timezone_configure: true
 common_ntp_configure: true
+common_ntp_enabled: true
 common_motd_configure: true
+common_motd_enabled: true
+common_motd_organization: "BAUER GROUP"
 common_logdir_configure: true
+common_system_timezone: "Etc/UTC"
+
+# NTP servers (override per environment in group_vars)
+common_ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+common_ntp_fallback_servers:
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
 
 # Hardware-specific package selection — auto-detected from facts, overridable per host.
 # ansible_facts['virtualization_role'] values:
