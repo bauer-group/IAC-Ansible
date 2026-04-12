@@ -1,3 +1,9 @@
+## [1.3.12](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.11...v1.3.12) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **common:** added fallback defaults for renamed global variables ([ef1dba3](https://github.com/bauer-group/IAC-Ansible/commit/ef1dba3698bbd262da06e405bb29b9ccf8a19d38))
+
 ## [1.3.11](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.10...v1.3.11) (2026-04-12)
 
 ### 🐛 Bug Fixes
