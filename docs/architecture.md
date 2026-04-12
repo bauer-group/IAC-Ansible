@@ -149,4 +149,14 @@ site.yml
 | Rocky | 8, 9, 10 | dnf | dnf-automatic |
 | AlmaLinux | 8, 9, 10 | dnf | dnf-automatic |
 
-Platform is auto-detected via `ansible_os_family` and `ansible_distribution`.
+Platform is auto-detected via `ansible_facts['os_family']` and `ansible_facts['distribution']`.
+
+## Ansible Compatibility
+
+| Requirement | Value |
+|---|---|
+| Minimum ansible-core | 2.18 (ansible >= 13.0) |
+| Fact access syntax | `ansible_facts['...']` (migrated from deprecated `ansible_*` top-level injection) |
+| Collections required | `community.general >= 12.0.0`, `ansible.posix >= 2.1.0` |
+
+All fact access uses the `ansible_facts['...']` dictionary syntax. The deprecated `INJECT_FACTS_AS_VARS` top-level injection (`ansible_os_family`, `ansible_distribution`, etc.) is not used, ensuring compatibility with ansible-core 2.24+ where this feature will be removed.

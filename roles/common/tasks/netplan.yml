@@ -76,6 +76,7 @@
       - "interface: {{ common_netplan_effective_interface }}"
       - "ipv4: {{ common_netplan_effective_ipv4 }} (gw {{ common_netplan_effective_ipv4_gateway }})"
       - "ipv6: {{ common_netplan_effective_ipv6 }} (gw {{ common_netplan_effective_ipv6_gateway }})"
+    verbosity: 1
 
 # --- Backup + render ---
 

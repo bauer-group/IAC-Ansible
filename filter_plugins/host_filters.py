@@ -14,7 +14,9 @@ Usage in playbooks:
 import fnmatch
 import re
 
-# Group code to asset type mapping (AAAA-GG schema)
+# Group code to asset type mapping (AAAA-GG schema).
+# To add a new group code: add an entry here and document it in docs/server-naming.md.
+# The key is the 2-digit group code (GG), the value is the human-readable asset type.
 GROUP_CODE_MAP = {
     "00": "physical_server",
     "05": "physical_cluster_node",

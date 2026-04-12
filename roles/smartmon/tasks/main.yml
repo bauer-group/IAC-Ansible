@@ -37,6 +37,7 @@
 - name: Display monitored disks
   ansible.builtin.debug:
     msg: "SMART monitoring: {{ smartmon_final_disks | map(attribute='device') | list | join(', ') }}"
+    verbosity: 1
   when: smartmon_final_disks | length > 0
 
 - name: Deploy smartd.conf

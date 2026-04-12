@@ -14,6 +14,7 @@
       | OS: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
       | Family: {{ ansible_facts['os_family'] }}
       | Architecture: {{ ansible_facts['architecture'] }}
+    verbosity: 1
 
 - name: Include Debian/Ubuntu tasks
   ansible.builtin.include_tasks: debian.yml

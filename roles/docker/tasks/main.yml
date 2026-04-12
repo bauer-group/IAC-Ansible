@@ -78,6 +78,7 @@
 - name: Display Docker version
   ansible.builtin.debug:
     msg: "Docker {{ docker_version.stdout }} installed on {{ inventory_hostname }}"
+    verbosity: 1
 
 - name: Configure weekly Docker prune cron job
   ansible.builtin.cron:

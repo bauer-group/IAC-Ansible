@@ -13,6 +13,7 @@
       | reboot={{ auto_update_reboot_enabled }} (wd={{ auto_update_reboot_cron_weekday }})
       | cron={{ auto_update_cron_hour }}:{{ auto_update_cron_minute }}
       | statusmon={{ auto_update_statusmon_enabled }}
+    verbosity: 1
 
 - name: Include Debian/Ubuntu auto-update tasks
   ansible.builtin.include_tasks: debian.yml

@@ -25,6 +25,7 @@
 
 - name: Show Coolify installation status
   ansible.builtin.debug:
+    verbosity: 1
     msg: >-
       {% if coolify_marker.stat.exists and not coolify_force_reinstall %}
       Coolify already installed at {{ coolify_install_marker }} — installer skipped.
