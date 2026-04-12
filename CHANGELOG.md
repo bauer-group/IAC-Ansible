@@ -1,3 +1,9 @@
+## [1.3.10](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.9...v1.3.10) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **docker:** replaced ip6tables with iptables package ([2696a29](https://github.com/bauer-group/IAC-Ansible/commit/2696a297259e329995a445a15eb0dafc22992867))
+
 ## [1.3.9](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.8...v1.3.9) (2026-04-12)
 
 ### 🐛 Bug Fixes
