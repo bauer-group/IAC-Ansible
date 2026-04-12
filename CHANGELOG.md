@@ -1,3 +1,9 @@
+## [1.3.8](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.7...v1.3.8) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **inventory:** pinned iac_repo_branch=main for production hosts ([5b5bc3b](https://github.com/bauer-group/IAC-Ansible/commit/5b5bc3b320c58d4126e93a9dab879c8793c77441))
+
 ## [1.3.7](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.6...v1.3.7) (2026-04-12)
 
 ### 🐛 Bug Fixes
