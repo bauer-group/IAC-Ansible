@@ -27,6 +27,9 @@ labels:
   - docker-host
   - coolify
 
+# Branch override (staging group_vars bleed into production via merged inventory)
+iac_repo_branch: "main"
+
 # --- Hostname ---
 # Set by default (idempotent); kept here explicit so a fresh-install run is
 # guaranteed to name the host correctly before services come up.

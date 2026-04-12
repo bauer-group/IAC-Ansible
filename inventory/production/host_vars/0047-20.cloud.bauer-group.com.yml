@@ -22,6 +22,11 @@ labels:
   - ubuntu
   - docker-host
 
+# Branch override: ansible.cfg loads both production + staging inventories;
+# staging group_vars set iac_repo_branch=staging which bleeds into production.
+# Explicit host-level override ensures this host always pulls from main.
+iac_repo_branch: "main"
+
 # --- Hostname: already set during bootstrap (install.sh + IAC_HOSTNAME) ---
 
 # --- UFW: off (Docker manages iptables directly; UFW would conflict) ---
