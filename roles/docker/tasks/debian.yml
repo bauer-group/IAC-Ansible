@@ -16,7 +16,7 @@
       - ca-certificates
       - curl
       - gnupg
-      - ip6tables
+      - iptables
     state: present
     update_cache: true
     cache_valid_time: 86400
