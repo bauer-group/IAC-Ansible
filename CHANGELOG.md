@@ -1,3 +1,13 @@
+## [1.3.11](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.10...v1.3.11) (2026-04-12)
+
+### 🐛 Bug Fixes
+
+* **lint:** renamed variable to use role prefix ([5dd592c](https://github.com/bauer-group/IAC-Ansible/commit/5dd592c9d9093d87f7452bcca4a4788b56fdb06d))
+
+### ♻️ Refactoring
+
+* **common:** resolved 16 audit findings (H1-H4, M1-M7, L2-L3) ([4b4dc33](https://github.com/bauer-group/IAC-Ansible/commit/4b4dc33cbb6be63efd26a19cb0bfa7718e5afc13))
+
 ## [1.3.10](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.9...v1.3.10) (2026-04-12)
 
 ### 🐛 Bug Fixes
