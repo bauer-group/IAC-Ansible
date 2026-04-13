@@ -1,0 +1,10 @@
+---
+extends: default
+rules:
+  line-length:
+    max: 200
+  truthy: disable
+  comments:
+    min-spaces-from-content: 2
+  indentation:
+    spaces: 2

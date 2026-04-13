@@ -9,7 +9,7 @@ TAGS_ARG := $(if $(TAGS),--tags "$(TAGS)",)
 LABEL_ARG := $(if $(LABEL),-e "filter_label=$(LABEL)",)
 EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG)
 
-.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create vault-view vault-rekey
+.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create vault-view vault-rekey validate syntax graph hosts
 
 help: ## Show this help
 	@echo "IAC-Ansible - Infrastructure as Code"
@@ -58,7 +58,7 @@ facts: ## Gather and display facts
 
 lint: ## Lint all playbooks and roles
 	ansible-lint playbooks/ roles/
-	yamllint .
+	yamllint -c .yamllint .
 
 check: ## Dry-run deployment (check mode)
 	ansible-playbook -i $(INVENTORY) playbooks/site.yml $(EXTRA_ARGS) --check --diff
@@ -81,3 +81,16 @@ vault-view: ## View decrypted vault secrets
 
 vault-rekey: ## Change vault encryption password
 	ansible-vault rekey inventory/$(ENV)/group_vars/all/secrets.yml
+
+validate: ## Validate inventory syntax
+	ansible-inventory -i $(INVENTORY) --list > /dev/null
+	@echo "✓ Inventory valid"
+
+syntax: ## Check playbook syntax
+	ansible-playbook -i $(INVENTORY) --syntax-check playbooks/site.yml
+
+graph: ## Show inventory group tree
+	ansible-inventory -i $(INVENTORY) --graph
+
+hosts: ## List all managed hosts
+	ansible-inventory -i $(INVENTORY) --list | python -c "import sys,json; [print(h) for h in json.load(sys.stdin).get('_meta',{}).get('hostvars',{}).keys()]"

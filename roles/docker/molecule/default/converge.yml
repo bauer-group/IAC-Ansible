@@ -1,0 +1,13 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    docker_enabled: true
+    docker_ipv6_nat_enabled: false
+    docker_prune_enabled: true
+
+  roles:
+    - role: docker

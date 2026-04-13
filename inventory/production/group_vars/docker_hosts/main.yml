@@ -1,0 +1,6 @@
+---
+# =============================================================================
+# Docker Hosts - Group Variables
+# =============================================================================
+# Override role defaults for all hosts in the docker_hosts group.
+# Per-host overrides go in host_vars/<hostname>.yml

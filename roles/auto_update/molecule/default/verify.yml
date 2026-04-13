@@ -1,0 +1,30 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verify update script is deployed
+      ansible.builtin.stat:
+        path: /usr/local/sbin/iac-auto-update.sh
+      register: update_script
+      failed_when: not update_script.stat.exists or not update_script.stat.executable
+
+    - name: Verify cron job is configured
+      ansible.builtin.command: crontab -l
+      register: cron_result
+      changed_when: false
+      failed_when: "'iac-auto-update' not in cron_result.stdout"
+
+    - name: Verify log directory exists
+      ansible.builtin.stat:
+        path: /var/log
+      register: logdir_stat
+      failed_when: not logdir_stat.stat.exists
+
+    - name: Verify iac-ansible config directory exists
+      ansible.builtin.stat:
+        path: /etc/iac-ansible
+      register: confdir_stat
+      failed_when: not confdir_stat.stat.exists

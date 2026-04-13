@@ -21,7 +21,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           cache: 'pip'
 
       - name: 📦 Install dependencies
@@ -30,7 +30,7 @@ jobs:
 
       - name: 📋 Run yamllint
         run: |
-          yamllint -d "{extends: default, rules: {line-length: {max: 200}, truthy: disable}}" .
+          yamllint -c .yamllint .
 
       - name: 🔎 Run ansible-lint
         run: |

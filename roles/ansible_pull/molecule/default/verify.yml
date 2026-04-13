@@ -1,0 +1,42 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Verify ansible-pull service unit exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/ansible-pull.service
+      register: service_stat
+      failed_when: not service_stat.stat.exists
+
+    - name: Verify ansible-pull timer unit exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/ansible-pull.timer
+      register: timer_stat
+      failed_when: not timer_stat.stat.exists
+
+    - name: Verify timer is enabled
+      ansible.builtin.command: systemctl is-enabled ansible-pull.timer
+      register: timer_enabled
+      changed_when: false
+      failed_when: timer_enabled.stdout != "enabled"
+
+    - name: Verify log directory exists
+      ansible.builtin.stat:
+        path: /var/log/ansible
+      register: logdir_stat
+      failed_when: not logdir_stat.stat.exists
+
+    - name: Verify logrotate configuration exists
+      ansible.builtin.stat:
+        path: /etc/logrotate.d/ansible-pull
+      register: logrotate_stat
+      failed_when: not logrotate_stat.stat.exists
+
+    - name: Verify working directory exists
+      ansible.builtin.stat:
+        path: /opt/iac-ansible
+      register: workdir_stat
+      failed_when: not workdir_stat.stat.exists

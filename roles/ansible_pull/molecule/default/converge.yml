@@ -1,0 +1,13 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    iac_repo_url: "https://github.com/bauer-group/IAC-Ansible.git"
+    iac_repo_branch: "main"
+    ansible_pull_enabled: true
+
+  roles:
+    - role: ansible_pull

@@ -115,7 +115,11 @@ auto_update_type: "security"  # Security updates only
 - [Auto-Updates](docs/auto-updates.md)
 - [Cloud-Init](docs/cloud-init.md)
 - [Inventory Management](docs/inventory-management.md)
+- [Secrets Management](docs/vault.md)
+- [Host Onboarding](docs/host-onboarding.md)
 - [Workflows](docs/workflows.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## Platforms
 

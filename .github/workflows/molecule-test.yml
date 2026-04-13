@@ -1,0 +1,61 @@
+---
+name: 🧪 Molecule Tests
+
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - 'roles/**'
+      - 'requirements.yml'
+      - 'requirements.txt'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'roles/**'
+
+permissions:
+  contents: read
+
+jobs:
+  molecule:
+    name: 🔬 ${{ matrix.role }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        role:
+          - common
+          - ansible_pull
+          - auto_update
+          - docker
+          - smartmon
+          - coolify
+          - secrets
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: 📚 Install Ansible collections
+        run: |
+          ansible-galaxy collection install -r requirements.yml --force
+
+      - name: 🧪 Run Molecule tests
+        working-directory: roles/${{ matrix.role }}
+        run: |
+          molecule test
+        env:
+          ANSIBLE_FORCE_COLOR: "true"
+          PY_COLORS: "1"

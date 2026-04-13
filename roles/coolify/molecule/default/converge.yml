@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Disable actual installation in test — the installer needs Docker
+    # and network access to registries which aren't available in molecule.
+    # We test the download + idempotency logic only.
+    coolify_enabled: false
+
+  roles:
+    - role: coolify

@@ -1,0 +1,10 @@
+---
+# =============================================================================
+# Auto-Update - Group Variables
+# =============================================================================
+# Override update settings for all hosts in the auto_update group.
+# Per-host overrides go in host_vars/<hostname>.yml
+#
+# Common pattern for team-based differentiation:
+#   auto_update_type: "security"    # Security updates only
+#   auto_update_type: "all"         # All packages (default)

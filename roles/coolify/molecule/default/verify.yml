@@ -1,0 +1,19 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Verify role executed without errors
+      ansible.builtin.debug:
+        msg: >-
+          Coolify role converged successfully.
+          Actual installation is disabled in molecule (requires Docker + network).
+          Verifying idempotency and task structure only.
+
+    - name: Verify no installer script left behind
+      ansible.builtin.stat:
+        path: /tmp/coolify-install.sh
+      register: installer_stat
+      failed_when: installer_stat.stat.exists

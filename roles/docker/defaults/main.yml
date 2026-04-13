@@ -56,3 +56,5 @@ docker_prune_enabled: true
 docker_prune_cron_hour: "4"
 docker_prune_cron_minute: "30"
 docker_prune_cron_weekday: "0"
+# Retention: only prune images older than this (protects recently pulled production images)
+docker_prune_image_retention: "240h"

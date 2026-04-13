@@ -11,17 +11,28 @@
     path: "{{ coolify_install_marker }}"
   register: coolify_marker
 
+- name: Download Coolify installer
+  ansible.builtin.get_url:
+    url: "{{ coolify_install_url }}"
+    dest: /tmp/coolify-install.sh
+    mode: "0700"
+    force: true
+  when:
+    - coolify_enabled | bool
+    - (not coolify_marker.stat.exists) or (coolify_force_reinstall | bool)
+
 - name: Run Coolify installer
-  ansible.builtin.shell: |
-    set -o pipefail
-    curl -fsSL {{ coolify_install_url }} | bash -s -- {{ coolify_install_flags }}
-  args:
-    executable: /bin/bash
+  ansible.builtin.command: /tmp/coolify-install.sh {{ coolify_install_flags }}
   register: coolify_install_result
   when:
     - coolify_enabled | bool
     - (not coolify_marker.stat.exists) or (coolify_force_reinstall | bool)
   changed_when: coolify_install_result.rc == 0
+
+- name: Remove installer script
+  ansible.builtin.file:
+    path: /tmp/coolify-install.sh
+    state: absent
 
 - name: Show Coolify installation status
   ansible.builtin.debug:

@@ -1,0 +1,42 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verify timezone is set
+      ansible.builtin.command: timedatectl show --property=Timezone --value
+      register: tz_result
+      changed_when: false
+      failed_when: tz_result.stdout | length == 0
+
+    - name: Verify MOTD script is executable
+      ansible.builtin.stat:
+        path: /etc/update-motd.d/50-iac-ansible
+      register: motd_stat
+      failed_when: not motd_stat.stat.exists or not motd_stat.stat.executable
+
+    - name: Verify hostname is set
+      ansible.builtin.command: hostname -f
+      register: hostname_result
+      changed_when: false
+      failed_when: hostname_result.stdout | length == 0
+
+    - name: Verify fail2ban is installed
+      ansible.builtin.command: fail2ban-client --version
+      register: f2b_result
+      changed_when: false
+      failed_when: f2b_result.rc != 0
+
+    - name: Verify resolved configuration exists
+      ansible.builtin.stat:
+        path: /etc/systemd/resolved.conf.d/iac-dns.conf
+      register: resolved_stat
+      failed_when: not resolved_stat.stat.exists
+
+    - name: Verify log directory exists
+      ansible.builtin.stat:
+        path: /var/log/ansible
+      register: logdir_stat
+      failed_when: not logdir_stat.stat.exists or not logdir_stat.stat.isdir

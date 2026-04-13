@@ -1,0 +1,15 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    auto_update_enabled: true
+    auto_update_type: "all"
+    auto_update_reboot_enabled: false
+    auto_update_statusmon_enabled: false
+    auto_update_chain_ansible_pull: false
+
+  roles:
+    - role: auto_update

@@ -1,0 +1,9 @@
+---
+profile: production
+skip_list: []
+warn_list:
+  - experimental
+exclude_paths:
+  - .git
+  - .github
+  - .claude

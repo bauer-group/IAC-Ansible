@@ -34,6 +34,10 @@ ansible_pull_log_file: "/var/log/ansible/ansible-pull.log"
 # Leave empty to skip (no --vault-password-file flag passed to ansible-pull).
 ansible_pull_vault_password_file: ""
 
+# Inventory file for ansible-pull (relative to repo checkout).
+# Override in staging group_vars to point to the staging inventory.
+ansible_pull_inventory: "inventory/production/hosts.yml"
+
 # Extra arguments for ansible-pull
 ansible_pull_extra_args: ""
 

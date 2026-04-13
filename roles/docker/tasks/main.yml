@@ -86,5 +86,5 @@
     minute: "{{ docker_prune_cron_minute }}"
     hour: "{{ docker_prune_cron_hour }}"
     weekday: "{{ docker_prune_cron_weekday }}"
-    job: "docker system prune -af --volumes > /dev/null 2>&1"
+    job: "docker image prune -af --filter 'until={{ docker_prune_image_retention }}' && docker container prune -f && docker builder prune -af > /dev/null 2>&1"
     state: "{{ 'present' if docker_prune_enabled | bool else 'absent' }}"

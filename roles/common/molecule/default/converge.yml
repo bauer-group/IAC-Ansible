@@ -1,0 +1,16 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Disable features that need real hardware or network
+    common_netplan_configure: false
+    common_firewall_ufw_state: "unmanaged"
+    common_apparmor_state: "unmanaged"
+    common_ssh_hardening: false
+    common_msmtp_password: ""
+
+  roles:
+    - role: common

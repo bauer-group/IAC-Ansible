@@ -8,6 +8,7 @@ iac_repo_branch: "staging"
 
 ansible_pull_schedule: "*-*-* 02:00:00"
 ansible_pull_playbook: "playbooks/site.yml"
+ansible_pull_inventory: "inventory/staging/hosts.yml"
 
 common_system_timezone: "Etc/UTC"
 common_motd_enabled: true

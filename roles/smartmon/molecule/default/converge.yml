@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # In containers there are no real disks — provide a manual list
+    # so the role deploys config without auto-detection
+    smartmon_auto_detect: false
+    smartmon_disks: []
+
+  roles:
+    - role: smartmon

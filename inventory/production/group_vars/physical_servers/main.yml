@@ -1,0 +1,6 @@
+---
+# =============================================================================
+# Physical Servers - Group Variables
+# =============================================================================
+# Override role defaults for all physical servers.
+# SMART monitoring is typically enabled for this group.
