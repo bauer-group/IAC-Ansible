@@ -5,6 +5,7 @@
 
 - name: Install Ansible on managed host
   ansible.builtin.include_tasks: "{{ ansible_facts['os_family'] | lower }}.yml"
+  tags: [pull-install]
 
 - name: Create ansible-pull working directory
   ansible.builtin.file:
@@ -24,6 +25,7 @@
     dest: /etc/systemd/system/ansible-pull.service
     mode: "0644"
   notify: Reload systemd
+  tags: [pull-configure]
 
 - name: Deploy ansible-pull systemd timer
   ansible.builtin.template:
@@ -33,6 +35,7 @@
   notify:
     - Reload systemd
     - Restart ansible-pull timer
+  tags: [pull-configure]
 
 - name: Flush handlers to activate systemd units
   ansible.builtin.meta: flush_handlers

@@ -6,10 +6,12 @@
 - name: Include Debian/Ubuntu Docker tasks
   ansible.builtin.include_tasks: debian.yml
   when: ansible_facts['os_family'] == "Debian"
+  tags: [docker-install]
 
 - name: Include RedHat/CentOS Docker tasks
   ansible.builtin.include_tasks: redhat.yml
   when: ansible_facts['os_family'] == "RedHat"
+  tags: [docker-install]
 
 - name: Fail on unsupported platform
   ansible.builtin.fail:
@@ -30,6 +32,7 @@
     dest: /etc/docker/daemon.json
     mode: "0644"
   notify: Restart Docker
+  tags: [docker-configure]
 
 - name: Deploy sysctl settings for Docker
   ansible.builtin.template:
@@ -88,3 +91,4 @@
     weekday: "{{ docker_prune_cron_weekday }}"
     job: "docker image prune -af --filter 'until={{ docker_prune_image_retention }}' && docker container prune -f && docker builder prune -af > /dev/null 2>&1"
     state: "{{ 'present' if docker_prune_enabled | bool else 'absent' }}"
+  tags: [docker-prune]

@@ -7,6 +7,7 @@
   ansible.builtin.package:
     name: smartmontools
     state: present
+  tags: [smart-install]
 
 - name: Auto-detect block devices for SMART monitoring
   ansible.builtin.shell: |
@@ -48,6 +49,7 @@
     backup: true
   notify: Restart smartmontools
   when: smartmon_final_disks | length > 0
+  tags: [smart-configure]
 
 - name: Deploy smartcheck utility script
   ansible.builtin.template:
