@@ -15,6 +15,9 @@ ExecStart=/usr/bin/ansible-pull \
   --checkout {{ ansible_pull_branch }} \
   --directory {{ ansible_pull_workdir }} \
   --full \
+{% if ansible_pull_vault_password_file | default('') | length > 0 %}
+  --vault-password-file {{ ansible_pull_vault_password_file }} \
+{% endif %}
   {{ ansible_pull_playbook }}{{ ' ' + ansible_pull_extra_args if ansible_pull_extra_args | default('') | length > 0 else '' }}
 StandardOutput=append:{{ ansible_pull_log_file }}
 StandardError=append:{{ ansible_pull_log_file }}

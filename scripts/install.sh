@@ -39,6 +39,13 @@ MARKER_FILE="/etc/iac-ansible-bootstrapped"
 # Leave empty to keep the previous, system-managed hostname.
 IAC_HOSTNAME="${IAC_HOSTNAME:-}"
 
+# Optional: vault credentials (out-of-band secret provisioning)
+# Ansible Vault: password for decrypting secrets.yml
+VAULT_PASSWORD="${VAULT_PASSWORD:-}"
+# HashiCorp Vault: AppRole credentials for API-based secret retrieval
+VAULT_ROLE_ID="${VAULT_ROLE_ID:-}"
+VAULT_SECRET_ID="${VAULT_SECRET_ID:-}"
+
 # --- Colors ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -210,6 +217,40 @@ configure_hostname() {
     fi
 }
 
+# --- Configure vault credentials (opt-in via environment variables) ---
+# Deploys credential files required by the secrets role.
+# All files are root-only (0400) and placed outside the git working directory.
+configure_vault_credentials() {
+    local changed=false
+
+    # Ansible Vault password → /etc/ansible/vault-password
+    if [ -n "${VAULT_PASSWORD}" ]; then
+        log "Deploying Ansible Vault password to /etc/ansible/vault-password"
+        mkdir -p /etc/ansible
+        printf '%s' "${VAULT_PASSWORD}" > /etc/ansible/vault-password
+        chmod 0400 /etc/ansible/vault-password
+        changed=true
+    fi
+
+    # HashiCorp Vault AppRole credentials → /etc/iac-ansible/
+    if [ -n "${VAULT_ROLE_ID}" ]; then
+        log "Deploying HashiCorp Vault AppRole credentials to /etc/iac-ansible/"
+        mkdir -p /etc/iac-ansible
+        printf '%s' "${VAULT_ROLE_ID}" > /etc/iac-ansible/vault-role-id
+        chmod 0400 /etc/iac-ansible/vault-role-id
+
+        if [ -n "${VAULT_SECRET_ID}" ]; then
+            printf '%s' "${VAULT_SECRET_ID}" > /etc/iac-ansible/vault-secret-id
+            chmod 0400 /etc/iac-ansible/vault-secret-id
+        fi
+        changed=true
+    fi
+
+    if [ "${changed}" = "true" ]; then
+        log "Vault credentials deployed successfully"
+    fi
+}
+
 # --- Setup directories ---
 setup_directories() {
     log "Creating directories..."
@@ -222,6 +263,17 @@ setup_directories() {
 setup_systemd() {
     log "Configuring systemd timer for ansible-pull..."
 
+    # Build ansible-pull command with optional vault flag
+    local pull_cmd="/usr/bin/ansible-pull"
+    pull_cmd+=" --url ${REPO_URL}"
+    pull_cmd+=" --checkout ${BRANCH}"
+    pull_cmd+=" --directory ${WORKDIR}"
+    pull_cmd+=" --full"
+    if [ -n "${VAULT_PASSWORD}" ]; then
+        pull_cmd+=" --vault-password-file /etc/ansible/vault-password"
+    fi
+    pull_cmd+=" ${PLAYBOOK}"
+
     cat > /etc/systemd/system/ansible-pull.service << SVCEOF
 [Unit]
 Description=IAC-Ansible Pull Configuration from Git
@@ -230,12 +282,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/ansible-pull \\
-  --url "${REPO_URL}" \\
-  --checkout "${BRANCH}" \\
-  --directory "${WORKDIR}" \\
-  --full \\
-  "${PLAYBOOK}"
+ExecStart=${pull_cmd}
 StandardOutput=append:${LOG_FILE}
 StandardError=append:${LOG_FILE}
 TimeoutStartSec=1800
@@ -307,6 +354,7 @@ main() {
         redhat) install_ansible_redhat ;;
     esac
 
+    configure_vault_credentials
     setup_directories
     setup_systemd
     run_initial_pull

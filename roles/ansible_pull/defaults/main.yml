@@ -29,6 +29,11 @@ ansible_pull_workdir: "/opt/iac-ansible"
 # Log file
 ansible_pull_log_file: "/var/log/ansible/ansible-pull.log"
 
+# Vault password file for decrypting Ansible Vault secrets.
+# Set to "/etc/ansible/vault-password" when using the ansible-vault backend.
+# Leave empty to skip (no --vault-password-file flag passed to ansible-pull).
+ansible_pull_vault_password_file: ""
+
 # Extra arguments for ansible-pull
 ansible_pull_extra_args: ""
 

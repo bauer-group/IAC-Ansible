@@ -13,6 +13,17 @@
 #   make deploy LIMIT="0046-20.cloud.bauer-group.com"            # Via Makefile
 # =============================================================================
 
+# --- Phase 0: Secrets resolution (all hosts) ---
+- name: "Phase 0: Resolve secrets from configured backend"
+  hosts: all
+  become: true
+  gather_facts: false
+  tags: [always]
+
+  roles:
+    - role: secrets
+      tags: [always, secrets]
+
 # --- Phase 1: Common baseline for all hosts ---
 - name: "Phase 1: Common baseline configuration"
   hosts: all

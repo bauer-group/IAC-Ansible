@@ -9,7 +9,7 @@ TAGS_ARG := $(if $(TAGS),--tags "$(TAGS)",)
 LABEL_ARG := $(if $(LABEL),-e "filter_label=$(LABEL)",)
 EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG)
 
-.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create
+.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create vault-view vault-rekey
 
 help: ## Show this help
 	@echo "IAC-Ansible - Infrastructure as Code"
@@ -75,3 +75,9 @@ vault-edit: ## Edit vault secrets
 
 vault-create: ## Create new vault file
 	ansible-vault create inventory/$(ENV)/group_vars/all/secrets.yml
+
+vault-view: ## View decrypted vault secrets
+	ansible-vault view inventory/$(ENV)/group_vars/all/secrets.yml
+
+vault-rekey: ## Change vault encryption password
+	ansible-vault rekey inventory/$(ENV)/group_vars/all/secrets.yml

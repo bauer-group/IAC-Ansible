@@ -1,95 +1,215 @@
-# Ansible Vault - Secrets Management
+# Secrets Management
 
 ## Überblick
 
-Ansible Vault verschlüsselt sensible Daten (Passwörter, API-Keys, SSH-Keys) mit AES-256. Die verschlüsselten Dateien werden im Git-Repo gespeichert, sind aber nur mit dem Vault-Passwort lesbar.
+Das IAC-Ansible-Repo unterstützt drei Betriebsmodi für Secrets:
+
+| Modus               | `secrets_backend`   | Beschreibung                                  | Host-Voraussetzungen     |
+|----------------------|---------------------|-----------------------------------------------|--------------------------|
+| **Kein Vault**       | `"ansible-vault"`   | Keine Secrets — alle Features laufen ohne     | Keine                    |
+| **Ansible Vault**    | `"ansible-vault"`   | Datei-Verschlüsselung (AES-256), out-of-band | `secrets.yml` + Passwort |
+| **HashiCorp Vault**  | `"hashicorp-vault"` | Zentraler Secret-Store mit API, KV v2         | AppRole-Credentials      |
+
+**Standard:** `secrets_backend: "ansible-vault"` — das Repo funktioniert sofort ohne
+jede Konfiguration, weil alle Secret-abhängigen Features graceful degradieren.
+
+### Architektur
+
+Die **`secrets` Role** läuft als Phase 0 in `site.yml`, bevor alle anderen Roles:
+
+```
+site.yml
+  │
+  ├─ Phase 0: secrets Role
+  │    │
+  │    ├─ secrets_backend == "ansible-vault"
+  │    │    └─ secrets.yml vorhanden? → vault_* Variablen geladen
+  │    │       secrets.yml fehlt?     → vault_* bleiben leer (OK)
+  │    │
+  │    └─ secrets_backend == "hashicorp-vault"
+  │         └─ KV v2 API → vault_* Variablen aus Vault-Server
+  │
+  │    Mapping: vault_* → Consumer-Variablen
+  │      vault_msmtp_password     → common_msmtp_password
+  │      vault_ssh_key_deploy_bot → common_ssh_extra_keys
+  │      vault_statusmon_*        → auto_update_statusmon_*
+  │
+  ├─ Phase 1: common        (nutzt Consumer-Variablen)
+  ├─ Phase 2: ansible_pull
+  ├─ Phase 3: auto_update   (nutzt Consumer-Variablen)
+  └─ Phase 4-6: ...
+```
+
+Bestehende Roles werden **nicht verändert** — sie konsumieren weiterhin
+`common_msmtp_password`, `auto_update_statusmon_password` etc.
+
+### Dateistruktur
 
 ```
 group_vars/all/
 ├── main.yml              ← Klartext (allgemeine Variablen)
 ├── update_settings.yml   ← Klartext (Update-Konfiguration)
-└── secrets.yml           ← Verschlüsselt (Passwörter, Keys)
+├── secrets_config.yml    ← Backend-Toggle + HashiCorp Vault Settings
+└── secrets.yml           ← Verschlüsselt (nur bei Ansible Vault, out-of-band)
 ```
 
-## Einrichtung
+### Secrets-Variablen
 
-### 1. Vault erstellen
+| Secret                  | Vault-Variable             | Consumer-Variable                | Verwendet von          |
+|-------------------------|----------------------------|----------------------------------|------------------------|
+| SMTP-Passwort           | `vault_msmtp_password`     | `common_msmtp_password`          | common (msmtp)         |
+| SSH Deploy Key          | `vault_ssh_key_deploy_bot` | `common_ssh_extra_keys`          | common (SSH hardening) |
+| Status Monitor URL      | `vault_statusmon_url`      | `auto_update_statusmon_url`      | auto_update            |
+| Status Monitor User     | `vault_statusmon_username` | `auto_update_statusmon_username` | auto_update            |
+| Status Monitor Passwort | `vault_statusmon_password` | `auto_update_statusmon_password` | auto_update            |
+
+**Konvention:** Vault-Variablen beginnen immer mit `vault_`.
+Die Secrets Role mappt sie auf die Consumer-Variablen.
+
+---
+
+## Modus 1: Kein Vault (Standard)
+
+### Wann nutzen?
+
+- Neuer Host im Testbetrieb
+- Features die Secrets brauchen werden nicht benötigt
+- Schneller Start ohne Vault-Infrastruktur
+
+### Was passiert?
+
+Nichts Besonderes. Das Repo läuft out-of-the-box:
+
+- `secrets_backend` steht auf `"ansible-vault"` (Default)
+- Keine `secrets.yml` vorhanden → alle `vault_*`-Variablen bleiben leer
+- Phase 0 setzt Consumer-Variablen auf leere Strings
+- Roles prüfen `| length > 0` und **überspringen** Secret-abhängige Tasks
+
+**Konkret werden übersprungen:**
+
+| Feature                    | Guard-Bedingung                                |
+|----------------------------|------------------------------------------------|
+| msmtp Mail-Relay           | `common_msmtp_password \| length > 0`          |
+| SSH Deploy Key             | `common_ssh_extra_keys \| length > 0`          |
+| Status Monitor Credentials | `auto_update_statusmon_password \| length > 0` |
+
+Alle anderen Features (Timezone, NTP, MOTD, Firewall, Docker, etc.) laufen normal.
+
+### Einrichtung
+
+Keine — das ist der Standardzustand. Einfach deployen:
 
 ```bash
-# Production
-make vault-create
-
-# Staging
-make vault-create ENV=staging
+make deploy                                              # Alle Hosts
+make deploy LIMIT=0047-20.cloud.bauer-group.com          # Ein Host
 ```
 
-Dies öffnet einen Editor. Beispielinhalt:
+### Bootstrap ohne Vault
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/.../install.sh | \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+---
+
+## Modus 2: Ansible Vault
+
+### Wann Ansible Vault nutzen?
+
+- Secrets werden benötigt (SMTP, SSH-Keys, Status Monitor)
+- Einzelner Verantwortlicher oder kleines Team
+- Keine dynamische Rotation erforderlich
+- Einfacher Start, minimaler Overhead
+
+### Wie Ansible Vault funktioniert
+
+- `secrets.yml` (AES-256 verschlüsselt) liegt out-of-band auf jedem Host
+- `ansible-pull` entschlüsselt die Datei mit `/etc/ansible/vault-password`
+- Ansible lädt `vault_*`-Variablen automatisch aus `group_vars/all/secrets.yml`
+- Phase 0 mappt sie auf Consumer-Variablen → Roles nutzen die Secrets
+
+### Ansible Vault einrichten
+
+#### Schritt 1: Vault-Datei erstellen
+
+```bash
+make vault-create               # Production
+make vault-create ENV=staging   # Staging
+```
+
+Inhalt:
 
 ```yaml
 ---
 # IAC-Ansible Vault Secrets
 # Bearbeiten mit: make vault-edit
 
-# Mail relay (msmtp)
 vault_msmtp_password: "dein-smtp-passwort"
-
-# SSH deploy key (optional)
 vault_ssh_key_deploy_bot: "ssh-ed25519 AAAA..."
-
-# Status monitor credentials (optional)
 vault_statusmon_url: "https://status.example.com"
 vault_statusmon_username: "admin"
 vault_statusmon_password: "geheim"
 ```
 
-### 2. Secrets referenzieren
+#### Schritt 2: ansible-pull für Vault konfigurieren
 
-In `group_vars/all/main.yml` (Klartext):
+In `group_vars/all/main.yml` die Vault-Passwort-Datei aktivieren:
 
 ```yaml
-# Mail relay - Passwort aus Vault
-common_msmtp_password: "{{ vault_msmtp_password }}"
-
-# SSH deploy key aus Vault
-common_ssh_extra_keys:
-  - "{{ vault_ssh_key_deploy_bot }}"
+ansible_pull_vault_password_file: "/etc/ansible/vault-password"
 ```
 
-**Konvention:** Vault-Variablen beginnen immer mit `vault_`, damit klar ist woher der Wert kommt.
+Damit wird `--vault-password-file` an `ansible-pull` übergeben.
 
-### 3. Vault-Passwort für ansible-pull
+#### Schritt 3: Vault-Passwort auf Hosts verteilen
 
-Damit Server den Vault entschlüsseln können, muss das Passwort auf jedem Server hinterlegt werden:
+**Via install.sh (Bootstrap):**
 
 ```bash
-# Auf dem Server als root:
+curl -fsSL https://raw.githubusercontent.com/.../install.sh | \
+  VAULT_PASSWORD="dein-vault-passwort" \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+**Manuell:**
+
+```bash
 mkdir -p /etc/ansible
-echo "dein-vault-passwort" > /etc/ansible/vault-password
-chmod 600 /etc/ansible/vault-password
+printf '%s' "dein-vault-passwort" > /etc/ansible/vault-password
+chmod 0400 /etc/ansible/vault-password
 ```
 
-In `ansible.cfg` ist die Datei bereits referenzierbar:
+#### Schritt 4: secrets.yml auf Hosts verteilen
 
-```ini
-[defaults]
-vault_password_file = /etc/ansible/vault-password
-```
-
-**Alternativ:** Das Vault-Passwort kann auch über die Umgebungsvariable `ANSIBLE_VAULT_PASSWORD_FILE` gesetzt werden.
-
-## Tägliche Nutzung
-
-### Secrets bearbeiten
+Da `secrets.yml` nicht im Git-Repo liegt (out-of-band), muss die verschlüsselte
+Datei separat auf jeden Host kopiert werden:
 
 ```bash
-make vault-edit              # Production
-make vault-edit ENV=staging  # Staging
+scp inventory/production/group_vars/all/secrets.yml \
+  root@<host>:/opt/iac-ansible/inventory/production/group_vars/all/secrets.yml
 ```
 
-### Secrets anzeigen (temporär entschlüsseln)
+### Tägliche Nutzung
 
 ```bash
-ansible-vault view inventory/production/group_vars/all/secrets.yml
+make vault-edit              # Production Secrets bearbeiten
+make vault-edit ENV=staging  # Staging Secrets bearbeiten
+make vault-view              # Secrets temporär anzeigen (entschlüsselt)
+make vault-rekey             # Vault-Passwort ändern (Rotation)
+```
+
+### Lokale Nutzung (Entwickler-Maschine)
+
+Auf der lokalen Maschine ist kein `/etc/ansible/vault-password` nötig:
+
+```bash
+# Option A: Umgebungsvariable
+export ANSIBLE_VAULT_PASSWORD_FILE=/pfad/zum/lokalen/passwort
+make deploy
+
+# Option B: Interaktiv
+ansible-playbook -i inventory/production/hosts.yml playbooks/site.yml --ask-vault-pass
 ```
 
 ### Einzelnen Wert verschlüsseln
@@ -100,39 +220,237 @@ Für Inline-Verschlüsselung in Klartext-Dateien:
 ansible-vault encrypt_string 'mein-geheimes-passwort' --name 'vault_msmtp_password'
 ```
 
-Ausgabe direkt in YAML einfügbar:
+---
+
+## Modus 3: HashiCorp Vault
+
+### Wann HashiCorp Vault nutzen?
+
+- Mehrere Teams mit eigenen Secrets (Team-Isolation)
+- Super-Admin der alles sehen muss
+- Automatische Secret-Rotation erforderlich
+- Audit-Logging für Compliance
+- Skalierung auf 10+ Hosts mit verschiedenen Zugriffsrechten
+
+### Wie HashiCorp Vault funktioniert
+
+- Phase 0 authentifiziert sich via AppRole am HashiCorp Vault Server
+- Secrets werden per API aus dem KV v2 Store geholt
+- `vault_*`-Variablen werden per `set_fact` gesetzt
+- Temporäre Credentials werden nach dem Fetch gelöscht
+- Alle Tasks nutzen `no_log: true`
+
+### Voraussetzungen
+
+- HashiCorp Vault Server (v1.15+) mit KV v2 Secrets Engine
+- `community.hashi_vault` Ansible Collection (bereits in `requirements.yml`)
+- `hvac` Python Library (bereits in `requirements.txt`)
+- Collection installieren: `make setup`
+
+### Einrichtung
+
+#### Schritt 1: Backend umschalten
+
+In `inventory/production/group_vars/all/secrets_config.yml`:
 
 ```yaml
-vault_msmtp_password: !vault |
-  $ANSIBLE_VAULT;1.1;AES256
-  6162636465...
+secrets_backend: "hashicorp-vault"
+
+hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
+hashicorp_vault_auth_method: "approle"
+hashicorp_vault_role_id_file: "/etc/iac-ansible/vault-role-id"
+hashicorp_vault_secret_id_file: "/etc/iac-ansible/vault-secret-id"
+hashicorp_vault_secret_path: "iac-ansible/shared"
+hashicorp_vault_mount_point: "secret"
 ```
 
-### Vault-Passwort ändern
+#### Schritt 2: KV v2 Secrets befüllen
 
 ```bash
-ansible-vault rekey inventory/production/group_vars/all/secrets.yml
+vault kv put secret/iac-ansible/shared \
+  msmtp_password="smtp-passwort" \
+  ssh_key_deploy_bot="ssh-ed25519 AAAA..." \
+  statusmon_url="https://status.example.com" \
+  statusmon_username="admin" \
+  statusmon_password="monitor-passwort"
 ```
 
-## Welche Secrets gehören in den Vault?
+Erwartete Pfad-Struktur:
 
-| Secret | Variable | Verwendet von |
-|--------|----------|---------------|
-| SMTP-Passwort | `vault_msmtp_password` | common (msmtp) |
-| SSH Deploy Keys | `vault_ssh_key_deploy_bot` | common (SSH hardening) |
-| Status Monitor URL | `vault_statusmon_url` | auto_update |
-| Status Monitor User | `vault_statusmon_username` | auto_update |
-| Status Monitor Passwort | `vault_statusmon_password` | auto_update |
+```
+secret/data/iac-ansible/
+├── shared/              ← Alle Hosts (msmtp, ssh, statusmon)
+│   ├── msmtp_password
+│   ├── ssh_key_deploy_bot
+│   ├── statusmon_url
+│   ├── statusmon_username
+│   └── statusmon_password
+├── team-alpha/          ← Nur Team-Alpha-Hosts
+│   └── ...
+└── team-beta/           ← Nur Team-Beta-Hosts
+    └── ...
+```
 
-## Was passiert ohne Vault?
+#### Schritt 3: Policies erstellen
 
-- **Keine `secrets.yml` vorhanden:** Alles funktioniert. Features die Vault-Variablen brauchen (msmtp, Status Monitor) werden übersprungen.
-- **`secrets.yml` vorhanden, kein Passwort:** `ansible-pull` schlägt fehl. Daher den Vault erst erstellen wenn das Passwort auf allen Servern hinterlegt ist.
+```hcl
+# policy: iac-ansible-shared (für alle Hosts)
+path "secret/data/iac-ansible/shared" {
+  capabilities = ["read"]
+}
+
+# policy: iac-ansible-team-alpha (für Team-Alpha-Hosts)
+path "secret/data/iac-ansible/team-alpha" {
+  capabilities = ["read"]
+}
+
+# policy: iac-ansible-super-admin (sieht alles)
+path "secret/data/iac-ansible/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+```
+
+#### Schritt 4: AppRole einrichten
+
+```bash
+# AppRole aktivieren
+vault auth enable approle
+
+# Shared-Role für alle Hosts
+vault write auth/approle/role/iac-ansible-shared \
+  token_policies="iac-ansible-shared" \
+  token_ttl=1h \
+  token_max_ttl=4h \
+  secret_id_ttl=720h \
+  secret_id_num_uses=0
+
+# Role-ID auslesen (einmalig, stabil)
+vault read auth/approle/role/iac-ansible-shared/role-id
+
+# Secret-ID generieren (pro Host, rotierbar)
+vault write -f auth/approle/role/iac-ansible-shared/secret-id
+```
+
+#### Schritt 5: Credentials auf Hosts verteilen
+
+**Via install.sh (Bootstrap):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/.../install.sh | \
+  VAULT_ROLE_ID="<role-id>" \
+  VAULT_SECRET_ID="<secret-id>" \
+  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+```
+
+**Manuell:**
+
+```bash
+mkdir -p /etc/iac-ansible
+printf '%s' "<role-id>" > /etc/iac-ansible/vault-role-id
+printf '%s' "<secret-id>" > /etc/iac-ansible/vault-secret-id
+chmod 0400 /etc/iac-ansible/vault-role-id /etc/iac-ansible/vault-secret-id
+```
+
+### Team-Isolation
+
+Teams erhalten eigene KV-Pfade und AppRoles.
+Override per Inventory-Gruppe:
+
+```yaml
+# inventory/production/group_vars/team_alpha/secrets_config.yml
+hashicorp_vault_secret_path: "iac-ansible/team-alpha"
+```
+
+Jedes Team bekommt eine eigene AppRole mit:
+
+- `iac-ansible-shared` Policy (gemeinsame Secrets)
+- `iac-ansible-team-<name>` Policy (eigene Secrets)
+
+Der Super-Admin hat `iac-ansible-super-admin` und sieht alle Pfade.
+
+### Secret-Rotation
+
+| Was               | Wie                                                               | Frequenz                |
+|-------------------|-------------------------------------------------------------------|-------------------------|
+| Secret-Werte      | `vault kv put` mit neuen Werten — nächster ansible-pull übernimmt | Nach Bedarf             |
+| AppRole secret_id | Neue secret_id generieren + auf Host deployen                     | Alle 30 Tage            |
+| AppRole role_id   | Bleibt stabil pro Host-Klasse                                     | Nur bei Policy-Änderung |
+
+---
+
+## Backend wechseln
+
+### Von Kein Vault zu Ansible Vault
+
+1. `make vault-create` → Secrets eingeben
+2. `ansible_pull_vault_password_file` in group_vars setzen
+3. Vault-Passwort + `secrets.yml` auf Hosts verteilen
+4. `make deploy`
+
+### Von Ansible Vault zu HashiCorp Vault
+
+1. HashiCorp Vault Server aufsetzen und Secrets befüllen
+2. AppRole + Policies konfigurieren
+3. AppRole-Credentials auf Hosts verteilen
+4. In `secrets_config.yml` umschalten:
+
+   ```yaml
+   secrets_backend: "hashicorp-vault"
+   hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
+   ```
+
+5. `ansible_pull_vault_password_file` kann entfernt werden (nicht mehr nötig)
+6. `make deploy` — die Secrets Role holt jetzt aus HashiCorp Vault
+
+### Schrittweise Migration
+
+Der Toggle kann **pro Host** gesetzt werden:
+
+```yaml
+# host_vars/test-host.yml — HashiCorp Vault für einen Host testen
+secrets_backend: "hashicorp-vault"
+hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
+```
+
+Alle anderen Hosts bleiben auf `ansible-vault` bis die Migration validiert ist.
+
+---
+
+## Fehlverhalten und Troubleshooting
+
+| Situation                                      | Verhalten                                          |
+|------------------------------------------------|----------------------------------------------------|
+| Kein Backend, kein secrets.yml                 | OK — leere Defaults, Secret-Features übersprungen  |
+| Ansible Vault: secrets.yml fehlt               | OK — leere Defaults, Secret-Features übersprungen  |
+| Ansible Vault: Passwort-Datei fehlt            | Fehler wenn secrets.yml vorhanden (kann nicht entschlüsseln) |
+| Ansible Vault: secrets.yml + Passwort vorhanden | OK — Secrets geladen und gemappt                  |
+| HashiCorp Vault: Server nicht erreichbar       | Fehler mit klarer Meldung (Vault-Adresse prüfen)  |
+| HashiCorp Vault: AppRole-Dateien fehlen        | Fehler mit Hinweis auf fehlende Dateien            |
+| HashiCorp Vault: Secret-Pfad nicht vorhanden   | Fehler (Pfad und Permissions prüfen)               |
+| Falscher `secrets_backend`-Wert                | Sofortiger Assert-Fehler mit erlaubten Werten      |
+
+### Debugging
+
+```bash
+# Dry-Run: prüfen ob Phase 0 durchläuft
+make check LIMIT=0047-20.cloud.bauer-group.com
+
+# Verbose: Secret-Status sehen (Ansible Vault Backend zeigt SET/EMPTY)
+ansible-playbook -i inventory/production/hosts.yml playbooks/site.yml \
+  --tags secrets --limit <host> -v
+```
+
+---
 
 ## Sicherheitshinweise
 
 - Vault-Passwort **niemals** ins Git-Repo committen
-- `.gitignore` enthält bereits Muster für Passwort-Dateien
-- Vault-Passwort über sicheren Kanal an Server verteilen (z.B. SSH, Cloud-Init Secrets)
-- Regelmäßig rotieren mit `ansible-vault rekey`
+- `.gitignore` enthält Muster für Passwort-Dateien und `secrets.yml`
+- Credentials über sicheren Kanal verteilen (SSH, Cloud-Init Secrets)
+- Alle HashiCorp Vault Tasks nutzen `no_log: true`
+- Temporäre Credentials werden nach dem Fetch aus dem Speicher gelöscht
+- Regelmäßig rotieren:
+  - Ansible Vault: `make vault-rekey`
+  - HashiCorp Vault: secret_id erneuern
 - In CI/CD als Secret-Variable hinterlegen (`ANSIBLE_VAULT_PASSWORD`)
+- Dateiberechtigungen: alle Credential-Dateien `0400` (root-only, read-only)
