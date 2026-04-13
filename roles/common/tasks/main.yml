@@ -19,12 +19,10 @@
 - name: Include Debian/Ubuntu tasks
   ansible.builtin.include_tasks: debian.yml
   when: ansible_facts['os_family'] == "Debian"
-  tags: [packages]
 
 - name: Include RedHat/CentOS tasks
   ansible.builtin.include_tasks: redhat.yml
   when: ansible_facts['os_family'] == "RedHat"
-  tags: [packages]
 
 - name: Fail on unsupported platform
   ansible.builtin.fail:
@@ -35,7 +33,6 @@
 - name: Manage system hostname
   ansible.builtin.include_tasks: hostname.yml
   when: common_hostname_configure | bool
-  tags: [hostname]
 
 # --- AppArmor (Debian/Ubuntu only) ---
 - name: Manage AppArmor state
@@ -43,7 +40,6 @@
   when:
     - ansible_os_family == "Debian"
     - common_apparmor_state != "unmanaged"
-  tags: [apparmor]
 
 # --- UFW firewall (Debian/Ubuntu only, opt-in) ---
 - name: Manage UFW firewall state
@@ -51,7 +47,6 @@
   when:
     - ansible_os_family == "Debian"
     - common_firewall_ufw_state != "unmanaged"
-  tags: [firewall]
 
 # --- Common tasks (all platforms) ---
 
@@ -76,7 +71,6 @@
   community.general.timezone:
     name: "{{ common_system_timezone }}"
   when: common_timezone_configure | bool
-  tags: [ntp]
 
 - name: Gather service facts for NTP detection
   ansible.builtin.service_facts:
@@ -104,7 +98,6 @@
     - common_ntp_enabled | bool
     - common_ntp_servers is defined
     - not (common_ntp_already_active | default(false) | bool)
-  tags: [ntp]
 
 - name: Enable and start NTP service
   ansible.builtin.systemd:
@@ -115,7 +108,6 @@
     - common_ntp_configure | bool
     - common_ntp_enabled | bool
     - not (common_ntp_already_active | default(false) | bool)
-  tags: [ntp]
 
 # --- Mail relay (msmtp) ---
 - name: Install msmtp
@@ -127,7 +119,6 @@
   when:
     - common_msmtp_enabled | bool
     - common_msmtp_password | length > 0
-  tags: [msmtp]
 
 - name: Deploy msmtp configuration
   ansible.builtin.template:
@@ -139,7 +130,6 @@
   when:
     - common_msmtp_enabled | bool
     - common_msmtp_password | length > 0
-  tags: [msmtp]
 
 # --- DNS resolver hardening ---
 - name: Deploy resolved.conf (disable mDNS + stub listener)
@@ -149,7 +139,6 @@
     mode: "0644"
   notify: Restart resolved
   when: common_resolved_configure | bool
-  tags: [dns]
 
 # --- fail2ban ---
 - name: Install fail2ban
@@ -157,7 +146,6 @@
     name: fail2ban
     state: present
   when: common_fail2ban_enabled | bool
-  tags: [fail2ban]
 
 - name: Deploy fail2ban SSH jail configuration
   ansible.builtin.template:
@@ -166,7 +154,6 @@
     mode: "0644"
   notify: Restart fail2ban
   when: common_fail2ban_enabled | bool
-  tags: [fail2ban]
 
 - name: Enable and start fail2ban
   ansible.builtin.systemd:
@@ -174,7 +161,6 @@
     state: started
     enabled: true
   when: common_fail2ban_enabled | bool
-  tags: [fail2ban]
 
 # --- Open file limits ---
 - name: Create systemd system.conf.d directory
@@ -229,7 +215,6 @@
     dest: /etc/motd
     mode: "0644"
   when: common_motd_configure | bool and common_motd_enabled | bool
-  tags: [motd]
 
 - name: Ensure update-motd.d directory exists (Debian)
   ansible.builtin.file:
@@ -239,7 +224,6 @@
   when:
     - common_motd_configure | bool and common_motd_enabled | bool
     - ansible_os_family == "Debian"
-  tags: [motd]
 
 - name: Remove default Debian MOTD scripts
   ansible.builtin.shell: |
@@ -248,7 +232,6 @@
   when:
     - common_motd_configure | bool and common_motd_enabled | bool
     - ansible_os_family == "Debian"
-  tags: [motd]
 
 - name: Deploy dynamic MOTD script (Debian)
   ansible.builtin.template:
@@ -258,7 +241,6 @@
   when:
     - common_motd_configure | bool and common_motd_enabled | bool
     - ansible_os_family == "Debian"
-  tags: [motd]
 
 - name: Deploy dynamic MOTD script (RedHat)
   ansible.builtin.template:
@@ -268,12 +250,10 @@
   when:
     - common_motd_configure | bool and common_motd_enabled | bool
     - ansible_os_family == "RedHat"
-  tags: [motd]
 
 - name: Include SSH hardening
   ansible.builtin.include_tasks: ssh_hardening.yml
   when: common_ssh_hardening | bool
-  tags: [ssh]
 
 # --- Netplan (Debian/Ubuntu only, opt-in) ---
 - name: Manage Netplan configuration
@@ -281,4 +261,3 @@
   when:
     - common_netplan_configure | bool
     - ansible_os_family == "Debian"
-  tags: [netplan]
