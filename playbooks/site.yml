@@ -29,7 +29,7 @@
   hosts: all
   become: true
   gather_facts: true
-  tags: [common, always-gather]
+  tags: [common, packages, hostname, apparmor, firewall, ntp, msmtp, dns, fail2ban, motd, ssh, netplan]
 
   pre_tasks:
     - name: Validate Ansible version
@@ -58,7 +58,7 @@
   hosts: all
   become: true
   gather_facts: true
-  tags: [ansible-pull, pull]
+  tags: [ansible-pull, pull, pull-install, pull-configure]
 
   roles:
     - role: ansible_pull
@@ -69,7 +69,7 @@
   hosts: auto_update
   become: true
   gather_facts: true
-  tags: [update, auto-update]
+  tags: [update, auto-update, update-configure]
 
   roles:
     - role: auto_update
@@ -80,7 +80,7 @@
   hosts: docker_hosts
   become: true
   gather_facts: true
-  tags: [docker]
+  tags: [docker, docker-install, docker-configure, docker-prune]
 
   roles:
     - role: docker
@@ -91,7 +91,7 @@
   hosts: physical_servers
   become: true
   gather_facts: true
-  tags: [smartmon, monitoring]
+  tags: [smartmon, monitoring, smart-install, smart-configure]
 
   roles:
     - role: smartmon
