@@ -1,3 +1,9 @@
+## [2.0.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.2...v2.0.3) (2026-04-16)
+
+### 🐛 Bug Fixes
+
+* **molecule:** resolved local roles via ANSIBLE_ROLES_PATH ([aa42ca1](https://github.com/bauer-group/IAC-Ansible/commit/aa42ca1f45b2eeb954a9e60e8265cec43e4176ac))
+
 ## [2.0.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.1...v2.0.2) (2026-04-16)
 
 ### 🐛 Bug Fixes
