@@ -33,6 +33,11 @@ platforms:
 
 provisioner:
   name: ansible
+  env:
+    # Let ansible find sibling roles by short name (repo layout: roles/<name>/).
+    # MOLECULE_PROJECT_DIRECTORY resolves to the role dir (roles/<name>/),
+    # so "/.." points at roles/ — the parent that Ansible scans for short names.
+    ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/.."
   playbooks:
     converge: converge.yml
     verify: verify.yml

@@ -11,4 +11,4 @@
     coolify_enabled: false
 
   roles:
-    - role: bauer_group.coolify
+    - role: coolify

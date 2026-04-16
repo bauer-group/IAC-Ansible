@@ -12,4 +12,4 @@
     auto_update_chain_ansible_pull: false
 
   roles:
-    - role: bauer_group.auto_update
+    - role: auto_update
