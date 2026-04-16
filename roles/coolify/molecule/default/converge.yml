@@ -9,6 +9,9 @@
     # and network access to registries which aren't available in molecule.
     # We test the download + idempotency logic only.
     coolify_enabled: false
+    # docker runs as dependency — disable service start (test container
+    # is not DinD-capable). Configs are still deployed + verified.
+    docker_enabled: false
 
   roles:
     - role: coolify

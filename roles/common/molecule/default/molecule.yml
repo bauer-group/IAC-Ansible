@@ -38,6 +38,9 @@ provisioner:
     # MOLECULE_PROJECT_DIRECTORY resolves to the role dir (roles/<name>/),
     # so "/.." points at roles/ — the parent that Ansible scans for short names.
     ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/.."
+    # Custom Jinja2 filters (asset_id, role_code, etc.) live at repo-root's
+    # filter_plugins/. "/../.." from MOLECULE_PROJECT_DIRECTORY = repo root.
+    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../filter_plugins"
   playbooks:
     converge: converge.yml
     verify: verify.yml

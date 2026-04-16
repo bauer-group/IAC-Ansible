@@ -35,6 +35,7 @@ provisioner:
   name: ansible
   env:
     ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/.."
+    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../filter_plugins"
   playbooks:
     converge: converge.yml
     verify: verify.yml
