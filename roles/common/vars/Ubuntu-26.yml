@@ -1,0 +1,8 @@
+---
+# Ubuntu 26.04+ specific overrides.
+# Upstream default NTP daemon switched from systemd-timesyncd to chrony
+# (release notes: https://documentation.ubuntu.com/release-notes/26.04/).
+# These variables override the Debian.yml defaults for the chrony deploy path
+# in roles/common/tasks/main.yml.
+common_ntp_package: "chrony"
+common_ntp_service: "chrony"

@@ -135,6 +135,12 @@ The role detects the sshd config method automatically:
 - **Modern systems** (Ubuntu 22.04+, Debian 12+, RHEL 9+): drop-in file `/etc/ssh/sshd_config.d/99-iac-hardening.conf`
 - **Legacy systems**: inline edit of `/etc/ssh/sshd_config` via `lineinfile`
 
+On Ubuntu 26.04+ the distribution ships OpenSSH 10.2p1, which removes DSA
+signature support and adds the post-quantum key exchange
+`mlkem768x25519-sha256`. The role does not manage DSA keys, so the removal
+is transparent. To verify PQ-KEX availability on a target, run
+`ssh -Q kex | grep mlkem`.
+
 Both methods validate the config with `sshd -t` before writing.
 
 ## Safety Mechanisms

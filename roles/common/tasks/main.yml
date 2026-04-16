@@ -7,6 +7,13 @@
 - name: Gather OS family variables
   ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
 
+- name: Gather distribution-major-version-specific variables (optional)
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+      skip: true
+
 - name: Display detected platform
   ansible.builtin.debug:
     msg: >
@@ -78,14 +85,56 @@
 
 - name: Set NTP already active fact
   ansible.builtin.set_fact:
+    # Retrofit-safety: skip deploy if a foreign NTP daemon is running.
+    # When we manage chrony ourselves (common_ntp_package == 'chrony'),
+    # running chrony is EXPECTED and must not skip our config — so it is
+    # excluded from the check in that case.
     common_ntp_already_active: >-
       {{
-        (ansible_facts.services['chronyd.service'] | default({})).get('state') == 'running' or
-        (ansible_facts.services['chrony.service'] | default({})).get('state') == 'running' or
+        (
+          common_ntp_package != 'chrony' and (
+            (ansible_facts.services['chronyd.service'] | default({})).get('state') == 'running' or
+            (ansible_facts.services['chrony.service'] | default({})).get('state') == 'running'
+          )
+        ) or
         (ansible_facts.services['ntpd.service'] | default({})).get('state') == 'running' or
         (ansible_facts.services['ntp.service'] | default({})).get('state') == 'running'
       }}
   when: common_ntp_configure | bool and common_ntp_enabled | bool
+
+- name: Install NTP daemon package
+  ansible.builtin.package:
+    name: "{{ common_ntp_package }}"
+    state: present
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - not (common_ntp_already_active | default(false) | bool)
+
+- name: Stop and mask systemd-timesyncd when chrony is the managed daemon
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: stopped
+    enabled: false
+    masked: true
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_package == "chrony"
+  failed_when: false
+
+- name: Deploy chrony configuration
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+    mode: "0644"
+  notify: Restart chrony
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_servers is defined
+    - common_ntp_package == "chrony"
+    - not (common_ntp_already_active | default(false) | bool)
 
 - name: Deploy timesyncd configuration
   ansible.builtin.template:
@@ -97,6 +146,7 @@
     - common_ntp_configure | bool
     - common_ntp_enabled | bool
     - common_ntp_servers is defined
+    - common_ntp_package == "systemd-timesyncd"
     - not (common_ntp_already_active | default(false) | bool)
 
 - name: Enable and start NTP service

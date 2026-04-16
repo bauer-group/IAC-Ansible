@@ -66,8 +66,9 @@ Auto-assigned based on detected OS. Used for conditional task execution:
 
 ```yaml
 ubuntu:          # All Ubuntu hosts
-  ubuntu_2404:   # Ubuntu 24.04 specifically
-  ubuntu_2204:   # Ubuntu 22.04
+  ubuntu_2604:   # Ubuntu 26.04 (resolute)
+  ubuntu_2404:   # Ubuntu 24.04 (noble)
+  ubuntu_2204:   # Ubuntu 22.04 (jammy)
 debian:          # All Debian hosts
 centos:          # All CentOS hosts
 redhat:          # All RHEL hosts
