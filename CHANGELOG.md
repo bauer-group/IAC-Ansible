@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.0...v2.0.1) (2026-04-16)
+
+### 🐛 Bug Fixes
+
+* **deps:** upgraded molecule-plugins to 25.x for ansible-core 2.20 compat ([730d826](https://github.com/bauer-group/IAC-Ansible/commit/730d826d7b2947d62bf5b22bae5d7e1266b436ba))
+
 ## [2.0.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.4.0...v2.0.0) (2026-04-16)
 
 ### ⚠ BREAKING CHANGES
