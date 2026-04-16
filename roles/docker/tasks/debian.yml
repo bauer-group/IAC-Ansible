@@ -17,6 +17,7 @@
       - curl
       - gnupg
       - iptables
+      - cron  # required by the Docker prune cron job task
     state: present
     update_cache: true
     cache_valid_time: 86400
