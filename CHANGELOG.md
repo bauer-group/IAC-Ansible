@@ -1,3 +1,9 @@
+## [2.0.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.5...v2.0.6) (2026-04-16)
+
+### 🐛 Bug Fixes
+
+* **roles:** resolved MOTD template + docker cron prereq ([75ca555](https://github.com/bauer-group/IAC-Ansible/commit/75ca5558b755e83fa4dee0fd3d801d33f6fbc6ef))
+
 ## [2.0.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.4...v2.0.5) (2026-04-16)
 
 ### 🐛 Bug Fixes
