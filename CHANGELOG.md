@@ -1,3 +1,14 @@
+## [1.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.12...v1.4.0) (2026-04-16)
+
+### 🚀 Features
+
+* **platform:** added Ubuntu 26.04 LTS (Resolute) support ([7dda958](https://github.com/bauer-group/IAC-Ansible/commit/7dda958f51bee0db280c63a522c258e1c4748791))
+* **secrets:** added switchable secrets backend (Ansible Vault / HashiCorp Vault) ([bfda69a](https://github.com/bauer-group/IAC-Ansible/commit/bfda69a379ee835f0605667af0de5f4c81bd5297))
+
+### 🐛 Bug Fixes
+
+* **common:** improved IPv6 detection in MOTD banner ([7a93c1c](https://github.com/bauer-group/IAC-Ansible/commit/7a93c1c75b1de9649b1baf486494f0bbd917cc86))
+
 ## [1.3.12](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.11...v1.3.12) (2026-04-12)
 
 ### 🐛 Bug Fixes
