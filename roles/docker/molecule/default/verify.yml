@@ -7,21 +7,21 @@
   tasks:
     - name: Verify Docker is installed
       ansible.builtin.command: docker version --format '{{ '{{' }}.Server.Version{{ '}}' }}'
-      register: docker_version
+      register: docker_version_result
       changed_when: false
-      failed_when: docker_version.rc != 0
+      failed_when: docker_version_result.rc != 0
 
     - name: Verify Docker service is running
       ansible.builtin.systemd:
         name: docker
-      register: docker_service
-      failed_when: docker_service.status.ActiveState != "active"
+      register: docker_service_status
+      failed_when: docker_service_status.status.ActiveState != "active"
 
     - name: Verify daemon.json exists
       ansible.builtin.stat:
         path: /etc/docker/daemon.json
-      register: daemon_json
-      failed_when: not daemon_json.stat.exists
+      register: docker_daemon_json_stat
+      failed_when: not docker_daemon_json_stat.stat.exists
 
     - name: Verify daemon.json is valid JSON
       ansible.builtin.command: python3 -c "import json; json.load(open('/etc/docker/daemon.json'))"
@@ -30,11 +30,11 @@
     - name: Verify sysctl config deployed
       ansible.builtin.stat:
         path: /etc/sysctl.d/98-docker.conf
-      register: sysctl_stat
-      failed_when: not sysctl_stat.stat.exists
+      register: docker_sysctl_stat
+      failed_when: not docker_sysctl_stat.stat.exists
 
     - name: Verify prune cron job exists
       ansible.builtin.command: crontab -l
-      register: cron_result
+      register: docker_cron_result
       changed_when: false
-      failed_when: "'docker image prune' not in cron_result.stdout"
+      failed_when: "'docker image prune' not in docker_cron_result.stdout"

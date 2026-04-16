@@ -7,13 +7,13 @@
   tasks:
     - name: Verify smartmontools is installed
       ansible.builtin.command: smartctl --version
-      register: smartctl_result
+      register: smartmon_smartctl_result
       changed_when: false
-      failed_when: smartctl_result.rc != 0
+      failed_when: smartmon_smartctl_result.rc != 0
 
     - name: Verify smartd configuration directory exists
       ansible.builtin.stat:
         path: /etc/smartmontools
-      register: smartd_dir
+      register: smartmon_smartd_dir_stat
       # Directory may not exist if no disks configured — that's OK
       changed_when: false

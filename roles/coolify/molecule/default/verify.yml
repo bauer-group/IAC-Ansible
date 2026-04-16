@@ -15,5 +15,5 @@
     - name: Verify no installer script left behind
       ansible.builtin.stat:
         path: /tmp/coolify-install.sh
-      register: installer_stat
-      failed_when: installer_stat.stat.exists
+      register: coolify_installer_stat
+      failed_when: coolify_installer_stat.stat.exists

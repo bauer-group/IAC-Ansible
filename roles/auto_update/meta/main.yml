@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: auto_update
+  namespace: bauer_group
   author: BAUER GROUP
   description: Automatic system updates with controlled reboot scheduling
   license: MIT

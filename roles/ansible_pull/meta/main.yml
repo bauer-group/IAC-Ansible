@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: ansible_pull
+  namespace: bauer_group
   author: BAUER GROUP
   description: Git-based ansible-pull with systemd timer for automatic configuration updates
   license: MIT

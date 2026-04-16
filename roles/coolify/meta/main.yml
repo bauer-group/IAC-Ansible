@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: coolify
+  namespace: bauer_group
   author: BAUER GROUP
   description: Install and manage Coolify application platform
   license: MIT

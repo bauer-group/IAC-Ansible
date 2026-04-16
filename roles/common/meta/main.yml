@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: common
+  namespace: bauer_group
   author: BAUER GROUP
   description: Common base configuration for all managed hosts
   license: MIT

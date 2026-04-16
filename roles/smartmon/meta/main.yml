@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: smartmon
+  namespace: bauer_group
   author: BAUER GROUP
   description: SMART disk health monitoring with email alerts
   license: MIT
