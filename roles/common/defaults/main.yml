@@ -131,9 +131,9 @@ common_msmtp_port: 465
 common_msmtp_tls_starttls: "off"
 common_msmtp_user: "no-reply@simply-send.com"
 common_msmtp_from: "no-reply@simply-send.com"
-# Password MUST be set via Ansible Vault:
-#   common_msmtp_password: "{{ vault_msmtp_password }}"
-common_msmtp_password: ""
+# Password is auto-resolved from the secrets role (Phase 0).
+# Override per host/group to inject a plaintext value if no backend is used.
+common_msmtp_password: "{{ secrets_msmtp_password | default('') }}"
 
 # SSH hardening (disabled by default - enable per host only!)
 # Will REFUSE to harden if no SSH keys are deployed for the target user.
@@ -142,11 +142,13 @@ common_ssh_permit_root_login: "prohibit-password"
 common_ssh_password_authentication: "no"
 common_ssh_authorized_keys_user: "root"
 
-# SSH key sources (combined: GitHub + Vault)
+# SSH key sources (combined: GitHub + secrets backend)
 # GitHub: list of GitHub usernames - keys fetched from github.com/<user>.keys
 common_ssh_github_users: []
-# Vault: list of additional public keys (use ansible-vault for encryption)
-common_ssh_extra_keys: []
+# Extra keys: deploy-bot/CI keys resolved from the secrets role (Phase 0).
+# When secrets_ssh_deploy_key is set, it is appended as a single extra key.
+# Override per host/group to inject additional keys unconditionally.
+common_ssh_extra_keys: >-
+  {{ [secrets_ssh_deploy_key] if (secrets_ssh_deploy_key | default('') | length > 0) else [] }}
 # Example:
 #   common_ssh_github_users: ["karl-bauer", "ops-team-member"]
-#   common_ssh_extra_keys: ["{{ vault_ssh_key_deploy_bot }}"]

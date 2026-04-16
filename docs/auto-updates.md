@@ -210,20 +210,23 @@ auto_update_statusmon_provider: "uptime-kuma"
 
 ##### Option A: Via Ansible Vault (recommended for fleet management)
 
-```bash
-# Encrypt the password
-ansible-vault encrypt_string 'your-password' --name 'vault_statusmon_password'
-```
-
-Add to `inventory/production/group_vars/all/update_settings.yml`:
+Set all status-monitor values in `inventory/production/group_vars/all/secrets.yml`
+(encrypted via `make vault-edit`):
 
 ```yaml
-auto_update_statusmon_url: "https://status.bauer-group.com"
-auto_update_statusmon_username: "iac-ansible"
-auto_update_statusmon_password: "{{ vault_statusmon_password }}"
+secrets_statusmon_url: "https://status.bauer-group.com"
+secrets_statusmon_username: "iac-ansible"
+secrets_statusmon_password: "your-password"
 ```
 
-The `.env` file is deployed automatically to each host.
+`auto_update_statusmon_*` automatically pulls from `secrets_statusmon_*` via the
+secrets role (Phase 0). The `.env` file is deployed to each host.
+
+Per-value inline encryption is also supported:
+
+```bash
+ansible-vault encrypt_string 'your-password' --name 'secrets_statusmon_password'
+```
 
 ##### Option B: Manual .env per host
 

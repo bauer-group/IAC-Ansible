@@ -23,25 +23,35 @@ site.yml
   ├─ Phase 0: secrets Role
   │    │
   │    ├─ secrets_backend == "ansible-vault"
-  │    │    └─ secrets.yml vorhanden? → vault_* Variablen geladen
-  │    │       secrets.yml fehlt?     → vault_* bleiben leer (OK)
+  │    │    └─ secrets.yml vorhanden? → secrets_* Variablen geladen
+  │    │       secrets.yml fehlt?     → secrets_* bleiben leer (OK)
   │    │
   │    └─ secrets_backend == "hashicorp-vault"
-  │         └─ KV v2 API → vault_* Variablen aus Vault-Server
+  │         └─ KV v2 API → secrets_* Variablen aus Vault-Server
   │
-  │    Mapping: vault_* → Consumer-Variablen
-  │      vault_msmtp_password     → common_msmtp_password
-  │      vault_ssh_key_deploy_bot → common_ssh_extra_keys
-  │      vault_statusmon_*        → auto_update_statusmon_*
-  │
-  ├─ Phase 1: common        (nutzt Consumer-Variablen)
+  ├─ Phase 1: common        (Defaults pullen aus secrets_*)
   ├─ Phase 2: ansible_pull
-  ├─ Phase 3: auto_update   (nutzt Consumer-Variablen)
+  ├─ Phase 3: auto_update   (Defaults pullen aus secrets_*)
   └─ Phase 4-6: ...
 ```
 
-Bestehende Roles werden **nicht verändert** — sie konsumieren weiterhin
-`common_msmtp_password`, `auto_update_statusmon_password` etc.
+Die Consumer-Rollen referenzieren `secrets_*` direkt in ihren Defaults:
+
+```yaml
+# roles/common/defaults/main.yml
+common_msmtp_password: "{{ secrets_msmtp_password | default('') }}"
+common_ssh_extra_keys: >-
+  {{ [secrets_ssh_deploy_key]
+     if (secrets_ssh_deploy_key | default('') | length > 0) else [] }}
+
+# roles/auto_update/defaults/main.yml
+auto_update_statusmon_url: "{{ secrets_statusmon_url | default('') }}"
+auto_update_statusmon_username: "{{ secrets_statusmon_username | default('') }}"
+auto_update_statusmon_password: "{{ secrets_statusmon_password | default('') }}"
+```
+
+Kein Mapping-Layer, keine `set_fact`-Shim — idiomatisches Ansible-
+Defaults-Precedence.
 
 ### Dateistruktur
 
@@ -55,16 +65,17 @@ group_vars/all/
 
 ### Secrets-Variablen
 
-| Secret                  | Vault-Variable             | Consumer-Variable                | Verwendet von          |
-|-------------------------|----------------------------|----------------------------------|------------------------|
-| SMTP-Passwort           | `vault_msmtp_password`     | `common_msmtp_password`          | common (msmtp)         |
-| SSH Deploy Key          | `vault_ssh_key_deploy_bot` | `common_ssh_extra_keys`          | common (SSH hardening) |
-| Status Monitor URL      | `vault_statusmon_url`      | `auto_update_statusmon_url`      | auto_update            |
-| Status Monitor User     | `vault_statusmon_username` | `auto_update_statusmon_username` | auto_update            |
-| Status Monitor Passwort | `vault_statusmon_password` | `auto_update_statusmon_password` | auto_update            |
+| Secret                  | Secrets-Variable              | Consumer-Variable                | Verwendet von          |
+|-------------------------|-------------------------------|----------------------------------|------------------------|
+| SMTP-Passwort           | `secrets_msmtp_password`      | `common_msmtp_password`          | common (msmtp)         |
+| SSH Deploy Key          | `secrets_ssh_deploy_key`      | `common_ssh_extra_keys`          | common (SSH hardening) |
+| Status Monitor URL      | `secrets_statusmon_url`       | `auto_update_statusmon_url`      | auto_update            |
+| Status Monitor User     | `secrets_statusmon_username`  | `auto_update_statusmon_username` | auto_update            |
+| Status Monitor Passwort | `secrets_statusmon_password`  | `auto_update_statusmon_password` | auto_update            |
 
-**Konvention:** Vault-Variablen beginnen immer mit `vault_`.
-Die Secrets Role mappt sie auf die Consumer-Variablen.
+**Konvention:** Alle von der secrets-Rolle veröffentlichten Variablen
+beginnen mit `secrets_` (Role-Prefix). Consumer-Rollen pullen sie in
+ihren eigenen Defaults via `{{ secrets_* | default('') }}`.
 
 ---
 
@@ -81,8 +92,8 @@ Die Secrets Role mappt sie auf die Consumer-Variablen.
 Nichts Besonderes. Das Repo läuft out-of-the-box:
 
 - `secrets_backend` steht auf `"ansible-vault"` (Default)
-- Keine `secrets.yml` vorhanden → alle `vault_*`-Variablen bleiben leer
-- Phase 0 setzt Consumer-Variablen auf leere Strings
+- Keine `secrets.yml` vorhanden → alle `secrets_*`-Variablen bleiben leer
+- Consumer-Defaults resolvieren zu leeren Strings
 - Roles prüfen `| length > 0` und **überspringen** Secret-abhängige Tasks
 
 **Konkret werden übersprungen:**
@@ -126,8 +137,8 @@ curl -fsSL https://raw.githubusercontent.com/.../install.sh | \
 
 - `secrets.yml` (AES-256 verschlüsselt) liegt out-of-band auf jedem Host
 - `ansible-pull` entschlüsselt die Datei mit `/etc/ansible/vault-password`
-- Ansible lädt `vault_*`-Variablen automatisch aus `group_vars/all/secrets.yml`
-- Phase 0 mappt sie auf Consumer-Variablen → Roles nutzen die Secrets
+- Ansible lädt `secrets_*`-Variablen automatisch aus `group_vars/all/secrets.yml`
+- Consumer-Rollen (common, auto_update) pullen die Werte via Defaults
 
 ### Ansible Vault einrichten
 
@@ -145,11 +156,11 @@ Inhalt:
 # IAC-Ansible Vault Secrets
 # Bearbeiten mit: make vault-edit
 
-vault_msmtp_password: "dein-smtp-passwort"
-vault_ssh_key_deploy_bot: "ssh-ed25519 AAAA..."
-vault_statusmon_url: "https://status.example.com"
-vault_statusmon_username: "admin"
-vault_statusmon_password: "geheim"
+secrets_msmtp_password: "dein-smtp-passwort"
+secrets_ssh_deploy_key: "ssh-ed25519 AAAA..."
+secrets_statusmon_url: "https://status.example.com"
+secrets_statusmon_username: "admin"
+secrets_statusmon_password: "geheim"
 ```
 
 #### Schritt 2: ansible-pull für Vault konfigurieren
@@ -217,7 +228,7 @@ ansible-playbook -i inventory/production/hosts.yml playbooks/site.yml --ask-vaul
 Für Inline-Verschlüsselung in Klartext-Dateien:
 
 ```bash
-ansible-vault encrypt_string 'mein-geheimes-passwort' --name 'vault_msmtp_password'
+ansible-vault encrypt_string 'mein-geheimes-passwort' --name 'secrets_msmtp_password'
 ```
 
 ---
@@ -236,7 +247,7 @@ ansible-vault encrypt_string 'mein-geheimes-passwort' --name 'vault_msmtp_passwo
 
 - Phase 0 authentifiziert sich via AppRole am HashiCorp Vault Server
 - Secrets werden per API aus dem KV v2 Store geholt
-- `vault_*`-Variablen werden per `set_fact` gesetzt
+- `secrets_*`-Variablen werden per `set_fact` gesetzt
 - Temporäre Credentials werden nach dem Fetch gelöscht
 - Alle Tasks nutzen `no_log: true`
 
@@ -256,12 +267,12 @@ In `inventory/production/group_vars/all/secrets_config.yml`:
 ```yaml
 secrets_backend: "hashicorp-vault"
 
-hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
-hashicorp_vault_auth_method: "approle"
-hashicorp_vault_role_id_file: "/etc/iac-ansible/vault-role-id"
-hashicorp_vault_secret_id_file: "/etc/iac-ansible/vault-secret-id"
-hashicorp_vault_secret_path: "iac-ansible/shared"
-hashicorp_vault_mount_point: "secret"
+secrets_vault_addr: "https://vault.bauer-group.com:8200"
+secrets_vault_auth_method: "approle"
+secrets_vault_role_id_file: "/etc/iac-ansible/vault-role-id"
+secrets_vault_secret_id_file: "/etc/iac-ansible/vault-secret-id"
+secrets_vault_secret_path: "iac-ansible/shared"
+secrets_vault_mount_point: "secret"
 ```
 
 #### Schritt 2: KV v2 Secrets befüllen
@@ -269,7 +280,7 @@ hashicorp_vault_mount_point: "secret"
 ```bash
 vault kv put secret/iac-ansible/shared \
   msmtp_password="smtp-passwort" \
-  ssh_key_deploy_bot="ssh-ed25519 AAAA..." \
+  ssh_deploy_key="ssh-ed25519 AAAA..." \
   statusmon_url="https://status.example.com" \
   statusmon_username="admin" \
   statusmon_password="monitor-passwort"
@@ -281,7 +292,7 @@ Erwartete Pfad-Struktur:
 secret/data/iac-ansible/
 ├── shared/              ← Alle Hosts (msmtp, ssh, statusmon)
 │   ├── msmtp_password
-│   ├── ssh_key_deploy_bot
+│   ├── ssh_deploy_key
 │   ├── statusmon_url
 │   ├── statusmon_username
 │   └── statusmon_password
@@ -358,7 +369,7 @@ Override per Inventory-Gruppe:
 
 ```yaml
 # inventory/production/group_vars/team_alpha/secrets_config.yml
-hashicorp_vault_secret_path: "iac-ansible/team-alpha"
+secrets_vault_secret_path: "iac-ansible/team-alpha"
 ```
 
 Jedes Team bekommt eine eigene AppRole mit:
@@ -396,7 +407,7 @@ Der Super-Admin hat `iac-ansible-super-admin` und sieht alle Pfade.
 
    ```yaml
    secrets_backend: "hashicorp-vault"
-   hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
+   secrets_vault_addr: "https://vault.bauer-group.com:8200"
    ```
 
 5. `ansible_pull_vault_password_file` kann entfernt werden (nicht mehr nötig)
@@ -409,7 +420,7 @@ Der Toggle kann **pro Host** gesetzt werden:
 ```yaml
 # host_vars/test-host.yml — HashiCorp Vault für einen Host testen
 secrets_backend: "hashicorp-vault"
-hashicorp_vault_addr: "https://vault.bauer-group.com:8200"
+secrets_vault_addr: "https://vault.bauer-group.com:8200"
 ```
 
 Alle anderen Hosts bleiben auf `ansible-vault` bis die Migration validiert ist.

@@ -18,9 +18,11 @@ Die SMART-Monitoring-Rolle überwacht die Gesundheit von SSDs und HDDs auf physi
 Für Email-Alerts muss **msmtp** konfiguriert sein (Common-Rolle):
 
 ```yaml
-# In group_vars oder host_vars
-common_msmtp_password: "{{ vault_msmtp_password }}"
+# In group_vars/all/secrets.yml (encrypted via ansible-vault)
+secrets_msmtp_password: "dein-smtp-passwort"
 ```
+
+`common_msmtp_password` pullt den Wert automatisch aus `secrets_msmtp_password`.
 
 Ohne msmtp funktioniert SMART-Monitoring trotzdem — Alerts werden dann nur ins Syslog geschrieben.
 

@@ -31,12 +31,12 @@ common_ntp_fallback_servers:
   - ptbtime3.ptb.de
 
 # SSH key deployment + hardening
-# Keys are fetched from GitHub profiles and/or Ansible Vault.
+# Keys are fetched from GitHub profiles and from the secrets backend
+# (secrets_ssh_deploy_key is auto-pulled into common_ssh_extra_keys).
 # Hardening is OFF globally - enable per host in host_vars!
 # SAFETY: Refuses to harden if no keys are deployed.
 common_ssh_hardening: false
 common_ssh_github_users: []
-# common_ssh_extra_keys: ["{{ vault_ssh_key_deploy_bot }}"]
 #
 # Enable per host example (host_vars/<hostname>.yml):
 #   common_ssh_hardening: true

@@ -81,16 +81,12 @@ How it works:
 For users without GitHub or for service accounts (deploy bots, CI/CD):
 
 ```bash
-# Encrypt a public key
-ansible-vault encrypt_string 'ssh-ed25519 AAAA... deploy-bot@ci' --name 'vault_ssh_key_deploy_bot'
+# Encrypt a public key in group_vars/all/secrets.yml
+ansible-vault encrypt_string 'ssh-ed25519 AAAA... deploy-bot@ci' --name 'secrets_ssh_deploy_key'
 ```
 
-Add to vault file or group_vars:
-
-```yaml
-common_ssh_extra_keys:
-  - "{{ vault_ssh_key_deploy_bot }}"
-```
+The secrets role publishes `secrets_ssh_deploy_key`, and `common_ssh_extra_keys`
+pulls it automatically — no manual mapping needed.
 
 ### Combined Example
 
@@ -99,8 +95,9 @@ common_ssh_extra_keys:
 common_ssh_github_users:
   - karl-bauer
   - ops-colleague
-common_ssh_extra_keys:
-  - "{{ vault_ssh_key_deploy_bot }}"
+
+# group_vars/all/secrets.yml (encrypted — additional keys)
+secrets_ssh_deploy_key: "ssh-ed25519 AAAA... deploy-bot@ci"
 
 # host_vars/webserver01.yml (enable hardening for this host)
 common_ssh_hardening: true

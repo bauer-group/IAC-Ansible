@@ -53,12 +53,13 @@ auto_update_mail_on_error: true
 auto_update_statusmon_enabled: false
 # Provider: "uptime-kuma" (add new providers in files/providers/)
 auto_update_statusmon_provider: "uptime-kuma"
-# Optional: set these to deploy .env via Ansible (use vault for password!)
-# If empty, the .env file must be created manually on each host.
+# Auto-resolved from the secrets role (Phase 0).
+# If the secrets backend publishes these values, the .env file is deployed
+# automatically. If not, create /etc/iac-ansible/status-monitor.env manually.
 # Note: Uptime Kuma uses username/password via Socket.IO API.
-auto_update_statusmon_url: ""
-auto_update_statusmon_username: ""
-auto_update_statusmon_password: ""
+auto_update_statusmon_url: "{{ secrets_statusmon_url | default('') }}"
+auto_update_statusmon_username: "{{ secrets_statusmon_username | default('') }}"
+auto_update_statusmon_password: "{{ secrets_statusmon_password | default('') }}"
 
 # --- Logging ---
 auto_update_log_file: "/var/log/auto-update.log"
