@@ -1,3 +1,19 @@
+## [2.0.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.4.0...v2.0.0) (2026-04-16)
+
+### ⚠ BREAKING CHANGES
+
+* **secrets:** Users mit vault_* in ihrer secrets.yml oder
+hashicorp_vault_* in secrets_config.yml müssen migrieren — siehe
+Migration-Schritte oben.
+
+### 🐛 Bug Fixes
+
+* **ci:** resolved accumulated molecule and lint errors ([8c62c08](https://github.com/bauer-group/IAC-Ansible/commit/8c62c083371c422c7e0efa752cd742da4957115e))
+
+### ♻️ Refactoring
+
+* **secrets:** renamed public API vars to use secrets_ prefix ([44ad1f8](https://github.com/bauer-group/IAC-Ansible/commit/44ad1f8b9c4590b2cd9e867e49071cea04e3c300))
+
 ## [1.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v1.3.12...v1.4.0) (2026-04-16)
 
 ### 🚀 Features
