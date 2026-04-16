@@ -1,3 +1,9 @@
+## [2.0.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.4...v2.0.5) (2026-04-16)
+
+### 🐛 Bug Fixes
+
+* **molecule:** addressed remaining container-test failures ([e6c6ffc](https://github.com/bauer-group/IAC-Ansible/commit/e6c6ffcd017c8031eda1414826cbd27afbf374a2))
+
 ## [2.0.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.3...v2.0.4) (2026-04-16)
 
 ### 🐛 Bug Fixes
