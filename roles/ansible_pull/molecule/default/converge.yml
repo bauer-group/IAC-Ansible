@@ -10,4 +10,4 @@
     ansible_pull_enabled: true
 
   roles:
-    - role: ansible_pull
+    - role: bauer_group.ansible_pull

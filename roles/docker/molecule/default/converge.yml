@@ -10,4 +10,4 @@
     docker_prune_enabled: true
 
   roles:
-    - role: docker
+    - role: bauer_group.docker

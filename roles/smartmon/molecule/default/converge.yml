@@ -11,4 +11,4 @@
     smartmon_disks: []
 
   roles:
-    - role: smartmon
+    - role: bauer_group.smartmon

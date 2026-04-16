@@ -13,4 +13,4 @@
     common_msmtp_password: ""
 
   roles:
-    - role: common
+    - role: bauer_group.common
