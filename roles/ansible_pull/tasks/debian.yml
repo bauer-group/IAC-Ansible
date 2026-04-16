@@ -2,21 +2,46 @@
 # =============================================================================
 # Ansible-Pull - Debian/Ubuntu: Install Ansible
 # =============================================================================
+# PPA usage:
+#   - Ubuntu 22.04 (jammy): universe ships ansible-core 2.12, too old for
+#     min_ansible_version 2.18 → PPA required.
+#   - Ubuntu 24.04+ (noble, resolute, ...): universe already ships
+#     ansible-core >= 2.16 → PPA not needed, and on 26.04 the legacy
+#     apt-key mechanism behind ppa: shortcuts is unavailable (removed
+#     from the distribution, see release notes).
+#   - Debian: universe equivalent (main) ships modern enough ansible-core.
+# =============================================================================
 
-- name: "[Debian] Check if Ansible PPA is already configured"
-  ansible.builtin.shell: >-
-    grep -rqs 'ansible/ansible' /etc/apt/sources.list.d/ && echo "present" || echo "absent"
-  register: ansible_pull_ppa_check
-  changed_when: false
-  when: ansible_facts['distribution'] == "Ubuntu"
+- name: "[Ubuntu 22.04] Create keyrings directory for Ansible PPA"
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_major_version'] == "22"
 
-- name: "[Debian] Add Ansible PPA (Ubuntu)"
+- name: "[Ubuntu 22.04] Fetch Ansible PPA signing key"
+  ansible.builtin.get_url:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367"
+    dest: /etc/apt/keyrings/ansible-ppa.asc
+    mode: "0644"
+    force: false
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_major_version'] == "22"
+
+- name: "[Ubuntu 22.04] Add Ansible PPA repository (signed-by keyring)"
   ansible.builtin.apt_repository:
-    repo: "ppa:ansible/ansible"
+    repo: >-
+      deb [signed-by=/etc/apt/keyrings/ansible-ppa.asc]
+      https://ppa.launchpadcontent.net/ansible/ansible/ubuntu
+      {{ ansible_facts['distribution_release'] }} main
+    filename: ansible-ppa
     state: present
   when:
     - ansible_facts['distribution'] == "Ubuntu"
-    - ansible_pull_ppa_check.stdout | default('absent') == "absent"
+    - ansible_facts['distribution_major_version'] == "22"
 
 - name: "[Debian] Update apt cache"
   ansible.builtin.apt:

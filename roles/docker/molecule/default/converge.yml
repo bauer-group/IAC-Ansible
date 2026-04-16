@@ -5,7 +5,8 @@
   gather_facts: true
 
   vars:
-    docker_enabled: true
+    # Test image is NOT DinD-capable — deploy configs but don't start daemon.
+    docker_enabled: false
     docker_ipv6_nat_enabled: false
     docker_prune_enabled: true
 

@@ -5,17 +5,11 @@
   gather_facts: false
 
   tasks:
-    - name: Verify Docker is installed
-      ansible.builtin.command: docker version --format '{{ '{{' }}.Server.Version{{ '}}' }}'
-      register: docker_version_result
+    - name: Verify docker-ce package is installed
+      ansible.builtin.command: dpkg-query -W -f='${Status}' docker-ce
+      register: docker_package_status
       changed_when: false
-      failed_when: docker_version_result.rc != 0
-
-    - name: Verify Docker service is running
-      ansible.builtin.systemd:
-        name: docker
-      register: docker_service_status
-      failed_when: docker_service_status.status.ActiveState != "active"
+      failed_when: "'install ok installed' not in docker_package_status.stdout"
 
     - name: Verify daemon.json exists
       ansible.builtin.stat:

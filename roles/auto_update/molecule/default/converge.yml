@@ -10,6 +10,9 @@
     auto_update_reboot_enabled: false
     auto_update_statusmon_enabled: false
     auto_update_chain_ansible_pull: false
+    # common runs as dependency — disable host-level tasks that don't
+    # work in the bind-mounted test container filesystem.
+    common_hostname_configure: false
 
   roles:
     - role: auto_update

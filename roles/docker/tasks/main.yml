@@ -43,6 +43,7 @@
     name: docker
     state: started
     enabled: true
+  when: docker_enabled | bool
 
 - name: Deploy IPv6 NAT support service
   ansible.builtin.template:
@@ -60,7 +61,9 @@
     name: docker-support
     state: started
     enabled: true
-  when: docker_ipv6_nat_enabled | bool
+  when:
+    - docker_enabled | bool
+    - docker_ipv6_nat_enabled | bool
 
 - name: Disable Docker IPv6 NAT service when not needed
   ansible.builtin.systemd:
@@ -74,11 +77,13 @@
   ansible.builtin.command: docker version --format '{{ '{{' }}.Server.Version{{ '}}' }}'
   register: docker_version
   changed_when: false
+  when: docker_enabled | bool
 
 - name: Display Docker version
   ansible.builtin.debug:
     msg: "Docker {{ docker_version.stdout }} installed on {{ inventory_hostname }}"
     verbosity: 1
+  when: docker_enabled | bool
 
 - name: Configure weekly Docker prune cron job
   ansible.builtin.cron:

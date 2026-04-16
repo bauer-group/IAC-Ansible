@@ -5,7 +5,10 @@
   gather_facts: true
 
   vars:
-    # Disable features that need real hardware or network
+    # Disable features that need real hardware, network, or privileged
+    # mount access — /etc/hosts is bind-mounted in the test container
+    # so the hostname module cannot replace it atomically.
+    common_hostname_configure: false
     common_netplan_configure: false
     common_firewall_ufw_state: "unmanaged"
     common_apparmor_state: "unmanaged"
