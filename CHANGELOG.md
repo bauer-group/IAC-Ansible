@@ -1,3 +1,9 @@
+## [2.0.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.1...v2.0.2) (2026-04-16)
+
+### 🐛 Bug Fixes
+
+* **molecule:** used fully-qualified role names in converge playbooks ([5fde7b9](https://github.com/bauer-group/IAC-Ansible/commit/5fde7b981ffc055bc9f444ea39b4675ee93c7142))
+
 ## [2.0.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.0...v2.0.1) (2026-04-16)
 
 ### 🐛 Bug Fixes
