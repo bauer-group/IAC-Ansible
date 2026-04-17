@@ -1,3 +1,9 @@
+## [2.0.9](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.8...v2.0.9) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **molecule:** corrected auto_update verify paths ([d80676c](https://github.com/bauer-group/IAC-Ansible/commit/d80676c47ff7c74ed2e50b4564eead5b22f8e66c))
+
 ## [2.0.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.7...v2.0.8) (2026-04-17)
 
 ### 🐛 Bug Fixes
