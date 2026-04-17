@@ -13,6 +13,7 @@ common_packages:
   - python3-pip
   - cron
   - psmisc
+  - locales  # required by locale_gen; missing on minimal Debian installs
   # Diagnostic / operator convenience tools
   - ethtool
   - iputils-ping
