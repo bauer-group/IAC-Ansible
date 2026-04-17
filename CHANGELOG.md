@@ -1,3 +1,9 @@
+## [2.0.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.7...v2.0.8) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **molecule:** disabled NTP in common/auto_update converge tests ([426c5bf](https://github.com/bauer-group/IAC-Ansible/commit/426c5bff642343140e984590e7a449ad5aa970b7))
+
 ## [2.0.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.6...v2.0.7) (2026-04-17)
 
 ### 🐛 Bug Fixes
