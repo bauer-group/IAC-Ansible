@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.11...v2.1.0) (2026-04-17)
+
+### 🚀 Features
+
+* **platform:** dropped Debian 12, added Debian 13 Molecule coverage ([201733b](https://github.com/bauer-group/IAC-Ansible/commit/201733b0bff1d788ae5545a4d3dcb4a486da2280))
+
 ## [2.0.11](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.10...v2.0.11) (2026-04-17)
 
 ### 🐛 Bug Fixes
