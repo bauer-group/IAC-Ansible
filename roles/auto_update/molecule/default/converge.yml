@@ -11,8 +11,10 @@
     auto_update_statusmon_enabled: false
     auto_update_chain_ansible_pull: false
     # common runs as dependency — disable host-level tasks that don't
-    # work in the bind-mounted test container filesystem.
+    # work in the bind-mounted test container filesystem or break
+    # idempotency in isolated containers.
     common_hostname_configure: false
+    common_ntp_configure: false
 
   roles:
     - role: auto_update
