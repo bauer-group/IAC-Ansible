@@ -3,25 +3,29 @@
 # Ansible-Pull - Debian/Ubuntu: Install Ansible
 # =============================================================================
 # PPA usage:
-#   - Ubuntu 22.04 (jammy): universe ships ansible-core 2.12, too old for
+#   - Ubuntu 22.04 (jammy): universe ships ansible-core 2.12 → too old for
 #     min_ansible_version 2.18 → PPA required.
-#   - Ubuntu 24.04+ (noble, resolute, ...): universe already ships
-#     ansible-core >= 2.16 → PPA not needed, and on 26.04 the legacy
-#     apt-key mechanism behind ppa: shortcuts is unavailable (removed
-#     from the distribution, see release notes).
-#   - Debian: universe equivalent (main) ships modern enough ansible-core.
+#   - Ubuntu 24.04 (noble): universe ships ansible-core 2.16 → still too old
+#     for min_ansible_version 2.18 → PPA required.
+#   - Ubuntu 26.04+ (resolute, ...): universe ships ansible-core >= 2.18 →
+#     PPA not needed. This is crucial because Ubuntu 26.04 removed apt-key
+#     (see release notes) which the legacy "ppa:" shortcut relied on.
+#   - Debian: main ships modern enough ansible-core.
+#
+# Key handling: modern signed-by keyring pattern (compatible with all
+# Ubuntu versions including 26.04, does not depend on deprecated apt-key).
 # =============================================================================
 
-- name: "[Ubuntu 22.04] Create keyrings directory for Ansible PPA"
+- name: "[Ubuntu 22.04/24.04] Create keyrings directory for Ansible PPA"
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
   when:
     - ansible_facts['distribution'] == "Ubuntu"
-    - ansible_facts['distribution_major_version'] == "22"
+    - ansible_facts['distribution_major_version'] in ["22", "24"]
 
-- name: "[Ubuntu 22.04] Fetch Ansible PPA signing key"
+- name: "[Ubuntu 22.04/24.04] Fetch Ansible PPA signing key"
   ansible.builtin.get_url:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367"
     dest: /etc/apt/keyrings/ansible-ppa.asc
@@ -29,9 +33,9 @@
     force: false
   when:
     - ansible_facts['distribution'] == "Ubuntu"
-    - ansible_facts['distribution_major_version'] == "22"
+    - ansible_facts['distribution_major_version'] in ["22", "24"]
 
-- name: "[Ubuntu 22.04] Add Ansible PPA repository (signed-by keyring)"
+- name: "[Ubuntu 22.04/24.04] Add Ansible PPA repository (signed-by keyring)"
   ansible.builtin.apt_repository:
     repo: >-
       deb [signed-by=/etc/apt/keyrings/ansible-ppa.asc]
@@ -41,7 +45,7 @@
     state: present
   when:
     - ansible_facts['distribution'] == "Ubuntu"
-    - ansible_facts['distribution_major_version'] == "22"
+    - ansible_facts['distribution_major_version'] in ["22", "24"]
 
 - name: "[Debian] Update apt cache"
   ansible.builtin.apt:
