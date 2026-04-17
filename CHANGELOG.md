@@ -1,3 +1,9 @@
+## [2.0.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.6...v2.0.7) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **common:** guarded resolved.conf deploy + handler on service presence ([50c2e58](https://github.com/bauer-group/IAC-Ansible/commit/50c2e58ccd3ec61540b73c6bc3ed7fcbed1285a0))
+
 ## [2.0.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.5...v2.0.6) (2026-04-16)
 
 ### 🐛 Bug Fixes
