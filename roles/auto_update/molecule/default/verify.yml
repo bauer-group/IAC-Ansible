@@ -7,7 +7,7 @@
   tasks:
     - name: Verify update script is deployed
       ansible.builtin.stat:
-        path: /usr/local/sbin/iac-auto-update.sh
+        path: /usr/local/sbin/auto-update.sh
       register: auto_update_script_stat
       failed_when: not auto_update_script_stat.stat.exists or not auto_update_script_stat.stat.executable
 
@@ -15,7 +15,7 @@
       ansible.builtin.command: crontab -l
       register: auto_update_cron_result
       changed_when: false
-      failed_when: "'iac-auto-update' not in auto_update_cron_result.stdout"
+      failed_when: "'auto-update.sh' not in auto_update_cron_result.stdout"
 
     - name: Verify log directory exists
       ansible.builtin.stat:
