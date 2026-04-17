@@ -23,8 +23,7 @@
       register: auto_update_logdir_stat
       failed_when: not auto_update_logdir_stat.stat.exists
 
-    - name: Verify iac-ansible config directory exists
-      ansible.builtin.stat:
-        path: /etc/iac-ansible
-      register: auto_update_confdir_stat
-      failed_when: not auto_update_confdir_stat.stat.exists
+    # /etc/iac-ansible is only created when auto_update_statusmon_enabled is
+    # true (see roles/auto_update/tasks/main.yml "Create IAC directories").
+    # The default converge disables statusmon, so no dir check here — that
+    # belongs to a dedicated statusmon-enabled scenario if added later.
