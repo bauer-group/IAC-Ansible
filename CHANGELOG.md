@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.0...v2.1.1) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **common:** added locales package to Debian/Ubuntu common_packages ([a6328c0](https://github.com/bauer-group/IAC-Ansible/commit/a6328c0a9aa12725b09f600f0943c91b5fe51247))
+
 ## [2.1.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.11...v2.1.0) (2026-04-17)
 
 ### 🚀 Features
