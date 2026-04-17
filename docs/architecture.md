@@ -144,7 +144,7 @@ site.yml
 | Platform | Versions | Package Manager | Update Mechanism |
 |----------|----------|-----------------|------------------|
 | Ubuntu | 22.04, 24.04, 26.04 | apt | unattended-upgrades |
-| Debian | 12, 13 | apt | unattended-upgrades |
+| Debian | 13 | apt | unattended-upgrades |
 | RHEL | 8, 9, 10 | dnf | dnf-automatic |
 | Rocky | 8, 9, 10 | dnf | dnf-automatic |
 | AlmaLinux | 8, 9, 10 | dnf | dnf-automatic |

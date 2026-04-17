@@ -126,7 +126,7 @@ auto_update_type: "security"  # Security updates only
 | OS | Versions | Status |
 | --- | --- | --- |
 | Ubuntu | 22.04 LTS, 24.04 LTS, 26.04 LTS | Supported |
-| Debian | 12 (bookworm), 13 (trixie) | Supported |
+| Debian | 13 (trixie) | Supported |
 | RHEL | 8, 9, 10 | Supported |
 | Rocky Linux | 8, 9, 10 | Supported |
 | AlmaLinux | 8, 9, 10 | Supported |

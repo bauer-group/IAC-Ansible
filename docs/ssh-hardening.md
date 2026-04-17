@@ -129,7 +129,7 @@ common_ssh_authorized_keys_user: "deploy"        # deploy keys for 'deploy' inst
 
 The role detects the sshd config method automatically:
 
-- **Modern systems** (Ubuntu 22.04+, Debian 12+, RHEL 9+): drop-in file `/etc/ssh/sshd_config.d/99-iac-hardening.conf`
+- **Modern systems** (Ubuntu 22.04+, Debian 13+, RHEL 9+): drop-in file `/etc/ssh/sshd_config.d/99-iac-hardening.conf`
 - **Legacy systems**: inline edit of `/etc/ssh/sshd_config` via `lineinfile`
 
 On Ubuntu 26.04+ the distribution ships OpenSSH 10.2p1, which removes DSA

@@ -10,7 +10,7 @@ galaxy_info:
     - name: Ubuntu
       versions: [jammy, noble, resolute]
     - name: Debian
-      versions: [bookworm, trixie]
+      versions: [trixie]
     - name: EL
       versions: ["8", "9", "10"]
 
