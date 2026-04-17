@@ -182,13 +182,22 @@
     - common_msmtp_password | length > 0
 
 # --- DNS resolver hardening ---
+# Only on hosts that actually run systemd-resolved — minimal containers
+# (CI test images) often ship without it; deploying resolved.conf there
+# would trigger a handler for a non-existent service.
+- name: Gather service facts for resolved-presence check
+  ansible.builtin.service_facts:
+  when: common_resolved_configure | bool
+
 - name: Deploy resolved.conf (disable mDNS + stub listener)
   ansible.builtin.template:
     src: resolved.conf.j2
     dest: /etc/systemd/resolved.conf
     mode: "0644"
   notify: Restart resolved
-  when: common_resolved_configure | bool
+  when:
+    - common_resolved_configure | bool
+    - "'systemd-resolved.service' in (ansible_facts.services | default({}))"
 
 # --- fail2ban ---
 - name: Install fail2ban

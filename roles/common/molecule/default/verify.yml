@@ -29,11 +29,16 @@
       changed_when: false
       failed_when: common_f2b_result.rc != 0
 
-    - name: Verify resolved configuration exists
+    - name: Check whether systemd-resolved is present
+      ansible.builtin.service_facts:
+
+    - name: Verify resolved.conf is deployed (only where systemd-resolved runs)
       ansible.builtin.stat:
-        path: /etc/systemd/resolved.conf.d/iac-dns.conf
+        path: /etc/systemd/resolved.conf
       register: common_resolved_stat
-      failed_when: not common_resolved_stat.stat.exists
+      failed_when:
+        - "'systemd-resolved.service' in (ansible_facts.services | default({}))"
+        - not common_resolved_stat.stat.exists
 
     - name: Verify log directory exists
       ansible.builtin.stat:
