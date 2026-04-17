@@ -1,3 +1,9 @@
+## [2.0.11](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.10...v2.0.11) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **ansible_pull:** extended PPA usage to Ubuntu 24.04 (noble) ([c3b93cc](https://github.com/bauer-group/IAC-Ansible/commit/c3b93cc5b4cead3a4d5e6c0e0e3dd290e28de350))
+
 ## [2.0.10](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.9...v2.0.10) (2026-04-17)
 
 ### 🐛 Bug Fixes
