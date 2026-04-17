@@ -1,3 +1,9 @@
+## [2.1.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.1...v2.1.2) (2026-04-17)
+
+### ♻️ Refactoring
+
+* **common:** migrated NTP config to drop-in pattern (chrony + timesyncd) ([234dd33](https://github.com/bauer-group/IAC-Ansible/commit/234dd33cdb1c9868a04c5ebc90d87469ddc591aa))
+
 ## [2.1.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.0...v2.1.1) (2026-04-17)
 
 ### 🐛 Bug Fixes
