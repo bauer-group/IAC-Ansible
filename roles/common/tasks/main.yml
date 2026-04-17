@@ -123,10 +123,36 @@
     - common_ntp_package == "chrony"
   failed_when: false
 
-- name: Deploy chrony configuration
+- name: Ensure chrony drop-in directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /etc/chrony/conf.d
+    - /etc/chrony/sources.d
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_package == "chrony"
+    - not (common_ntp_already_active | default(false) | bool)
+
+- name: Deploy chrony main configuration (structural)
   ansible.builtin.template:
     src: chrony.conf.j2
     dest: /etc/chrony/chrony.conf
+    mode: "0644"
+  notify: Restart chrony
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_package == "chrony"
+    - not (common_ntp_already_active | default(false) | bool)
+
+- name: Deploy chrony custom NTP sources (drop-in)
+  ansible.builtin.template:
+    src: chrony-sources.j2
+    dest: /etc/chrony/sources.d/99-iac.sources
     mode: "0644"
   notify: Restart chrony
   when:
@@ -136,10 +162,33 @@
     - common_ntp_package == "chrony"
     - not (common_ntp_already_active | default(false) | bool)
 
-- name: Deploy timesyncd configuration
+- name: Deploy chrony tuning overrides (drop-in)
+  ansible.builtin.template:
+    src: chrony-tuning.j2
+    dest: /etc/chrony/conf.d/99-iac.conf
+    mode: "0644"
+  notify: Restart chrony
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_package == "chrony"
+    - not (common_ntp_already_active | default(false) | bool)
+
+- name: Ensure timesyncd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/timesyncd.conf.d
+    state: directory
+    mode: "0755"
+  when:
+    - common_ntp_configure | bool
+    - common_ntp_enabled | bool
+    - common_ntp_package == "systemd-timesyncd"
+    - not (common_ntp_already_active | default(false) | bool)
+
+- name: Deploy timesyncd configuration (drop-in)
   ansible.builtin.template:
     src: timesyncd.conf.j2
-    dest: /etc/systemd/timesyncd.conf
+    dest: /etc/systemd/timesyncd.conf.d/99-iac.conf
     mode: "0644"
   notify: Restart timesyncd
   when:

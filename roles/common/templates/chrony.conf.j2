@@ -1,26 +1,29 @@
-{# -----------------------------------------------------------------------------
-   IAC-Ansible: chrony configuration
-   Managed by Ansible - DO NOT EDIT MANUALLY
-   Poll interval bounds translated from common_ntp_poll_interval_{min,max}_sec
-   (log2 seconds -- chrony's minpoll/maxpoll are powers of two).
------------------------------------------------------------------------------ #}
 # =============================================================================
-# IAC-Ansible: chrony configuration
+# IAC-Ansible: chrony main configuration
 # Managed by Ansible - DO NOT EDIT MANUALLY
+# -----------------------------------------------------------------------------
+# Custom NTP sources  → /etc/chrony/sources.d/99-iac.sources
+# Custom tuning       → /etc/chrony/conf.d/99-iac.conf
+# Distribution sources (e.g. ubuntu-ntp-pools.sources with NTS) are picked
+# up via sourcedir below and act as fallback when our own servers are
+# unreachable.
 # =============================================================================
 
-{% set minpoll = (common_ntp_poll_interval_min_sec | int | log(2)) | round(0, 'floor') | int %}
-{% set maxpoll = (common_ntp_poll_interval_max_sec | int | log(2)) | round(0, 'floor') | int %}
-{% for server in common_ntp_servers -%}
-server {{ server }} iburst minpoll {{ minpoll }} maxpoll {{ maxpoll }}
-{% endfor -%}
-{% if common_ntp_fallback_servers is defined and common_ntp_fallback_servers | length > 0 %}
-{% for server in common_ntp_fallback_servers -%}
-server {{ server }} iburst minpoll {{ minpoll }} maxpoll {{ maxpoll }}
-{% endfor -%}
-{% endif %}
+# Modular config: load every *.conf in conf.d and every *.sources in
+# sources.d (distro pools + DHCP-provided sources + our drop-ins).
+confdir /etc/chrony/conf.d
+sourcedir /etc/chrony/sources.d
+sourcedir /run/chrony-dhcp
 
-driftfile /var/lib/chrony/drift
-makestep 1.0 3
+# Persistence + NTS key storage
+driftfile /var/lib/chrony/chrony.drift
+ntsdumpdir /var/lib/chrony
+
+# Logging + leap-second handling
+logdir /var/log/chrony
+leapsectz right/UTC
+
+# Safety directives (distribution defaults)
+maxupdateskew 100.0
 rtcsync
-maxdistance {{ common_ntp_root_distance_max_sec }}
+makestep 1 3
