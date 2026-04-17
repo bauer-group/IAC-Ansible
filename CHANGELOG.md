@@ -1,3 +1,9 @@
+## [2.0.10](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.9...v2.0.10) (2026-04-17)
+
+### 🐛 Bug Fixes
+
+* **molecule:** removed stale auto_update statusmon-dir verify check ([bd6485a](https://github.com/bauer-group/IAC-Ansible/commit/bd6485af5d4492d1c3c4802ca1898215e3fcff83))
+
 ## [2.0.9](https://github.com/bauer-group/IAC-Ansible/compare/v2.0.8...v2.0.9) (2026-04-17)
 
 ### 🐛 Bug Fixes
