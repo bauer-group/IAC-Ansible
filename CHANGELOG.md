@@ -1,3 +1,9 @@
+## [2.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.8...v2.3.0) (2026-04-18)
+
+### 🚀 Features
+
+* **platform:** added Ubuntu 22.04 Molecule coverage + legacy-var pre-flight ([834e438](https://github.com/bauer-group/IAC-Ansible/commit/834e438682c1a77b09e63fd671fdbec0136cc4eb))
+
 ## [2.2.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.7...v2.2.8) (2026-04-18)
 
 ### 🐛 Bug Fixes
