@@ -1,3 +1,9 @@
+## [2.2.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.4...v2.2.5) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **docker:** idempotent RHEL Docker install via package_facts gate ([603c8a9](https://github.com/bauer-group/IAC-Ansible/commit/603c8a9ffab26d688279c6b3ed7acce7866439c2))
+
 ## [2.2.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.3...v2.2.4) (2026-04-18)
 
 ### 🐛 Bug Fixes
