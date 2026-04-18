@@ -1,3 +1,9 @@
+## [2.2.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.5...v2.2.6) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **docker:** silenced Rocky 10 RPM idempotence false-positive ([3fb9cbe](https://github.com/bauer-group/IAC-Ansible/commit/3fb9cbe92339d12ed98e0d23ba78f9c48ea127ed))
+
 ## [2.2.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.4...v2.2.5) (2026-04-18)
 
 ### 🐛 Bug Fixes
