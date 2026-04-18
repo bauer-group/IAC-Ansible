@@ -9,7 +9,7 @@ TAGS_ARG := $(if $(TAGS),--tags "$(TAGS)",)
 LABEL_ARG := $(if $(LABEL),-e "filter_label=$(LABEL)",)
 EXTRA_ARGS := $(LIMIT_ARG) $(TAGS_ARG) $(LABEL_ARG)
 
-.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create vault-view vault-rekey validate syntax graph hosts
+.PHONY: help setup deploy update reboot ping facts lint check push cleanup vault-edit vault-create vault-view vault-rekey validate syntax graph hosts k0s k0s-status
 
 help: ## Show this help
 	@echo "IAC-Ansible - Infrastructure as Code"
@@ -40,6 +40,12 @@ setup: ## Initial setup - install requirements
 
 deploy: ## Run full deployment (site.yml)
 	ansible-playbook -i $(INVENTORY) playbooks/site.yml $(EXTRA_ARGS)
+
+k0s: ## Apply k0s role only (Phase 7)
+	ansible-playbook -i $(INVENTORY) playbooks/site.yml --tags k0s $(EXTRA_ARGS)
+
+k0s-status: ## Show k0s status on cluster nodes (LIMIT optional)
+	ansible -i $(INVENTORY) k0s_cluster -m ansible.builtin.command -a "/usr/local/bin/k0s status" --become $(LIMIT_ARG)
 
 update: ## Run system updates only
 	ansible-playbook -i $(INVENTORY) playbooks/update.yml $(EXTRA_ARGS)
