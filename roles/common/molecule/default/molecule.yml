@@ -74,6 +74,13 @@ provisioner:
     # Custom Jinja2 filters (asset_id, role_code, etc.) live at repo-root's
     # filter_plugins/. "/../.." from MOLECULE_PROJECT_DIRECTORY = repo root.
     ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../filter_plugins"
+  inventory:
+    group_vars:
+      all:
+        # Containers run as root by default; use "su" for root-to-root
+        # escalation (no prompt). Sudo-based escalation fails PAM checks
+        # on minimal RHEL-family images (pam_faillock not initialised).
+        ansible_become_method: su
   playbooks:
     converge: converge.yml
     verify: verify.yml
