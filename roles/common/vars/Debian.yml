@@ -14,6 +14,7 @@ common_packages:
   - cron
   - psmisc
   - locales  # required by locale_gen; missing on minimal Debian installs
+  - tzdata  # timezone database — missing on minimal Ubuntu 22.04 containers
   # Diagnostic / operator convenience tools
   - ethtool
   - iputils-ping
