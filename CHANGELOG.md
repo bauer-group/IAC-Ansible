@@ -1,3 +1,9 @@
+## [2.2.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.1...v2.2.2) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **roles:** addressed EL 9/10 package-management specifics ([130810a](https://github.com/bauer-group/IAC-Ansible/commit/130810adf0ce330e508c47285f14d0594ec92297))
+
 ## [2.2.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.0...v2.2.1) (2026-04-18)
 
 ### 🐛 Bug Fixes
