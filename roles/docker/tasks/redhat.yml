@@ -32,12 +32,23 @@
     gpgkey: "https://download.docker.com/linux/{{ (ansible_facts['distribution'] == 'Fedora') | ternary('fedora', 'rhel') }}/gpg"
     enabled: true
 
+- name: "[RedHat] Gather installed RPM packages (for idempotence gate)"
+  ansible.builtin.package_facts:
+    manager: rpm
+
+- name: "[RedHat] Compute missing Docker packages"
+  ansible.builtin.set_fact:
+    docker_missing_packages: >-
+      {{ docker_packages | reject('in', ansible_facts.packages.keys()) | list }}
+
 - name: "[RedHat] Install Docker packages"
   ansible.builtin.dnf:
-    name: "{{ docker_packages }}"
+    name: "{{ docker_missing_packages }}"
     state: present
-    # Container-minimal RHEL images have a different weak-dep baseline than
-    # real hosts. Disabling weak deps keeps the installed set deterministic
-    # across ansible runs — otherwise dnf picks different recommended
-    # packages each run and idempotence flaps.
     install_weak_deps: false
+  # dnf's "state: present" on Rocky 10 flaps between runs when weak-dep
+  # resolution of docker-ce isn't deterministic (docker repo + RHEL 10
+  # is very new). Gating on "is any package missing?" guarantees the
+  # dnf call is skipped entirely on the second run, regardless of
+  # weak-dep changes beneath.
+  when: docker_missing_packages | length > 0
