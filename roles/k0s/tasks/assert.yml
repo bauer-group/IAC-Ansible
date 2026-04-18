@@ -1,0 +1,116 @@
+---
+# =============================================================================
+# k0s Role - Preconditions
+# =============================================================================
+# All checks are STRICT (fail-fast). Adding a host to a k0s cluster requires
+# explicit, correct configuration — no guessing, no silent fallbacks.
+# =============================================================================
+
+- name: "[k0s][assert] Cluster ID is set"
+  ansible.builtin.assert:
+    that:
+      - k0s_cluster_id is defined
+      - k0s_cluster_id | length > 0
+    fail_msg: >-
+      k0s_cluster_id must be set for {{ inventory_hostname }}. Define it in
+      group_vars for the cluster's inventory group (e.g. 'prod-dc-de1').
+    quiet: true
+
+- name: "[k0s][assert] Role is valid"
+  ansible.builtin.assert:
+    that:
+      - k0s_role in ["controller", "worker", "controller+worker"]
+    fail_msg: >-
+      k0s_role must be one of: controller, worker, controller+worker.
+      Found: '{{ k0s_role }}'.
+    quiet: true
+
+- name: "[k0s][assert] Network mode is valid"
+  ansible.builtin.assert:
+    that:
+      - k0s_network_mode in ["vlan", "overlay"]
+    fail_msg: >-
+      k0s_network_mode must be 'vlan' or 'overlay'. Found: '{{ k0s_network_mode }}'.
+    quiet: true
+
+- name: "[k0s][assert] OS family supported"
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] in ["Debian", "RedHat"]
+    fail_msg: "Unsupported OS family for k0s: {{ ansible_facts['os_family'] }}"
+    quiet: true
+
+- name: "[k0s][assert] HashiCorp Vault backend is active"
+  ansible.builtin.assert:
+    that:
+      - secrets_backend | default('') == "hashicorp-vault"
+    fail_msg: |
+      The k0s role requires secrets_backend == 'hashicorp-vault'.
+      Current value: '{{ secrets_backend | default('<unset>') }}'.
+
+      Reason: join-tokens are rotated on every pull (write access required),
+      and Ansible-Vault would require git push-back from inside a pull run —
+      which breaks the pull model. Please migrate this cluster's secrets to
+      HashiCorp Vault before deploying k0s.
+
+      See docs/vault.md and project_k0s_secrets memory for details.
+    quiet: true
+  when: not (k0s_test_mode | bool)
+
+- name: "[k0s][assert] VLAN mode requires k0s_vlan_address"
+  ansible.builtin.assert:
+    that:
+      - k0s_vlan_address | length > 0
+    fail_msg: >-
+      k0s_vlan_address (CIDR, e.g. '10.10.0.5/24') must be set in host_vars
+      when k0s_network_mode == 'vlan'.
+    quiet: true
+  when: k0s_network_mode == "vlan"
+
+- name: "[k0s][assert] Overlay mode resolves to a usable address"
+  ansible.builtin.assert:
+    that:
+      - k0s_overlay_address | length > 0
+      - k0s_overlay_address is match('^[0-9a-fA-F\\.:]+/[0-9]+$')
+    fail_msg: >-
+      k0s_overlay_address could not be derived. Either set asset_id
+      in host_vars (default formula uses it) or set k0s_overlay_address
+      explicitly. Got: '{{ k0s_overlay_address }}'.
+    quiet: true
+  when: k0s_network_mode == "overlay"
+
+- name: "[k0s][assert] CPLB is only valid in VLAN mode"
+  ansible.builtin.assert:
+    that:
+      - not (k0s_cplb_enabled | bool) or k0s_network_mode == "vlan"
+      - not (k0s_cplb_enabled | bool) or (k0s_cplb_vip | length > 0)
+    fail_msg: >-
+      k0s_cplb_enabled requires k0s_network_mode == 'vlan' and a non-empty
+      k0s_cplb_vip. Overlay clusters cannot use VRRP across public-network
+      WireGuard endpoints — use NLLB instead.
+    quiet: true
+
+- name: "[k0s][assert] Bootstrap node uniqueness within the cluster"
+  ansible.builtin.assert:
+    that:
+      - bootstrap_count == 1
+    fail_msg: |
+      Cluster '{{ k0s_cluster_id }}' has {{ bootstrap_count }} bootstrap node(s).
+      Exactly one host in the cluster must carry k0s_bootstrap_node: true.
+
+      Hosts in this cluster currently flagged as bootstrap:
+        {{ bootstrap_hosts | join(', ') if bootstrap_hosts else '(none)' }}
+    quiet: true
+  vars:
+    cluster_members: >-
+      {{ groups['all']
+         | map('extract', hostvars)
+         | selectattr('k0s_cluster_id', 'defined')
+         | selectattr('k0s_cluster_id', 'equalto', k0s_cluster_id)
+         | list }}
+    bootstrap_hosts: >-
+      {{ groups['all']
+         | select('in', cluster_members | map(attribute='inventory_hostname') | list)
+         | select('extract', hostvars, 'k0s_bootstrap_node')
+         | list }}
+    bootstrap_count: "{{ bootstrap_hosts | length }}"

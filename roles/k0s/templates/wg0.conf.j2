@@ -1,0 +1,16 @@
+{# {{ ansible_managed }} — WireGuard full-mesh config #}
+[Interface]
+Address = {{ k0s_overlay_address }}
+ListenPort = {{ k0s_overlay_listen_port }}
+PrivateKey = {{ k0s_wg_privkey }}
+MTU = {{ k0s_overlay_mtu }}
+
+{% for peer in k0s_wg_ready_peers %}
+# Peer: {{ peer.host }}
+[Peer]
+PublicKey = {{ peer.pubkey }}
+Endpoint = {{ peer.endpoint }}
+AllowedIPs = {{ peer.allowed_ips | default(peer.host ~ '/32') }}
+PersistentKeepalive = {{ k0s_overlay_persistent_keepalive }}
+
+{% endfor %}

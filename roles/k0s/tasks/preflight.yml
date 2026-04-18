@@ -1,0 +1,82 @@
+---
+# =============================================================================
+# k0s Role - Preflight (kernel + OS prerequisites)
+# =============================================================================
+
+- name: "[k0s][preflight] Install required packages"
+  ansible.builtin.package:
+    name: "{{ k0s_packages }}"
+    state: present
+
+# --- Swap (kubelet refuses with swap on) -----------------------------------
+
+- name: "[k0s][preflight] Disable swap at runtime"
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+  failed_when: false
+  when: k0s_disable_swap | bool
+
+- name: "[k0s][preflight] Disable swap entries in /etc/fstab"
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)$'
+    replace: '# \1   # disabled by k0s role'
+  when: k0s_disable_swap | bool
+
+# --- Kernel modules --------------------------------------------------------
+
+- name: "[k0s][preflight] Persist kernel module load list"
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k0s.conf
+    mode: "0644"
+    content: |
+      # Managed by k0s role
+      {% for m in k0s_kernel_modules %}
+      {{ m }}
+      {% endfor %}
+
+- name: "[k0s][preflight] Load kernel modules"
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ k0s_kernel_modules }}"
+  failed_when: false   # absent in some container test envs; persistent file still wins on real boot
+
+# --- Sysctl ---------------------------------------------------------------
+
+- name: "[k0s][preflight] Deploy sysctl config"
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/97-k0s.conf
+    mode: "0644"
+    content: |
+      # Managed by k0s role
+      {% for k, v in k0s_sysctl.items() %}
+      {{ k }} = {{ v }}
+      {% endfor %}
+  notify: Reload sysctl
+
+- name: "[k0s][preflight] Apply sysctl now (no wait for handler)"
+  ansible.builtin.command: sysctl --system
+  changed_when: false
+
+# --- iptables-legacy (Debian/Ubuntu only; RHEL ignores) -------------------
+
+- name: "[k0s][preflight] Switch to iptables-legacy where available"
+  ansible.builtin.command: "update-alternatives --set {{ item.name }} {{ item.path }}"
+  loop: "{{ k0s_iptables_legacy_alternatives }}"
+  changed_when: true
+  failed_when: false   # binary may be absent on minimal installs
+  when:
+    - k0s_set_iptables_legacy | bool
+    - k0s_iptables_legacy_alternatives | length > 0
+
+# --- Config / data directories --------------------------------------------
+
+- name: "[k0s][preflight] Ensure k0s config and data directories exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0700"
+  loop:
+    - "{{ k0s_config_dir }}"
+    - "{{ k0s_data_dir }}"

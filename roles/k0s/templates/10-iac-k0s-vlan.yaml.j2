@@ -1,0 +1,16 @@
+{# {{ ansible_managed }} — netplan VLAN sub-interface for k0s cluster network #}
+network:
+  version: 2
+  renderer: networkd
+  vlans:
+    {{ k0s_vlan_effective_parent }}.{{ k0s_vlan_id }}:
+      id: {{ k0s_vlan_id }}
+      link: {{ k0s_vlan_effective_parent }}
+      mtu: {{ k0s_vlan_mtu }}
+      addresses:
+        - {{ k0s_vlan_address }}
+{% if k0s_vlan_gateway | length > 0 %}
+      routes:
+        - to: 0.0.0.0/0
+          via: {{ k0s_vlan_gateway }}
+{% endif %}

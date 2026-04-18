@@ -1,0 +1,20 @@
+---
+# =============================================================================
+# k0s Role - RedHat/Rocky/Alma specific vars
+# =============================================================================
+# Note: RHEL 9+ uses nft-only by default. iptables-legacy is not shipped, so
+# k0s_set_iptables_legacy is silently ignored on this family — kube-proxy
+# IPVS mode works fine with nft on modern kernels (>= 5.10).
+
+k0s_packages:
+  - wireguard-tools
+  - iptables
+  - ipvsadm
+  - conntrack-tools
+  - ipset
+  - kmod
+  - ca-certificates
+  - curl
+
+# update-alternatives is not used on RHEL family for these binaries.
+k0s_iptables_legacy_alternatives: []

@@ -1,0 +1,90 @@
+---
+# =============================================================================
+# k0s Role - Join existing cluster
+# =============================================================================
+# Runs on every NON-bootstrap node. Idempotent:
+#   - already joined → no-op (state-only check)
+#   - not joined, no token in Vault → end_host (retry next pull)
+#   - not joined, token present → install + start
+# =============================================================================
+
+- name: "[k0s][join] Check whether this node has already joined"
+  ansible.builtin.stat:
+    path: >-
+      {{ k0s_data_dir }}/pki/{{
+         'ca.crt' if k0s_role in ['controller', 'controller+worker']
+         else 'kubelet/ca.crt' }}
+  register: k0s_join_marker
+
+- name: "[k0s][join] Skip — already joined"
+  ansible.builtin.debug:
+    msg: "Node already joined cluster {{ k0s_cluster_id }} as {{ k0s_role }}."
+  when: k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Fetch join token from Vault"
+  ansible.builtin.set_fact:
+    k0s_token_data: >-
+      {{ lookup('community.hashi_vault.vault_kv2_get',
+                 k0s_token_secret_path,
+                 engine_mount_point=k0s_vault_kv_mount,
+                 url=secrets_vault_addr,
+                 auth_method=secrets_vault_auth_method,
+                 role_id=lookup('file', secrets_vault_role_id_file),
+                 secret_id=lookup('file', secrets_vault_secret_id_file),
+                 errors='ignore') | default({}) }}
+  no_log: true
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Determine token to use"
+  ansible.builtin.set_fact:
+    k0s_join_token: >-
+      {{ k0s_token_data.secret.controller_token
+         if k0s_role in ['controller', 'controller+worker']
+         else k0s_token_data.secret.worker_token | default('') }}
+  no_log: true
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] No token in Vault yet — defer to next pull"
+  ansible.builtin.meta: end_host
+  when:
+    - not k0s_join_marker.stat.exists
+    - (k0s_join_token | default('') | length) == 0
+
+- name: "[k0s][join] Write token to a tmp file"
+  ansible.builtin.copy:
+    content: "{{ k0s_join_token }}"
+    dest: /tmp/k0s-join-token
+    mode: "0600"
+    owner: root
+    group: root
+  no_log: true
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Determine install command flags"
+  ansible.builtin.set_fact:
+    k0s_join_install_cmd: >-
+      {{ k0s_install_path }} install {{ 'controller' if k0s_role in ['controller', 'controller+worker'] else 'worker' }}
+      --config {{ k0s_config_dir }}/k0s.yaml
+      --token-file /tmp/k0s-join-token
+      {{ '--enable-worker' if k0s_role == 'controller+worker' else '' }}
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Install k0s with join token"
+  ansible.builtin.command:
+    cmd: "{{ k0s_join_install_cmd }}"
+  changed_when: true
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Remove tmp token file"
+  ansible.builtin.file:
+    path: /tmp/k0s-join-token
+    state: absent
+  when: not k0s_join_marker.stat.exists
+
+- name: "[k0s][join] Start joined service"
+  ansible.builtin.systemd:
+    name: "{{ 'k0scontroller' if k0s_role in ['controller', 'controller+worker'] else 'k0sworker' }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: not k0s_join_marker.stat.exists

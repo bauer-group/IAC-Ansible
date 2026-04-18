@@ -1,0 +1,28 @@
+---
+# =============================================================================
+# k0s Role - Service state
+# =============================================================================
+
+- name: "[k0s][service] Determine service unit name for role"
+  ansible.builtin.set_fact:
+    k0s_service_name: >-
+      {{ 'k0scontroller' if k0s_role in ['controller', 'controller+worker'] else 'k0sworker' }}
+
+- name: "[k0s][service] Ensure k0s service is enabled and running"
+  ansible.builtin.systemd:
+    name: "{{ k0s_service_name }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  failed_when: false   # service may not yet exist on a host that hasn't joined
+
+- name: "[k0s][service] Probe k0s status"
+  ansible.builtin.command: "{{ k0s_install_path }} status"
+  register: k0s_status_result
+  changed_when: false
+  failed_when: false
+
+- name: "[k0s][service] Report k0s status"
+  ansible.builtin.debug:
+    msg: "{{ k0s_status_result.stdout_lines | default([]) }}"
+    verbosity: 1

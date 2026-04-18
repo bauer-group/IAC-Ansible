@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: k0s
+  namespace: bauer_group
+  author: BAUER GROUP
+  description: >-
+    Bare-metal Kubernetes via k0s with two network modes — VLAN (datacenter)
+    and WireGuard full-mesh overlay (public network). Pure ansible-pull
+    bootstrap with HashiCorp Vault for join-token distribution.
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Ubuntu
+      versions: [jammy, noble, resolute]
+    - name: Debian
+      versions: [trixie]
+    - name: EL
+      versions:
+        - "all"
+
+dependencies:
+  - role: common
+  - role: secrets

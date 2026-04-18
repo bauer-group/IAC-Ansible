@@ -1,0 +1,147 @@
+---
+# =============================================================================
+# k0s Role - Network mode: WireGuard full-mesh overlay
+# =============================================================================
+# Pure-pull mesh distribution model:
+#   1. Generate keypair locally (idempotent — re-use existing key)
+#   2. Publish own pubkey + endpoint into Vault
+#   3. Read all peer pubkeys from Vault for hosts in this cluster
+#   4. Render wg0.conf (peers list grows as more nodes pull)
+#   5. Bring up wg-quick@wg0
+#
+# Convergence: ~3 pull cycles for a fresh cluster (each node needs to see
+# every other node's published key before the mesh is complete). Already-up
+# meshes converge in 1 cycle for a new node.
+# =============================================================================
+
+- name: "[k0s][overlay] Ensure /etc/wireguard exists"
+  ansible.builtin.file:
+    path: /etc/wireguard
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: "[k0s][overlay] Check whether private key already exists"
+  ansible.builtin.stat:
+    path: /etc/wireguard/private.key
+  register: k0s_wg_priv_stat
+
+- name: "[k0s][overlay] Generate new WireGuard keypair"
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      umask 077
+      wg genkey | tee /etc/wireguard/private.key | wg pubkey > /etc/wireguard/public.key
+    creates: /etc/wireguard/private.key
+  when: not k0s_wg_priv_stat.stat.exists
+
+- name: "[k0s][overlay] Read own pubkey"
+  ansible.builtin.slurp:
+    src: /etc/wireguard/public.key
+  register: k0s_wg_pub_raw
+
+- name: "[k0s][overlay] Read own private key (no_log)"
+  ansible.builtin.slurp:
+    src: /etc/wireguard/private.key
+  register: k0s_wg_priv_raw
+  no_log: true
+
+- name: "[k0s][overlay] Set local key facts"
+  ansible.builtin.set_fact:
+    k0s_wg_pubkey: "{{ k0s_wg_pub_raw.content | b64decode | trim }}"
+    k0s_wg_privkey: "{{ k0s_wg_priv_raw.content | b64decode | trim }}"
+  no_log: true
+
+- name: "[k0s][overlay] Determine effective public endpoint"
+  ansible.builtin.set_fact:
+    k0s_overlay_effective_endpoint: >-
+      {{ k0s_overlay_public_endpoint
+         if k0s_overlay_public_endpoint | length > 0
+         else (ansible_facts['default_ipv4'].address ~ ':' ~ k0s_overlay_listen_port) }}
+
+# --- Publish own pubkey + endpoint to Vault --------------------------------
+
+- name: "[k0s][overlay] Publish own pubkey + endpoint to Vault"
+  when: not (k0s_test_mode | bool)
+  community.hashi_vault.vault_kv2_write:
+    url: "{{ secrets_vault_addr }}"
+    auth_method: "{{ secrets_vault_auth_method }}"
+    role_id: "{{ lookup('file', secrets_vault_role_id_file) }}"
+    secret_id: "{{ lookup('file', secrets_vault_secret_id_file) }}"
+    engine_mount_point: "{{ k0s_vault_kv_mount }}"
+    path: "{{ k0s_overlay_pubkey_secret_path }}"
+    data:
+      pubkey: "{{ k0s_wg_pubkey }}"
+      endpoint: "{{ k0s_overlay_effective_endpoint }}"
+      allowed_ips: "{{ k0s_overlay_address | ansible.utils.ipaddr('address') }}/32"
+      updated: "{{ ansible_date_time.iso8601 }}"
+
+# --- Fetch peer pubkeys from Vault ------------------------------------------
+
+- name: "[k0s][overlay] Identify peer hosts in this cluster"
+  ansible.builtin.set_fact:
+    k0s_wg_peer_hosts: >-
+      {{ groups['all']
+         | map('extract', hostvars)
+         | selectattr('k0s_cluster_id', 'defined')
+         | selectattr('k0s_cluster_id', 'equalto', k0s_cluster_id)
+         | map(attribute='inventory_hostname')
+         | reject('equalto', inventory_hostname)
+         | list }}
+
+- name: "[k0s][overlay] Fetch peer entries from Vault"
+  ansible.builtin.set_fact:
+    k0s_wg_peers: >-
+      {{ k0s_wg_peers | default([])
+         + [(lookup('community.hashi_vault.vault_kv2_get',
+                     'k0s/' ~ k0s_cluster_id ~ '/wg/' ~ item,
+                     engine_mount_point=k0s_vault_kv_mount,
+                     url=secrets_vault_addr,
+                     auth_method=secrets_vault_auth_method,
+                     role_id=lookup('file', secrets_vault_role_id_file),
+                     secret_id=lookup('file', secrets_vault_secret_id_file),
+                     errors='ignore') | default({})).secret | default({})
+            | combine({'host': item})] }}
+  loop: "{{ k0s_wg_peer_hosts }}"
+  no_log: true
+  when: not (k0s_test_mode | bool)
+
+- name: "[k0s][overlay] Filter peers that have published their key"
+  ansible.builtin.set_fact:
+    k0s_wg_ready_peers: >-
+      {{ k0s_wg_peers | default([])
+         | selectattr('pubkey', 'defined')
+         | selectattr('pubkey', 'string')
+         | rejectattr('pubkey', 'equalto', '')
+         | list }}
+
+- name: "[k0s][overlay] Report mesh convergence state"
+  ansible.builtin.debug:
+    msg: >-
+      WireGuard mesh: {{ k0s_wg_ready_peers | length }} of
+      {{ k0s_wg_peer_hosts | length }} peer(s) reachable. Missing keys
+      will be picked up on the next pull cycle.
+
+# --- Render wg0.conf and bring it up ---------------------------------------
+
+- name: "[k0s][overlay] Render wg0.conf"
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart wg-quick wg0
+  no_log: true   # template references private key
+
+- name: "[k0s][overlay] Enable wg-quick@wg0"
+  ansible.builtin.systemd:
+    name: wg-quick@wg0
+    enabled: true
+    state: started
+  when: not (k0s_test_mode | bool)
+
+- name: "[k0s][overlay] Flush handlers (apply WG config now, before k0s starts)"
+  ansible.builtin.meta: flush_handlers
+  when: not (k0s_test_mode | bool)
