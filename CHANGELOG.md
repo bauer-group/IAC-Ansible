@@ -1,3 +1,9 @@
+## [2.2.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.0...v2.2.1) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **molecule:** switched become_method to su for Rocky/RHEL containers ([1728058](https://github.com/bauer-group/IAC-Ansible/commit/17280584d50016cf7b098e70d0945fa40036d6e8))
+
 ## [2.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.2...v2.2.0) (2026-04-18)
 
 ### 🚀 Features
