@@ -1,3 +1,9 @@
+## [2.2.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.6...v2.2.7) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **molecule:** OS-family-aware docker package verification ([60136b8](https://github.com/bauer-group/IAC-Ansible/commit/60136b860a9de9e76b69f544137151afbe07cc03))
+
 ## [2.2.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.5...v2.2.6) (2026-04-18)
 
 ### 🐛 Bug Fixes
