@@ -1,3 +1,9 @@
+## [2.2.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.7...v2.2.8) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **molecule:** unified docker-ce presence check via package_facts ([7639771](https://github.com/bauer-group/IAC-Ansible/commit/763977101d6b2d7950bf76816b2a53ccf38f7663))
+
 ## [2.2.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.6...v2.2.7) (2026-04-18)
 
 ### 🐛 Bug Fixes
