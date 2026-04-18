@@ -8,9 +8,12 @@
     name: epel-release
     state: present
 
-- name: "[RedHat] Install Ansible"
+# Use ansible-core (available on all supported EL versions via EPEL)
+# instead of the full "ansible" community meta-package (not shipped on
+# EPEL 10 and dropped from EPEL 9 in favor of ansible-core).
+- name: "[RedHat] Install ansible-core"
   ansible.builtin.dnf:
     name:
-      - ansible
+      - ansible-core
       - git
     state: present

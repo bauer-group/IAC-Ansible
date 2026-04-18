@@ -7,6 +7,10 @@
   ansible.builtin.dnf:
     name: "{{ common_packages }}"
     state: present
+    # RHEL 9/10 ship curl-minimal by default; installing curl would conflict
+    # on the "Provides: curl" virtual capability. allowerasing lets dnf
+    # replace curl-minimal with the full curl package cleanly.
+    allowerasing: true
   when: common_packages_install | bool
 
 - name: "[RedHat] Ensure crond service is running"

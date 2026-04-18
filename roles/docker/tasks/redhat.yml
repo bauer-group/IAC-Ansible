@@ -13,9 +13,10 @@
   ansible.builtin.dnf:
     name:
       - dnf-plugins-core
-      - ip6tables
       - cronie  # required by the Docker prune cron job task
     state: present
+    # RHEL 9/10 default to nftables; docker-ce pulls in iptables-nft as a
+    # dependency. No separate ip6tables package is shipped anymore.
 
 - name: "[RedHat] Add Docker repository"
   ansible.builtin.yum_repository:
