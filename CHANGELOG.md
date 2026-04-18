@@ -1,3 +1,9 @@
+## [2.2.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.3...v2.2.4) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **roles:** resolved RHEL docker idempotence + PPA-key download idempotence ([84a995c](https://github.com/bauer-group/IAC-Ansible/commit/84a995c31db4dad681805d3b718479d7686d941a))
+
 ## [2.2.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.2...v2.2.3) (2026-04-18)
 
 ### 🐛 Bug Fixes
