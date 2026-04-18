@@ -31,6 +31,12 @@
     mode: "0644"
   notify: Restart Docker
 
+- name: Ensure /etc/sysctl.d exists
+  ansible.builtin.file:
+    path: /etc/sysctl.d
+    state: directory
+    mode: "0755"
+
 - name: Deploy sysctl settings for Docker
   ansible.builtin.template:
     src: 98-docker.conf.j2
