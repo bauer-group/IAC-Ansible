@@ -1,3 +1,9 @@
+## [2.2.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.2...v2.2.0) (2026-04-18)
+
+### 🚀 Features
+
+* **platform:** dropped EL 8 (EOL), added Molecule + path-aware chrony for EL 9+10 ([9ede37d](https://github.com/bauer-group/IAC-Ansible/commit/9ede37d3c48fe51e104a1989a5f073b7d85cb36d))
+
 ## [2.1.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.1.1...v2.1.2) (2026-04-17)
 
 ### ♻️ Refactoring
