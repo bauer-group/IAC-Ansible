@@ -107,3 +107,19 @@
   roles:
     - role: coolify
       tags: [coolify]
+
+# --- Phase 7: k0s Kubernetes for designated cluster nodes ---
+- name: "Phase 7: k0s cluster nodes"
+  hosts: k0s_cluster
+  become: true
+  gather_facts: true
+  tags: [k0s]
+
+  pre_tasks:
+    - name: Skip host when k0s disabled
+      ansible.builtin.meta: end_host
+      when: not (k0s_enabled | default(true) | bool)
+
+  roles:
+    - role: k0s
+      tags: [k0s]
