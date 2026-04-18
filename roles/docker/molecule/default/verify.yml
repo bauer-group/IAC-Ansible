@@ -5,19 +5,14 @@
   gather_facts: false
 
   tasks:
-    - name: Verify docker-ce package is installed (Debian/Ubuntu)
-      ansible.builtin.command: dpkg-query -W -f='${Status}' docker-ce
-      register: docker_package_status
-      changed_when: false
-      failed_when: "'install ok installed' not in docker_package_status.stdout"
-      when: ansible_facts['os_family'] == "Debian"
+    - name: Gather installed package facts
+      ansible.builtin.package_facts:
 
-    - name: Verify docker-ce package is installed (RedHat)
-      ansible.builtin.command: rpm -q docker-ce
-      register: docker_package_status_rpm
-      changed_when: false
-      failed_when: docker_package_status_rpm.rc != 0
-      when: ansible_facts['os_family'] == "RedHat"
+    - name: Verify docker-ce package is installed
+      ansible.builtin.assert:
+        that:
+          - "'docker-ce' in ansible_facts.packages"
+        fail_msg: "docker-ce package not installed"
 
     - name: Verify daemon.json exists
       ansible.builtin.stat:
