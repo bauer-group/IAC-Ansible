@@ -145,9 +145,9 @@ site.yml
 |----------|----------|-----------------|------------------|
 | Ubuntu | 22.04, 24.04, 26.04 | apt | unattended-upgrades |
 | Debian | 13 | apt | unattended-upgrades |
-| RHEL | 8, 9, 10 | dnf | dnf-automatic |
-| Rocky | 8, 9, 10 | dnf | dnf-automatic |
-| AlmaLinux | 8, 9, 10 | dnf | dnf-automatic |
+| RHEL | 9, 10 | dnf | dnf-automatic |
+| Rocky | 9, 10 | dnf | dnf-automatic |
+| AlmaLinux | 9, 10 | dnf | dnf-automatic |
 
 Platform is auto-detected via `ansible_facts['os_family']` and `ansible_facts['distribution']`.
 

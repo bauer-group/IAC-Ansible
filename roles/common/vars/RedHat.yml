@@ -15,3 +15,11 @@ common_packages:
 
 common_ntp_package: "chrony"
 common_ntp_service: "chronyd"
+
+# RHEL chrony path conventions: main config at /etc/chrony.conf (not
+# under /etc/chrony/) and drop-ins bundled in a single /etc/chrony.d/
+# directory. Drift file uses the RHEL default name "drift".
+common_chrony_conf_path: /etc/chrony.conf
+common_chrony_confdir: /etc/chrony.d
+common_chrony_sourcedir: /etc/chrony.d
+common_chrony_driftfile: /var/lib/chrony/drift

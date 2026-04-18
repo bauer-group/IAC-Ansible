@@ -43,3 +43,11 @@ common_packages_physical:
 
 common_ntp_package: "systemd-timesyncd"
 common_ntp_service: "systemd-timesyncd"
+
+# Chrony path conventions — used only when common_ntp_package == "chrony"
+# (e.g. Ubuntu 26.04 via vars/Ubuntu-26.yml). Debian/Ubuntu ships chrony
+# with configs under /etc/chrony/ and drift in /var/lib/chrony/chrony.drift.
+common_chrony_conf_path: /etc/chrony/chrony.conf
+common_chrony_confdir: /etc/chrony/conf.d
+common_chrony_sourcedir: /etc/chrony/sources.d
+common_chrony_driftfile: /var/lib/chrony/chrony.drift
