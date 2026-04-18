@@ -1,0 +1,51 @@
+---
+# =============================================================================
+# k0s Role - Binary installation
+# =============================================================================
+# Idempotent download. Existing binary version is detected; re-download only
+# happens when the installed version != k0s_version AND k0s_upgrade_allowed
+# is true. This protects against accidental cluster-wide auto-upgrades.
+# =============================================================================
+
+- name: "[k0s][install] Detect installed k0s version"
+  ansible.builtin.command: "{{ k0s_install_path }} version"
+  register: k0s_installed_version_raw
+  changed_when: false
+  failed_when: false
+
+- name: "[k0s][install] Parse installed version"
+  ansible.builtin.set_fact:
+    k0s_installed_version: >-
+      {{ (k0s_installed_version_raw.stdout | default('')) | regex_search('v[0-9]+\\.[0-9]+\\.[0-9]+\\+k0s\\.[0-9]+') | default('', true) }}
+
+- name: "[k0s][install] Determine whether to (re)install"
+  ansible.builtin.set_fact:
+    k0s_install_needed: >-
+      {{ k0s_installed_version | length == 0
+         or (k0s_installed_version != k0s_version and k0s_upgrade_allowed | bool) }}
+
+- name: "[k0s][install] Refuse to upgrade unless explicitly allowed"
+  ansible.builtin.debug:
+    msg: >-
+      k0s {{ k0s_installed_version }} installed, k0s_version pinned to
+      {{ k0s_version }}. Upgrade NOT applied — set k0s_upgrade_allowed=true
+      for this cluster to perform the rolling upgrade.
+  when:
+    - k0s_installed_version | length > 0
+    - k0s_installed_version != k0s_version
+    - not (k0s_upgrade_allowed | bool)
+
+- name: "[k0s][install] Download k0s binary"
+  ansible.builtin.get_url:
+    url: "{{ k0s_download_url_template }}"
+    dest: "{{ k0s_install_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+    timeout: "{{ k0s_download_timeout }}"
+  when: k0s_install_needed | bool
+
+- name: "[k0s][install] Verify k0s binary executes"
+  ansible.builtin.command: "{{ k0s_install_path }} version"
+  register: k0s_post_install_version
+  changed_when: false

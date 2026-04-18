@@ -1,0 +1,39 @@
+---
+# =============================================================================
+# k0s Role - Cluster configuration
+# =============================================================================
+# Renders /etc/k0s/k0s.yaml. The bind-IP is derived per network mode:
+#   - vlan    → IP from k0s_vlan_address (strip /prefix)
+#   - overlay → IP from k0s_overlay_address (strip /prefix)
+# All controllers share the same SAN list so any node-IP is valid for TLS.
+# =============================================================================
+
+- name: "[k0s][config] Determine bind IP for this node"
+  ansible.builtin.set_fact:
+    k0s_bind_ip: >-
+      {{ ((k0s_vlan_address if k0s_network_mode == 'vlan' else k0s_overlay_address)
+          | ansible.utils.ipaddr('address'))
+         | default('0.0.0.0', true) }}
+
+- name: "[k0s][config] Collect node IPs for SAN list"
+  ansible.builtin.set_fact:
+    k0s_cluster_node_ips: >-
+      {{ groups['all']
+         | map('extract', hostvars)
+         | selectattr('k0s_cluster_id', 'defined')
+         | selectattr('k0s_cluster_id', 'equalto', k0s_cluster_id)
+         | map(attribute=('k0s_vlan_address' if k0s_network_mode == 'vlan' else 'k0s_overlay_address'))
+         | map('ansible.utils.ipaddr', 'address')
+         | reject('equalto', false)
+         | list }}
+
+- name: "[k0s][config] Render k0s.yaml"
+  ansible.builtin.template:
+    src: k0s.yaml.j2
+    dest: "{{ k0s_config_dir }}/k0s.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+  notify:
+    - Restart k0scontroller
+    - Restart k0sworker

@@ -1,0 +1,21 @@
+---
+- name: Converge — k0s VLAN-mode (test mode, no real install)
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Test mode: render configs and templates, but skip install/start/vault.
+    k0s_enabled: true
+    k0s_test_mode: true
+    k0s_cluster_id: "molecule-vlan"
+    k0s_role: "controller+worker"
+    k0s_bootstrap_node: true
+    k0s_network_mode: "vlan"
+    k0s_vlan_id: 1000
+    k0s_vlan_address: "10.10.0.5/24"
+    asset_id: "0005"
+    secrets_backend: "hashicorp-vault"
+
+  roles:
+    - role: k0s

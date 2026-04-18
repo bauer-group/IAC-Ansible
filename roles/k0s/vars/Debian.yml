@@ -1,0 +1,28 @@
+---
+# =============================================================================
+# k0s Role - Debian/Ubuntu specific vars
+# =============================================================================
+
+k0s_packages:
+  - wireguard
+  - wireguard-tools
+  - iptables
+  - ipvsadm
+  - conntrack
+  - ipset
+  - kmod
+  - ca-certificates
+  - curl
+
+# Path to legacy iptables binary used by update-alternatives switch.
+# kube-proxy IPVS mode requires the nf_tables-shim (xtables-nft-multi) to
+# behave as legacy. Debian/Ubuntu ship both via update-alternatives.
+k0s_iptables_legacy_alternatives:
+  - name: iptables
+    path: /usr/sbin/iptables-legacy
+  - name: ip6tables
+    path: /usr/sbin/ip6tables-legacy
+  - name: arptables
+    path: /usr/sbin/arptables-legacy
+  - name: ebtables
+    path: /usr/sbin/ebtables-legacy

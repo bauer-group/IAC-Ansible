@@ -1,0 +1,92 @@
+---
+# =============================================================================
+# k0s Role - Network mode: VLAN sub-interface
+# =============================================================================
+# Renders an additional netplan file (does NOT modify common's 01-iac-network).
+# Uses the same rollback-timer safety pattern as roles/common/tasks/netplan.yml,
+# scoped to a separate timer name and backup directory.
+# =============================================================================
+
+- name: "[k0s][vlan] Gather network facts"
+  ansible.builtin.setup:
+    gather_subset:
+      - network
+
+- name: "[k0s][vlan] Resolve parent interface (auto-detect from default route)"
+  ansible.builtin.set_fact:
+    k0s_vlan_effective_parent: >-
+      {{ k0s_vlan_parent_interface
+         if k0s_vlan_parent_interface | length > 0
+         else (ansible_facts['default_ipv4'].interface | default('eth0')) }}
+
+- name: "[k0s][vlan] Show VLAN configuration that will be applied"
+  ansible.builtin.debug:
+    msg:
+      - "parent : {{ k0s_vlan_effective_parent }}"
+      - "vlan-id: {{ k0s_vlan_id }}"
+      - "address: {{ k0s_vlan_address }}"
+      - "mtu    : {{ k0s_vlan_mtu }}"
+    verbosity: 1
+
+- name: "[k0s][vlan] Render netplan VLAN sub-interface"
+  ansible.builtin.template:
+    src: 10-iac-k0s-vlan.yaml.j2
+    dest: "{{ k0s_vlan_netplan_filename }}"
+    owner: root
+    group: root
+    mode: "0600"
+  register: k0s_vlan_netplan_render
+
+# Apply with the same systemd-run rollback pattern used in common/netplan.yml
+# (we deliberately use a different unit name so concurrent rollbacks don't
+# clobber each other).
+
+- name: "[k0s][vlan] Validate netplan syntax"
+  ansible.builtin.command: netplan generate
+  changed_when: false
+  when:
+    - k0s_vlan_netplan_render is changed
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s][vlan] Schedule VLAN-rollback safety timer"
+  ansible.builtin.command: >-
+    systemd-run
+    --unit=iac-netplan-rollback-k0s
+    --on-active=120s
+    /bin/sh -c "rm -f {{ k0s_vlan_netplan_filename | quote }} && netplan apply"
+  changed_when: true
+  when:
+    - k0s_vlan_netplan_render is changed
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s][vlan] netplan apply"
+  ansible.builtin.command: netplan apply
+  changed_when: true
+  when:
+    - k0s_vlan_netplan_render is changed
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s][vlan] Wait for VLAN sub-interface to appear"
+  ansible.builtin.wait_for:
+    timeout: 15
+  when:
+    - k0s_vlan_netplan_render is changed
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s][vlan] Connectivity probe (ping over VLAN)"
+  ansible.builtin.command:
+    cmd: "ping -c 2 -W 3 -I {{ k0s_vlan_effective_parent }}.{{ k0s_vlan_id }} {{ k0s_vlan_probe_target }}"
+  changed_when: false
+  when:
+    - k0s_vlan_netplan_render is changed
+    - k0s_vlan_probe_target | length > 0
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s][vlan] Cancel rollback timer (VLAN healthy)"
+  ansible.builtin.systemd:
+    name: iac-netplan-rollback-k0s.timer
+    state: stopped
+  failed_when: false
+  when:
+    - k0s_vlan_netplan_render is changed
+    - not (k0s_test_mode | bool)

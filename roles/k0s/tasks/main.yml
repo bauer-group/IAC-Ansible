@@ -1,0 +1,58 @@
+---
+# =============================================================================
+# k0s Role - Main orchestrator
+# =============================================================================
+# Phase order matters:
+#   1. assert         — preconditions (cluster_id, role, vault backend, ...)
+#   2. OS-family vars — load Debian.yml or RedHat.yml
+#   3. preflight      — kernel modules, sysctl, swap, iptables-legacy
+#   4. network_*      — VLAN sub-IF or WireGuard mesh (per k0s_network_mode)
+#   5. install        — download + verify k0s binary
+#   6. config         — render /etc/k0s/k0s.yaml
+#   7. bootstrap OR join — first controller seeds; everyone else joins
+#   8. service        — ensure systemd unit running and enabled
+# =============================================================================
+
+- name: "[k0s] Skip role when disabled"
+  ansible.builtin.meta: end_host
+  when: not (k0s_enabled | default(true) | bool)
+
+- name: "[k0s] Validate preconditions"
+  ansible.builtin.include_tasks: assert.yml
+
+- name: "[k0s] Load OS-family specific vars"
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+
+- name: "[k0s] Run preflight (kernel modules, sysctl, swap)"
+  ansible.builtin.include_tasks: preflight.yml
+
+- name: "[k0s] Configure cluster network — VLAN mode"
+  ansible.builtin.include_tasks: network_vlan.yml
+  when: k0s_network_mode == "vlan"
+
+- name: "[k0s] Configure cluster network — WireGuard overlay mode"
+  ansible.builtin.include_tasks: network_overlay.yml
+  when: k0s_network_mode == "overlay"
+
+- name: "[k0s] Install k0s binary"
+  ansible.builtin.include_tasks: install.yml
+  when: not (k0s_test_mode | bool)
+
+- name: "[k0s] Render k0s configuration"
+  ansible.builtin.include_tasks: config.yml
+
+- name: "[k0s] Bootstrap controller (first node only)"
+  ansible.builtin.include_tasks: bootstrap.yml
+  when:
+    - k0s_bootstrap_node | bool
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s] Join existing cluster (non-bootstrap nodes)"
+  ansible.builtin.include_tasks: join.yml
+  when:
+    - not (k0s_bootstrap_node | bool)
+    - not (k0s_test_mode | bool)
+
+- name: "[k0s] Ensure systemd service state"
+  ansible.builtin.include_tasks: service.yml
+  when: not (k0s_test_mode | bool)

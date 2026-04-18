@@ -1,0 +1,42 @@
+---
+- name: Verify — k0s VLAN-mode artifacts
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verify k0s config directory exists
+      ansible.builtin.stat:
+        path: /etc/k0s
+      register: k0s_cfg_stat
+      failed_when: not k0s_cfg_stat.stat.exists or not k0s_cfg_stat.stat.isdir
+
+    - name: Verify k0s.yaml is rendered
+      ansible.builtin.stat:
+        path: /etc/k0s/k0s.yaml
+      register: k0s_yaml_stat
+      failed_when: not k0s_yaml_stat.stat.exists
+
+    - name: Verify VLAN netplan file is rendered
+      ansible.builtin.stat:
+        path: /etc/netplan/10-iac-k0s-vlan.yaml
+      register: k0s_vlan_netplan_stat
+      failed_when: not k0s_vlan_netplan_stat.stat.exists
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Verify modules-load.d entry is in place
+      ansible.builtin.stat:
+        path: /etc/modules-load.d/k0s.conf
+      register: k0s_mod_stat
+      failed_when: not k0s_mod_stat.stat.exists
+
+    - name: Verify sysctl drop-in is in place
+      ansible.builtin.stat:
+        path: /etc/sysctl.d/97-k0s.conf
+      register: k0s_sysctl_stat
+      failed_when: not k0s_sysctl_stat.stat.exists
+
+    - name: Verify k0s.yaml contains the cluster ID
+      ansible.builtin.command:
+        cmd: 'grep -q "name: molecule-vlan" /etc/k0s/k0s.yaml'
+      changed_when: false

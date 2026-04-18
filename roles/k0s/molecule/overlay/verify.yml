@@ -1,0 +1,34 @@
+---
+- name: Verify — k0s overlay-mode artifacts
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verify wireguard private key was generated
+      ansible.builtin.stat:
+        path: /etc/wireguard/private.key
+      register: k0s_wg_priv_stat
+      failed_when: not k0s_wg_priv_stat.stat.exists
+
+    - name: Verify wireguard public key was generated
+      ansible.builtin.stat:
+        path: /etc/wireguard/public.key
+      register: k0s_wg_pub_stat
+      failed_when: not k0s_wg_pub_stat.stat.exists
+
+    - name: Verify wg0.conf was rendered
+      ansible.builtin.stat:
+        path: /etc/wireguard/wg0.conf
+      register: k0s_wg_conf_stat
+      failed_when: not k0s_wg_conf_stat.stat.exists
+
+    - name: Verify wg0.conf contains expected interface address
+      ansible.builtin.command:
+        cmd: 'grep -q "Address = 10.99.0.5/24" /etc/wireguard/wg0.conf'
+      changed_when: false
+
+    - name: Verify k0s.yaml is rendered with overlay cluster ID
+      ansible.builtin.command:
+        cmd: 'grep -q "name: molecule-overlay" /etc/k0s/k0s.yaml'
+      changed_when: false

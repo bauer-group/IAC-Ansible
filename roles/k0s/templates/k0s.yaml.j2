@@ -1,0 +1,46 @@
+{# {{ ansible_managed }} — k0s ClusterConfig #}
+apiVersion: k0s.k0sproject.io/v1beta1
+kind: ClusterConfig
+metadata:
+  name: {{ k0s_cluster_id }}
+spec:
+  api:
+    address: {{ k0s_bind_ip }}
+    sans:
+{% for ip in (k0s_cluster_node_ips + k0s_api_extra_sans) | unique %}
+      - {{ ip }}
+{% endfor %}
+{% if k0s_cplb_enabled and k0s_cplb_vip | length > 0 %}
+      - {{ k0s_cplb_vip }}
+{% endif %}
+
+  storage:
+    type: etcd
+    etcd:
+      peerAddress: {{ k0s_bind_ip }}
+
+  network:
+    provider: {{ k0s_cni }}
+    podCIDR: {{ k0s_pod_cidr }}
+    serviceCIDR: {{ k0s_service_cidr }}
+    kubeProxy:
+      mode: {{ k0s_kube_proxy_mode }}
+{% if k0s_nllb_enabled %}
+    nodeLocalLoadBalancing:
+      enabled: true
+      type: {{ k0s_nllb_type }}
+{% endif %}
+{% if k0s_cplb_enabled %}
+    controlPlaneLoadBalancing:
+      enabled: true
+      type: Keepalived
+      keepalived:
+        vrrpInstances:
+          - virtualIPs:
+              - {{ k0s_cplb_vip }}/32
+            authPass: "{{ secrets_k0s_cplb_authpass | default('changeme') }}"
+            virtualRouterID: {{ k0s_cplb_vrrp_router_id }}
+{% endif %}
+
+  telemetry:
+    enabled: {{ k0s_telemetry_enabled | string | lower }}

@@ -18,21 +18,32 @@ permissions:
 
 jobs:
   molecule:
-    name: 🔬 ${{ matrix.role }}
+    name: 🔬 ${{ matrix.role }} (${{ matrix.scenario }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     strategy:
       fail-fast: false
       matrix:
-        role:
-          - common
-          - ansible_pull
-          - auto_update
-          - docker
-          - smartmon
-          - coolify
-          - secrets
+        include:
+          - role: common
+            scenario: default
+          - role: ansible_pull
+            scenario: default
+          - role: auto_update
+            scenario: default
+          - role: docker
+            scenario: default
+          - role: smartmon
+            scenario: default
+          - role: coolify
+            scenario: default
+          - role: secrets
+            scenario: default
+          - role: k0s
+            scenario: default
+          - role: k0s
+            scenario: overlay
 
     steps:
       - name: 📥 Checkout repository
@@ -55,7 +66,7 @@ jobs:
       - name: 🧪 Run Molecule tests
         working-directory: roles/${{ matrix.role }}
         run: |
-          molecule test
+          molecule test -s ${{ matrix.scenario }}
         env:
           ANSIBLE_FORCE_COLOR: "true"
           PY_COLORS: "1"

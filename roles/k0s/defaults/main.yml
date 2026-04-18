@@ -1,0 +1,160 @@
+---
+# =============================================================================
+# k0s Role Defaults
+# =============================================================================
+# Bare-metal Kubernetes via k0s. Two network scenarios:
+#   - "vlan"    — Datacenter with managed switch, VLAN sub-interface (dot1q)
+#   - "overlay" — Public-network nodes, WireGuard full-mesh as soft "vSwitch"
+#
+# Bootstrap model: pure ansible-pull. Exactly ONE node per cluster carries
+# k0s_bootstrap_node: true; it initialises etcd and publishes join tokens
+# into HashiCorp Vault. Other nodes pull the token and join. Self-healing:
+# joiners that pull before the bootstrap node simply skip and retry next pull.
+# =============================================================================
+
+# --- Top-level switch -------------------------------------------------------
+k0s_enabled: true
+
+# --- Test mode --------------------------------------------------------------
+# Skips destructive steps (install, bootstrap, join, service start, vault
+# writes/reads). Used by Molecule and for first-time dry runs against a new
+# host. Configs and templates ARE rendered to disk for inspection.
+k0s_test_mode: false
+
+# --- Cluster identity -------------------------------------------------------
+# REQUIRED per host. Multi-cluster support: the same role can manage many
+# disjoint clusters in parallel. Each cluster has its own etcd, vault namespace
+# and overlay subnet. Suggested naming: "<env>-<location>", e.g. "prod-dc-de1".
+k0s_cluster_id: ""
+
+# Role of this node within the cluster:
+#   "controller"        — control plane only
+#   "worker"            — workload only
+#   "controller+worker" — combined (k0s default for small/symmetric clusters)
+k0s_role: "worker"
+
+# Bootstrap node election. Exactly ONE host per cluster_id must be true.
+# The role asserts uniqueness during preflight.
+k0s_bootstrap_node: false
+
+# --- k0s binary -------------------------------------------------------------
+# Pin a specific version. Override via group_vars to drive cluster-wide
+# upgrades. Format: "v<k8s>+k0s.<patch>". List: https://github.com/k0sproject/k0s/releases
+k0s_version: "v1.31.0+k0s.0"
+k0s_install_path: "/usr/local/bin/k0s"
+k0s_data_dir: "/var/lib/k0s"
+k0s_config_dir: "/etc/k0s"
+
+# Upgrade gate. Default OFF — version drift is REPORTED but not auto-applied.
+# Flip to true (per cluster) during a planned upgrade window, then back to false.
+k0s_upgrade_allowed: false
+
+# Download settings
+k0s_download_url_template: >-
+  https://github.com/k0sproject/k0s/releases/download/{{ k0s_version }}/k0s-{{ k0s_version }}-amd64
+k0s_download_timeout: 120
+
+# --- Network mode -----------------------------------------------------------
+# "vlan"    → roles/k0s/tasks/network_vlan.yml (datacenter)
+# "overlay" → roles/k0s/tasks/network_overlay.yml (public net + WireGuard mesh)
+k0s_network_mode: "vlan"
+
+# --- Scenario A: VLAN (dot1q sub-interface) --------------------------------
+# Standard VLAN-ID 1000+; configurable per cluster. Parent interface auto-detected
+# from the default route when empty. Address is REQUIRED per host.
+k0s_vlan_id: 1000
+k0s_vlan_parent_interface: ""
+k0s_vlan_address: ""        # CIDR, e.g. "10.10.0.5/24"
+k0s_vlan_mtu: 1500
+k0s_vlan_gateway: ""        # leave empty for cluster-only VLAN (no default-route via VLAN)
+k0s_vlan_netplan_filename: "/etc/netplan/10-iac-k0s-vlan.yaml"
+
+# Connectivity probe — pinged after netplan apply to validate the VLAN.
+# Default: first other VLAN member. Override with a known-good cluster IP.
+k0s_vlan_probe_target: ""
+
+# --- Scenario B: WireGuard overlay (soft vSwitch) --------------------------
+# Subnet for the wg0 overlay. Each host gets a /32 within this /24 (or larger).
+k0s_overlay_subnet: "10.99.0.0/24"
+
+# Per-host overlay address. By default DERIVED from asset_id:
+#   asset_id 0001 → 10.99.0.1/24
+#   asset_id 0050 → 10.99.0.50/24
+#   asset_id 0260 → 10.99.1.4/24  (rolls over into next /24)
+# This is collision-free given the unique 4-digit asset_id schema.
+# Override per host_vars to break out of the convention.
+k0s_overlay_address: >-
+  {{ k0s_overlay_subnet | ansible.utils.ipaddr('network')
+     | ansible.utils.ipmath(asset_id | int)
+     ~ '/' ~ (k0s_overlay_subnet | ansible.utils.ipaddr('prefix')) }}
+
+k0s_overlay_listen_port: 51820
+
+# Public endpoint (IP[:port]) advertised to peers. Empty → auto-derive from
+# ansible_default_ipv4.address + listen_port. Override for hosts behind NAT
+# where the public address differs from the local interface address.
+k0s_overlay_public_endpoint: ""
+
+# MTU: 1500 - 80 (WireGuard header over IPv4). Use 1360 for IPv6 endpoints.
+k0s_overlay_mtu: 1380
+
+# NAT/conntrack keepalive. Must be < 30s (Linux UDP-stream conntrack default).
+k0s_overlay_persistent_keepalive: 25
+
+# Vault path schema for pubkey distribution. One entry per host:
+#   k0s/<cluster_id>/wg/<inventory_hostname> = { pubkey, endpoint, allowed_ips }
+k0s_overlay_pubkey_secret_path: "k0s/{{ k0s_cluster_id }}/wg/{{ inventory_hostname }}"
+
+# --- Cluster network configuration ------------------------------------------
+k0s_cni: "kuberouter"           # "kuberouter" (default) | "calico" | "custom"
+k0s_pod_cidr: "10.244.0.0/16"
+k0s_service_cidr: "10.96.0.0/12"
+k0s_kube_proxy_mode: "ipvs"     # "ipvs" | "iptables"
+k0s_telemetry_enabled: false
+
+# --- API HA -----------------------------------------------------------------
+# NLLB (Node-Local Load Balancer): each kubelet gets a local Envoy that
+# round-robins API requests to all controllers. Works in BOTH scenarios
+# without external dependencies. Default ON.
+k0s_nllb_enabled: true
+k0s_nllb_type: "EnvoyProxy"
+
+# CPLB (Control Plane Load Balancer): k0s-managed keepalived+haproxy on the
+# controllers. Provides a real VIP. Requires L2 connectivity → only usable
+# in VLAN clusters, NOT in overlay clusters.
+k0s_cplb_enabled: false
+k0s_cplb_vip: ""                # required when cplb_enabled
+k0s_cplb_vrrp_router_id: 51
+
+# Extra Subject Alternative Names for the API certificate (DNS names etc.).
+k0s_api_extra_sans: []
+
+# --- Token rotation ---------------------------------------------------------
+# Daily pull → daily token regeneration. TTL slightly above pull interval
+# guarantees a valid token at all times.
+k0s_token_ttl: "25h"
+k0s_token_secret_path: "k0s/{{ k0s_cluster_id }}/tokens"
+
+# --- OS hardening hooks (k0s-specific kernel/sysctl requirements) ----------
+# These complement the common role; they are NOT a replacement.
+k0s_disable_swap: true                # kubelet refuses to start with swap on
+k0s_set_iptables_legacy: true         # kube-proxy IPVS mode requires legacy iptables backend
+k0s_kernel_modules:
+  - br_netfilter
+  - overlay
+  - ip_vs
+  - ip_vs_rr
+  - ip_vs_wrr
+  - ip_vs_sh
+  - nf_conntrack
+k0s_sysctl:
+  net.bridge.bridge-nf-call-iptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.ipv4.ip_forward: 1
+  net.ipv6.conf.all.forwarding: 1
+
+# --- Vault writes (token + WireGuard pubkey publish) -----------------------
+# k0s requires HashiCorp Vault; ansible-vault is intentionally unsupported
+# (would require git push-back from pull runs — breaks the pull model).
+# The role asserts secrets_backend == 'hashicorp-vault' during preflight.
+k0s_vault_kv_mount: "{{ secrets_vault_mount_point | default('secret') }}"

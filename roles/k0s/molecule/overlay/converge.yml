@@ -1,0 +1,19 @@
+---
+- name: Converge — k0s WireGuard-overlay mode (test mode)
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    k0s_enabled: true
+    k0s_test_mode: true
+    k0s_cluster_id: "molecule-overlay"
+    k0s_role: "controller+worker"
+    k0s_bootstrap_node: true
+    k0s_network_mode: "overlay"
+    k0s_overlay_subnet: "10.99.0.0/24"
+    asset_id: "0005"
+    secrets_backend: "hashicorp-vault"
+
+  roles:
+    - role: k0s
