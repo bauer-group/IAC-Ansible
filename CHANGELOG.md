@@ -1,3 +1,9 @@
+## [2.2.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.2...v2.2.3) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **roles:** EL-aware sysctl.d + MOTD path in verify ([5bf0887](https://github.com/bauer-group/IAC-Ansible/commit/5bf08879f7592a7795f7500ca87840daa46b14e5))
+
 ## [2.2.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.1...v2.2.2) (2026-04-18)
 
 ### 🐛 Bug Fixes
