@@ -25,15 +25,27 @@
     - ansible_facts['distribution'] == "Ubuntu"
     - ansible_facts['distribution_major_version'] in ["22", "24"]
 
+- name: "[Ubuntu 22.04/24.04] Check Ansible PPA signing key presence"
+  ansible.builtin.stat:
+    path: /etc/apt/keyrings/ansible-ppa.asc
+  register: ansible_pull_ppa_key_stat
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_major_version'] in ["22", "24"]
+
 - name: "[Ubuntu 22.04/24.04] Fetch Ansible PPA signing key"
   ansible.builtin.get_url:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367"
     dest: /etc/apt/keyrings/ansible-ppa.asc
     mode: "0644"
-    force: false
+  # get_url with force:false still probes the server and can report
+  # changed=true when the upstream keyserver omits ETag/Last-Modified
+  # headers. Gate the download explicitly on dest absence to guarantee
+  # idempotence.
   when:
     - ansible_facts['distribution'] == "Ubuntu"
     - ansible_facts['distribution_major_version'] in ["22", "24"]
+    - not (ansible_pull_ppa_key_stat.stat.exists | default(false))
 
 - name: "[Ubuntu 22.04/24.04] Add Ansible PPA repository (signed-by keyring)"
   ansible.builtin.apt_repository:

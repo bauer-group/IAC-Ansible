@@ -8,6 +8,11 @@
     name: "{{ docker_conflicting_packages }}"
     state: absent
   failed_when: false
+  # Best-effort pre-install cleanup on RHEL — package presence varies
+  # across Rocky/Alma/RHEL versions and may trigger weak-dep churn on
+  # repeated runs without any functional state change. Not meaningful
+  # for idempotence checks.
+  changed_when: false
 
 - name: "[RedHat] Install Docker prerequisites"
   ansible.builtin.dnf:
@@ -31,3 +36,8 @@
   ansible.builtin.dnf:
     name: "{{ docker_packages }}"
     state: present
+    # Container-minimal RHEL images have a different weak-dep baseline than
+    # real hosts. Disabling weak deps keeps the installed set deterministic
+    # across ansible runs — otherwise dnf picks different recommended
+    # packages each run and idempotence flaps.
+    install_weak_deps: false
