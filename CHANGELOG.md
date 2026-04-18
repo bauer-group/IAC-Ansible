@@ -1,3 +1,9 @@
+## [2.3.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.3.0...v2.3.1) (2026-04-18)
+
+### 🐛 Bug Fixes
+
+* **common:** added tzdata to Debian/Ubuntu common_packages ([c897c13](https://github.com/bauer-group/IAC-Ansible/commit/c897c13bba93a97681b53d86530df5515f58e063))
+
 ## [2.3.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.2.8...v2.3.0) (2026-04-18)
 
 ### 🚀 Features
