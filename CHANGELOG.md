@@ -1,3 +1,9 @@
+## [2.4.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.4.0...v2.4.1) (2026-04-19)
+
+### 🐛 Bug Fixes
+
+* **ansible_pull:** resolved apt Signed-By conflict on Ubuntu PPA ([6250a88](https://github.com/bauer-group/IAC-Ansible/commit/6250a88d1c7b637ff96640ae0e3d6d9c8558ea91))
+
 ## [2.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.3.1...v2.4.0) (2026-04-19)
 
 ### 🚀 Features
