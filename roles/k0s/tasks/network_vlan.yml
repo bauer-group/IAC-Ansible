@@ -28,6 +28,14 @@
       - "mtu    : {{ k0s_vlan_mtu }}"
     verbosity: 1
 
+- name: "[k0s][vlan] Ensure /etc/netplan exists"
+  ansible.builtin.file:
+    path: "{{ k0s_vlan_netplan_filename | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
 - name: "[k0s][vlan] Render netplan VLAN sub-interface"
   ansible.builtin.template:
     src: 10-iac-k0s-vlan.yaml.j2

@@ -22,12 +22,20 @@
   failed_when: false
   when: k0s_disable_swap | bool
 
+- name: "[k0s][preflight] Stat /etc/fstab"
+  ansible.builtin.stat:
+    path: /etc/fstab
+  register: k0s_fstab_stat
+  when: k0s_disable_swap | bool
+
 - name: "[k0s][preflight] Disable swap entries in /etc/fstab"
   ansible.builtin.replace:
     path: /etc/fstab
     regexp: '^([^#].*\sswap\s.*)$'
     replace: '# \1   # disabled by k0s role'
-  when: k0s_disable_swap | bool
+  when:
+    - k0s_disable_swap | bool
+    - k0s_fstab_stat.stat.exists | default(false)
 
 # --- Kernel modules --------------------------------------------------------
 
@@ -70,8 +78,8 @@
 - name: "[k0s][preflight] Switch to iptables-legacy where available"
   ansible.builtin.command: "update-alternatives --set {{ item.name }} {{ item.path }}"
   loop: "{{ k0s_iptables_legacy_alternatives }}"
-  changed_when: true
-  failed_when: false   # binary may be absent on minimal installs
+  changed_when: false   # update-alternatives --set is system-idempotent but always exits 0
+  failed_when: false    # binary may be absent on minimal installs
   when:
     - k0s_set_iptables_legacy | bool
     - k0s_iptables_legacy_alternatives | length > 0
