@@ -5,10 +5,12 @@
 # Role : k0s controller+worker (joiner for cluster staging-test-5node)
 # =============================================================================
 # Provider: VPS (Public Cloud)
-# OS: Debian 13 (Trixie)
+# OS: Ubuntu 24.04 LTS — HWE kernel track (newer kernel than Debian 13)
+# Verify after provisioning: `uname -r` should show 6.11+ (HWE), not 6.8 (GA).
+# If GA kernel is shipped, install: apt install linux-generic-hwe-24.04
 
 # Platform
-platform: debian_13
+platform: ubuntu_2404
 
 # Asset metadata
 asset_id: "0013"
@@ -19,7 +21,7 @@ asset_type: test_sandbox
 labels:
   - test
   - public-cloud
-  - debian
+  - ubuntu
   - k0s
 
 # Override: use main branch until staging branch exists
