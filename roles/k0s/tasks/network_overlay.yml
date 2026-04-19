@@ -30,7 +30,7 @@
 - name: "[k0s][overlay] Generate new WireGuard keypair"
   ansible.builtin.shell:
     cmd: |
-      set -e
+      set -eo pipefail
       umask 077
       wg genkey | tee /etc/wireguard/private.key | wg pubkey > /etc/wireguard/public.key
     creates: /etc/wireguard/private.key
