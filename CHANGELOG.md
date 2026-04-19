@@ -1,3 +1,26 @@
+## [2.4.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.3.1...v2.4.0) (2026-04-19)
+
+### 🚀 Features
+
+* **inventory:** added 5-node staging k0s cluster (overlay mode) ([a950325](https://github.com/bauer-group/IAC-Ansible/commit/a9503259b1a88e839f79883ac7bd2807193aec54))
+* **k0s:** added k0s role with vlan and overlay network modes ([c6d254b](https://github.com/bauer-group/IAC-Ansible/commit/c6d254b41338db8c86cacaf76d17ff918bcddc99))
+* **playbooks:** integrated k0s as Phase 7 with multi-cluster topology ([5f053e8](https://github.com/bauer-group/IAC-Ansible/commit/5f053e80ff21773a35a3772764217827c2f8f4bd))
+
+### 🐛 Bug Fixes
+
+* **k0s:** added pipefail to WireGuard keypair shell task ([b02afe0](https://github.com/bauer-group/IAC-Ansible/commit/b02afe0319510cae4904c1d59156716220333531))
+* **k0s:** bash-executable for pipefail, test-mode-safe handlers ([2c0028f](https://github.com/bauer-group/IAC-Ansible/commit/2c0028fad19501da01a74df287401e626a1521c5))
+* **k0s:** pre-create /etc/modules-load.d and /etc/sysctl.d ([f5823b1](https://github.com/bauer-group/IAC-Ansible/commit/f5823b1adba09e4fd3308b107b507a39834f2df9))
+* **k0s:** refresh apt cache before installing preflight packages ([82e0b19](https://github.com/bauer-group/IAC-Ansible/commit/82e0b19ccf863604eb112b37f6c23bdcc4237561))
+* **k0s:** removed meta-deps on common and secrets roles ([26311f9](https://github.com/bauer-group/IAC-Ansible/commit/26311f9dc3efaccd8687b61c7f1593b9e50df8e8))
+* **k0s:** skipped cross-host bootstrap uniqueness assert in test mode ([666297e](https://github.com/bauer-group/IAC-Ansible/commit/666297e033816ece84e08ad49a72f0971d249b20))
+* **k0s:** three molecule blockers (fstab, netplan dir, alternatives idempotency) ([dadbb84](https://github.com/bauer-group/IAC-Ansible/commit/dadbb847ef534d93c58ce67bbc0635ff37d85764))
+* **roles:** shortened apt cache_valid_time to recover from stale-cache images ([4b6d3ba](https://github.com/bauer-group/IAC-Ansible/commit/4b6d3ba38f7bbb7a3065c0cda6b291b10230dfa4))
+
+### ♻️ Refactoring
+
+* **staging:** switched k0s test cluster to Ubuntu 24.04 LTS (HWE) ([48e5378](https://github.com/bauer-group/IAC-Ansible/commit/48e5378712a43b89290e4c9b6082d3d7d937a383))
+
 ## [2.3.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.3.0...v2.3.1) (2026-04-18)
 
 ### 🐛 Bug Fixes
