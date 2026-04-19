@@ -153,8 +153,25 @@ install_ansible_debian() {
     apt-get install -y -qq git curl
 
     if [ "${OS_ID}" = "ubuntu" ]; then
-        apt-get install -y -qq software-properties-common
-        apt-add-repository -y ppa:ansible/ansible 2>/dev/null || true
+        # Register Ansible PPA with the signed-by keyring pattern.
+        # Must match roles/ansible_pull/tasks/debian.yml byte-for-byte so
+        # the role stays idempotent and apt never sees two registrations
+        # with different Signed-By values (noble fails hard on that).
+        mkdir -p /etc/apt/keyrings
+        local keyring="/etc/apt/keyrings/ansible-ppa.asc"
+        if [ ! -s "${keyring}" ]; then
+            curl -fsSL \
+                "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" \
+                -o "${keyring}"
+            chmod 0644 "${keyring}"
+        fi
+        # Purge any legacy add-apt-repository registration (inline Signed-By)
+        rm -f /etc/apt/sources.list.d/ansible-ubuntu-ansible-*.sources
+        local codename
+        codename="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
+        cat > /etc/apt/sources.list.d/ansible-ppa.list <<EOF
+deb [signed-by=${keyring}] https://ppa.launchpadcontent.net/ansible/ansible/ubuntu ${codename} main
+EOF
         apt-get update -qq
     fi
 

@@ -22,7 +22,7 @@ systemctl start ansible-pull
 | Problem | Lösung |
 |---------|--------|
 | Git-Repository nicht erreichbar | Netzwerk/DNS prüfen, `git ls-remote` testen |
-| Ansible-Version zu alt | PPA hinzufügen: `apt-add-repository ppa:ansible/ansible` |
+| Ansible-Version zu alt | `ansible_pull`-Rolle erneut ausführen (registriert PPA via signed-by keyring) |
 | Vault-Passwort fehlt | `/etc/ansible/vault-password` erstellen (siehe [Vault-Doku](vault.md)) |
 | Inventory nicht gefunden | `ansible_pull_inventory` in group_vars prüfen |
 

@@ -47,6 +47,31 @@
     - ansible_facts['distribution_major_version'] in ["22", "24"]
     - not (ansible_pull_ppa_key_stat.stat.exists | default(false))
 
+- name: "[Ubuntu 22.04/24.04] Find legacy add-apt-repository PPA files"
+  # add-apt-repository writes a deb822 .sources file with an INLINE PGP key
+  # under Signed-By. If bootstrap ran the legacy `apt-add-repository ppa:…`
+  # path, this file coexists with our .list below and apt rejects both with
+  # "Widersprüchliche Werte gesetzt für Option Signed-By". Detect and remove.
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "ansible-ubuntu-ansible-*.sources"
+    file_type: file
+  register: ansible_pull_legacy_ppa
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_major_version'] in ["22", "24"]
+
+- name: "[Ubuntu 22.04/24.04] Remove legacy add-apt-repository PPA files"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ ansible_pull_legacy_ppa.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when:
+    - ansible_pull_legacy_ppa.files is defined
+    - ansible_pull_legacy_ppa.files | length > 0
+
 - name: "[Ubuntu 22.04/24.04] Add Ansible PPA repository (signed-by keyring)"
   ansible.builtin.apt_repository:
     repo: >-
