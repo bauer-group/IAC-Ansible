@@ -18,6 +18,9 @@ galaxy_info:
       versions:
         - "all"
 
-dependencies:
-  - role: common
-  - role: secrets
+# No meta dependencies — `common` and `secrets` are run as separate plays
+# in playbooks/site.yml (Phase 0 + Phase 1) BEFORE Phase 7 (k0s). Declaring
+# them here would force molecule to load common into every k0s test scenario,
+# which fails on Docker's bind-mounted /etc/hosts (common's hostname task).
+# Production ordering is enforced by site.yml, not by meta-deps.
+dependencies: []
