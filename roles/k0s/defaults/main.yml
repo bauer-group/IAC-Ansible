@@ -40,7 +40,7 @@ k0s_bootstrap_node: false
 # --- k0s binary -------------------------------------------------------------
 # Pin a specific version. Override via group_vars to drive cluster-wide
 # upgrades. Format: "v<k8s>+k0s.<patch>". List: https://github.com/k0sproject/k0s/releases
-k0s_version: "v1.31.0+k0s.0"
+k0s_version: "v1.35.3+k0s.0"
 k0s_install_path: "/usr/local/bin/k0s"
 k0s_data_dir: "/var/lib/k0s"
 k0s_config_dir: "/etc/k0s"
