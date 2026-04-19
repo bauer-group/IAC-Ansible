@@ -33,6 +33,7 @@
       set -eo pipefail
       umask 077
       wg genkey | tee /etc/wireguard/private.key | wg pubkey > /etc/wireguard/public.key
+    executable: /bin/bash   # pipefail requires bash (Debian /bin/sh is dash)
     creates: /etc/wireguard/private.key
   when: not k0s_wg_priv_stat.stat.exists
 
