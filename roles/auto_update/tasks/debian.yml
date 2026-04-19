@@ -10,6 +10,8 @@
       - apt-listchanges
       - needrestart
     state: present
+    update_cache: true
+    cache_valid_time: 3600
 
 - name: "[Debian] Deploy update script"
   ansible.builtin.template:
