@@ -1,0 +1,34 @@
+---
+# =============================================================================
+# Host: 0011-68.cloud.bauer-group.com
+# Asset: 0011 | Group: 68 (Test / Sandbox)
+# Role : k0s controller+worker (BOOTSTRAP node for cluster staging-test-5node)
+# =============================================================================
+# Provider: VPS (Public Cloud)
+# OS: Debian 13 (Trixie)
+
+# Platform
+platform: debian_13
+
+# Asset metadata
+asset_id: "0011"
+group_code: "68"
+asset_type: test_sandbox
+
+# Labels
+labels:
+  - test
+  - public-cloud
+  - debian
+  - k0s
+  - k0s-bootstrap
+
+# Override: use main branch until staging branch exists
+iac_repo_branch: "main"
+
+# k0s — bootstrap node for staging-test-5node
+# This is the ONLY host in the cluster with k0s_bootstrap_node: true.
+# Overlay address auto-derived from asset_id (10.99.0.11/24).
+# Public endpoint auto-derived from ansible_default_ipv4 (VPS public IP).
+k0s_bootstrap_node: true
+k0s_enabled: false   # flip to true to activate the cluster rollout

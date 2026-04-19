@@ -1,0 +1,29 @@
+---
+# =============================================================================
+# Host: 0014-68.cloud.bauer-group.com
+# Asset: 0014 | Group: 68 (Test / Sandbox)
+# Role : k0s controller+worker (joiner for cluster staging-test-5node)
+# =============================================================================
+# Provider: VPS (Public Cloud)
+# OS: Debian 13 (Trixie)
+
+# Platform
+platform: debian_13
+
+# Asset metadata
+asset_id: "0014"
+group_code: "68"
+asset_type: test_sandbox
+
+# Labels
+labels:
+  - test
+  - public-cloud
+  - debian
+  - k0s
+
+# Override: use main branch until staging branch exists
+iac_repo_branch: "main"
+
+# k0s — joiner. Overlay address auto-derived: 10.99.0.14/24
+k0s_enabled: false   # flip to true to activate the cluster rollout
