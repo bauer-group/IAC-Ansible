@@ -92,11 +92,14 @@ The role asserts `secrets_backend == "hashicorp-vault"`. Ansible-Vault is
 not supported because tokens are rotated on every pull and Vault is the
 only backend that allows in-pull writes without a git push-back loop.
 
-Vault paths used by the role:
+Vault paths used by the role (KV v2 — one secret per path with multiple keys):
 
 ```
-secret/k0s/<cluster_id>/tokens                 # controller_token, worker_token
-secret/k0s/<cluster_id>/wg/<inventory_hostname> # pubkey, endpoint, allowed_ips
+secret/k0s/<cluster_id>/tokens
+  keys: controller_token, worker_token, issued, ttl, bootstrap_node
+
+secret/k0s/<cluster_id>/wg/<inventory_hostname>
+  keys: pubkey, endpoint, allowed_ips, updated
 ```
 
 ## Variable cheat sheet
@@ -108,7 +111,7 @@ k0s_role: "controller+worker"           # controller | worker | controller+worke
 k0s_bootstrap_node: false               # exactly one true per cluster
 
 # Version
-k0s_version: "v1.31.0+k0s.0"
+k0s_version: "v1.35.3+k0s.0"
 k0s_upgrade_allowed: false              # explicit gate against accidental upgrades
 
 # Network mode
@@ -129,7 +132,53 @@ k0s_cplb_enabled: false                 # vlan-only
 
 # Test mode
 k0s_test_mode: false                    # set true in molecule / dry-run
+                                        # skips: install, bootstrap, join,
+                                        #        service start, vault writes,
+                                        #        cross-host hostvars asserts
 ```
+
+## Active staging cluster — `staging-test-5node`
+
+5-node WireGuard-overlay cluster on Ubuntu 24.04 LTS (HWE kernel) with
+asset_ids 0011-68 .. 0015-68. WireGuard addresses derive automatically
+from `asset_id`:
+
+```
+0011-68 -> 10.99.0.11   (BOOTSTRAP node, k0s_bootstrap_node: true)
+0012-68 -> 10.99.0.12
+0013-68 -> 10.99.0.13
+0014-68 -> 10.99.0.14
+0015-68 -> 10.99.0.15
+```
+
+Inventory: [inventory/staging/hosts.yml](../inventory/staging/hosts.yml)
+under group `k0s_cluster_test_5node`. Per-host overrides in
+[inventory/staging/host_vars/](../inventory/staging/host_vars/).
+
+### Two-step activation
+
+Hosts ship with `k0s_enabled: false` so the standard pull (common,
+ansible-pull, auto-updates) converges first without bringing up k0s.
+Activate the cluster once Vault is reachable and base OS is stable:
+
+```bash
+# Step 1 — bootstrap node first
+sed -i 's/k0s_enabled: false/k0s_enabled: true/' \
+  inventory/staging/host_vars/0011-68.cloud.bauer-group.com.yml
+git commit -am "feat(staging): activated k0s on bootstrap node 0011-68"
+git push
+# wait for next pull on 0011-68: it initialises etcd, mints tokens, pushes to Vault
+
+# Step 2 — joiners (after tokens are visible in Vault)
+sed -i 's/k0s_enabled: false/k0s_enabled: true/' \
+  inventory/staging/host_vars/001[2-5]-68.cloud.bauer-group.com.yml
+git commit -am "feat(staging): activated k0s joiners 0012-0015"
+git push
+```
+
+Joiners that pull before the bootstrap node has minted tokens simply
+`meta: end_host` and retry on the next cycle — no manual coordination
+needed.
 
 ## Operating
 
