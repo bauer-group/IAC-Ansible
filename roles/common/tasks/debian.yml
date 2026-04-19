@@ -3,32 +3,6 @@
 # Common Role - Debian/Ubuntu Tasks
 # =============================================================================
 
-# Self-heal hosts bootstrapped with legacy `apt-add-repository ppa:ansible/ansible`.
-# That command writes a deb822 .sources file with an INLINE Signed-By PGP key,
-# which conflicts with the signed-by keyring pattern used by install.sh and
-# roles/ansible_pull. Must run before ANY apt module, otherwise apt aborts with
-# "Conflicting values set for option Signed-By" and breaks the entire play.
-- name: "[Ubuntu] Find legacy add-apt-repository Ansible PPA files"
-  ansible.builtin.find:
-    paths: /etc/apt/sources.list.d
-    patterns: "ansible-ubuntu-ansible-*.sources"
-    file_type: file
-  register: common_legacy_ansible_ppa
-  when:
-    - ansible_facts['distribution'] == "Ubuntu"
-    - ansible_facts['distribution_major_version'] in ["22", "24"]
-
-- name: "[Ubuntu] Remove legacy add-apt-repository Ansible PPA files"
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ common_legacy_ansible_ppa.files | default([]) }}"
-  loop_control:
-    label: "{{ item.path }}"
-  when:
-    - common_legacy_ansible_ppa.files is defined
-    - common_legacy_ansible_ppa.files | length > 0
-
 - name: "[Debian] Update apt cache (once per hour)"
   ansible.builtin.apt:
     update_cache: true
