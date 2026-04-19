@@ -39,6 +39,17 @@
 
 # --- Kernel modules --------------------------------------------------------
 
+- name: "[k0s][preflight] Ensure modules-load.d and sysctl.d exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /etc/modules-load.d
+    - /etc/sysctl.d
+
 - name: "[k0s][preflight] Persist kernel module load list"
   ansible.builtin.copy:
     dest: /etc/modules-load.d/k0s.conf
