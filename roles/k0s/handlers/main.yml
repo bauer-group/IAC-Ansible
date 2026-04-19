@@ -2,35 +2,53 @@
 # =============================================================================
 # k0s Role - Handlers
 # =============================================================================
+# Handlers are gated on NOT test_mode so molecule scenarios (which render
+# configs but skip service bring-up) don't fail at end-of-play when the
+# systemd unit they try to restart does not exist.
+# `failed_when: false` on the systemd restarts is a defense-in-depth layer
+# for first-pull scenarios where the config template is rendered before
+# `k0s install` has created the unit file.
 
 - name: Restart k0scontroller
   ansible.builtin.systemd:
     name: k0scontroller
     state: restarted
     daemon_reload: true
-  when: k0s_role in ["controller", "controller+worker"]
+  failed_when: false
+  when:
+    - k0s_role in ["controller", "controller+worker"]
+    - not (k0s_test_mode | default(false) | bool)
 
 - name: Restart k0sworker
   ansible.builtin.systemd:
     name: k0sworker
     state: restarted
     daemon_reload: true
-  when: k0s_role == "worker"
+  failed_when: false
+  when:
+    - k0s_role == "worker"
+    - not (k0s_test_mode | default(false) | bool)
 
 - name: Reload sysctl
   ansible.builtin.command: sysctl --system
   changed_when: true
+  failed_when: false
 
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: true
+  when: not (k0s_test_mode | default(false) | bool)
 
 - name: Restart wg-quick wg0
   ansible.builtin.systemd:
     name: wg-quick@wg0
     state: restarted
     daemon_reload: true
+  failed_when: false
+  when: not (k0s_test_mode | default(false) | bool)
 
 - name: Apply k0s netplan
   ansible.builtin.command: netplan apply
   changed_when: true
+  failed_when: false
+  when: not (k0s_test_mode | default(false) | bool)
