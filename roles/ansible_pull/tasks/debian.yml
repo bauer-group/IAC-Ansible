@@ -80,6 +80,11 @@
       {{ ansible_facts['distribution_release'] }} main
     filename: ansible-ppa
     state: present
+    # Skip the implicit cache update — its built-in retry policy is too
+    # short for transient launchpad mirror hiccups. The next task does the
+    # update with longer retries.
+    update_cache: false
+  register: ansible_pull_ppa_added
   when:
     - ansible_facts['distribution'] == "Ubuntu"
     - ansible_facts['distribution_major_version'] in ["22", "24"]
@@ -88,6 +93,13 @@
   ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
+  # ppa.launchpadcontent.net is regularly slow/flaky from CI runners.
+  # 10× with 30s pause is ~5 minutes worst-case but recovers from any
+  # mirror brownout shorter than that.
+  register: ansible_pull_apt_cache
+  until: ansible_pull_apt_cache is succeeded
+  retries: 10
+  delay: 30
 
 - name: "[Debian] Install Ansible"
   ansible.builtin.apt:
