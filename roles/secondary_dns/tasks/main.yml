@@ -1,0 +1,197 @@
+---
+# =============================================================================
+# secondary_dns - Main Tasks
+# =============================================================================
+# PowerDNS authoritative secondary. Idempotent — every task converges on the
+# same end state regardless of how many times it runs.
+#
+# Note: this role intentionally does NOT touch chrony, msmtp, fail2ban[sshd],
+# SSH hardening, MOTD, hostname or NTP — these are baseline tasks of the
+# `common` role (Phase 1) that runs before this role.
+
+- name: Skip host when secondary_dns is disabled
+  ansible.builtin.meta: end_host
+  when: not (secondary_dns_enabled | bool)
+
+- name: Display secondary_dns configuration
+  ansible.builtin.debug:
+    msg: >-
+      secondary_dns: {{ inventory_hostname }}
+      | primaries={{ secondary_dns_primaries | length }}
+      | tsig={{ 'yes' if secondary_dns_tsig_key | length > 0 else 'no' }}
+      | strict={{ secondary_dns_primaries_strict }}
+      | firewall_open={{ secondary_dns_firewall_open }}
+    verbosity: 1
+# Note: the [recidive] fail2ban jail is now provided by the `common` role
+# (common_fail2ban_recidive_enabled, default true). Bruteforce escalation
+# is generic, not DNS-specific.
+
+- name: Validate primary entries shape
+  ansible.builtin.assert:
+    that:
+      - item.hostname is defined and item.hostname | length > 0
+      - (item.ipv4 | default('') | length > 0) or (item.ipv6 | default('') | length > 0)
+    fail_msg: >-
+      Primary entry malformed: each item under secondary_dns_primaries needs
+      `hostname` and at least one of `ipv4` / `ipv6`. Got: {{ item }}
+  loop: "{{ secondary_dns_primaries }}"
+  loop_control:
+    label: "{{ item.hostname | default('<missing>') }}"
+  when: secondary_dns_primaries | length > 0
+
+- name: Refuse to start without any primaries
+  ansible.builtin.fail:
+    msg: >-
+      secondary_dns_primaries is empty. A pure-secondary PowerDNS without
+      configured primaries cannot accept any zone via NOTIFY/AXFR. Define
+      primaries in host_vars/{{ inventory_hostname }}.yml or set
+      secondary_dns_enabled=false to skip the role on this host.
+  when: secondary_dns_primaries | length == 0
+
+# --- OS support ------------------------------------------------------------
+
+- name: Refuse non-Debian platforms
+  ansible.builtin.fail:
+    msg: >-
+      secondary_dns currently supports only Debian/Ubuntu (PowerDNS apt
+      packages). Detected: {{ ansible_facts['os_family'] }}.
+  when: ansible_facts['os_family'] != "Debian"
+
+# --- Disable systemd-resolved (port 53 conflict) ---------------------------
+
+- name: Stop and mask systemd-resolved (port 53 conflict)
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: false
+    masked: true
+  failed_when: false
+
+- name: Replace /etc/resolv.conf with static external resolvers
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    mode: "0644"
+    owner: root
+    group: root
+    force: true
+
+# --- Packages --------------------------------------------------------------
+
+- name: Install PowerDNS authoritative + sqlite backend + dnsutils
+  ansible.builtin.apt:
+    name:
+      - pdns-server
+      - pdns-backend-sqlite3
+      - sqlite3
+      - dnsutils
+    state: present
+    update_cache: true
+    cache_valid_time: 600
+
+# --- SQLite database (schema + supermasters + tsig) ------------------------
+
+- name: Set up PowerDNS database
+  ansible.builtin.include_tasks: database.yml
+
+# --- Set fact: comma-joined IP list for the pdns.conf template -------------
+
+- name: Build primary IP list from inventory
+  ansible.builtin.set_fact:
+    secondary_dns_primary_ips: >-
+      {{
+        (secondary_dns_primaries
+          | map(attribute='ipv4', default='')
+          | reject('equalto', '')
+          | list)
+        +
+        (secondary_dns_primaries
+          | map(attribute='ipv6', default='')
+          | reject('equalto', '')
+          | list)
+      }}
+
+- name: Reduce to comma-separated string for pdns.conf
+  ansible.builtin.set_fact:
+    secondary_dns_primary_ips: "{{ secondary_dns_primary_ips | join(',') }}"
+
+# --- Configuration ---------------------------------------------------------
+
+- name: Deploy /etc/powerdns/pdns.conf
+  ansible.builtin.template:
+    src: pdns.conf.j2
+    dest: "{{ secondary_dns_conf_path }}"
+    owner: pdns
+    group: pdns
+    mode: "0640"
+  notify: Restart pdns
+
+- name: Validate pdns.conf with pdns_server --config (pre-flight)
+  ansible.builtin.command:
+    cmd: pdns_server --config-dir=/etc/powerdns --config
+  register: secondary_dns_validation
+  changed_when: false
+  failed_when: >-
+    secondary_dns_validation.rc != 0
+    or 'Fatal' in (secondary_dns_validation.stderr | default(''))
+    or 'unknown setting' in (secondary_dns_validation.stderr | default(''))
+
+# --- Sysctl tuning ---------------------------------------------------------
+
+- name: Deploy DNS sysctl tuning
+  ansible.builtin.template:
+    src: 99-dns-performance.conf.j2
+    dest: /etc/sysctl.d/99-dns-performance.conf
+    mode: "0644"
+  when: secondary_dns_sysctl_tune | bool
+  notify: Apply sysctl
+
+- name: Remove sysctl tuning when disabled
+  ansible.builtin.file:
+    path: /etc/sysctl.d/99-dns-performance.conf
+    state: absent
+  when: not (secondary_dns_sysctl_tune | bool)
+  notify: Apply sysctl
+
+# --- dns-admin tool --------------------------------------------------------
+
+- name: Deploy dns-admin management tool
+  ansible.builtin.template:
+    src: dns-admin.j2
+    dest: "{{ secondary_dns_admin_tool_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+
+# --- Firewall + fail2ban ---------------------------------------------------
+
+- name: Configure UFW rules for DNS
+  ansible.builtin.include_tasks: firewall.yml
+  when: secondary_dns_firewall_open | bool
+
+# --- Service ---------------------------------------------------------------
+
+- name: Enable and start pdns
+  ansible.builtin.systemd:
+    name: pdns
+    state: started
+    enabled: true
+
+- name: Flush handlers (apply pending pdns reloads before final check)
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for PowerDNS to listen on port 53
+  ansible.builtin.wait_for:
+    port: 53
+    host: 127.0.0.1
+    timeout: 15
+
+- name: Final health snapshot via dns-admin
+  ansible.builtin.command: "{{ secondary_dns_admin_tool_path }} health"
+  register: secondary_dns_health
+  changed_when: false
+  failed_when: secondary_dns_health.rc == 2  # CRITICAL only — WARNINGs are OK during first install
+
+- name: Show health output
+  ansible.builtin.debug:
+    msg: "{{ secondary_dns_health.stdout_lines }}"

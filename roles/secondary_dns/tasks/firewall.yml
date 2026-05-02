@@ -1,0 +1,39 @@
+---
+# =============================================================================
+# secondary_dns - UFW DNS rules
+# =============================================================================
+# Opens 53/tcp + 53/udp WHEN UFW is the active firewall on this host. We do
+# NOT touch UFW state — that is the `common` role's responsibility via
+# common_firewall_ufw_state. This task only adds rules, never enables/disables.
+
+- name: Check whether ufw is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: secondary_dns_ufw_binary
+
+- name: Check current ufw status
+  ansible.builtin.command: ufw status
+  register: secondary_dns_ufw_status
+  changed_when: false
+  failed_when: false
+  when: secondary_dns_ufw_binary.stat.exists
+
+- name: Allow DNS TCP (port 53) through UFW
+  community.general.ufw:
+    rule: allow
+    port: "53"
+    proto: tcp
+    comment: "IAC: DNS TCP (secondary_dns)"
+  when:
+    - secondary_dns_ufw_binary.stat.exists
+    - "'Status: active' in (secondary_dns_ufw_status.stdout | default(''))"
+
+- name: Allow DNS UDP (port 53) through UFW
+  community.general.ufw:
+    rule: allow
+    port: "53"
+    proto: udp
+    comment: "IAC: DNS UDP (secondary_dns)"
+  when:
+    - secondary_dns_ufw_binary.stat.exists
+    - "'Status: active' in (secondary_dns_ufw_status.stdout | default(''))"

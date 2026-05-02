@@ -123,3 +123,14 @@
   roles:
     - role: k0s
       tags: [k0s]
+
+# --- Phase 8: PowerDNS authoritative secondaries ---
+- name: "Phase 8: PowerDNS secondary DNS"
+  hosts: secondary_dns
+  become: true
+  gather_facts: true
+  tags: [secondary_dns, dns]
+
+  roles:
+    - role: secondary_dns
+      tags: [secondary_dns, dns]

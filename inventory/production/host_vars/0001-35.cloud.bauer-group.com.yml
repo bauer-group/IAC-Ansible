@@ -1,0 +1,105 @@
+---
+# =============================================================================
+# Host: 0001-35.cloud.bauer-group.com
+# Asset: 0001 | Group: 35 (Cloud service on virtual machine)
+# =============================================================================
+# Purpose: PowerDNS authoritative secondary (NOTIFY/AXFR slave).
+#
+# === Hostname vs. operational service name ===================================
+# This host is identified inside the inventory by the asset hostname
+# 0001-35.cloud.bauer-group.com (Asset 0001, Group 35 = cloud service on VM).
+# That is what /etc/hostname is set to and what every Ansible artefact uses.
+#
+# Externally the same machine answers DNS queries under one or more SERVICE
+# FQDNs (e.g. ns1.professional-hosting.com). Those names are JUST A/AAAA
+# records pointing at this host's IPs — they are NOT the system hostname.
+# Service FQDNs are kept here for documentation and so that operators can
+# correlate the asset with what the public sees, but they have no functional
+# effect on Ansible (see docs/server-naming.md "Service FQDNs vs. asset FQDN").
+#
+# This host_vars file is written so that a full run of `playbooks/site.yml`
+# either retrofits an already-configured PowerDNS server (no disruption) OR
+# provisions a blank Ubuntu 24.04 LTS from scratch to the same end state.
+# Ubuntu 24.04 was chosen for fleet consistency with the other public-cloud
+# hosts (0046-20, 0047-20). The source repository (bauer-group/IP-Helper.SecondaryDNS)
+# also supports Debian 12/13 — switch `platform:` if you provision differently.
+
+platform: ubuntu_2404
+
+asset_id: "0001"
+group_code: "35"
+asset_type: dns_secondary
+
+# Public-facing service FQDNs that resolve to this host (informational only).
+service_fqdns:
+  - ns1.professional-hosting.com
+
+labels:
+  - production
+  - dns-secondary
+  - ubuntu
+  - public-facing
+
+# --- Hostname ---
+# Set by default; explicit here so a fresh-install run names the host
+# correctly before PowerDNS comes up.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# DNS server: UFW enabled, the secondary_dns role opens 53/tcp + 53/udp.
+common_firewall_ufw_state: "enabled"
+
+# --- DNS resolver hardening ---
+# Disable common's resolved-stub configuration: this host RUNS the DNS
+# server, so systemd-resolved is stopped + masked by the secondary_dns role
+# and /etc/resolv.conf points at external resolvers (Quad9 by default).
+common_resolved_configure: false
+
+# --- SSH hardening ---
+# DNS is exposed to the public internet; the SSH attack surface should be
+# minimised here. Enable hardening + provide the operator key sources.
+# common_ssh_hardening: true
+# common_ssh_github_users:
+#   - karl-bauer
+
+# =============================================================================
+# secondary_dns role configuration
+# =============================================================================
+# >>> THIS IS THE STELLE THE OPERATOR MUST FILL IN <<<
+#
+# Each primary needs `hostname` (= MNAME in the SOA, NOT reverse-DNS!) and
+# at least one of `ipv4` / `ipv6`. If you don't know the MNAME, deploy with
+# this list empty after temporarily setting `secondary_dns_enabled: false`,
+# then run `dns-admin primary discover <ip> <known-zone>` on the host to
+# discover it from a live SOA query.
+#
+# Example with two dual-stack primaries:
+#   secondary_dns_primaries:
+#     - hostname: "ns1.example.com"
+#       ipv4: "203.0.113.10"
+#       ipv6: "2001:db8::10"
+#     - hostname: "ns2.example.com"
+#       ipv4: "203.0.113.11"
+#       ipv6: "2001:db8::11"
+#
+# The role applies these with INSERT OR IGNORE — runtime additions via
+# `dns-admin primary add` survive future Ansible runs. To enforce
+# inventory-only mode (drop out-of-band entries) set
+# secondary_dns_primaries_strict: true.
+
+secondary_dns_primaries: []
+# secondary_dns_primaries:
+#   - hostname: "REPLACE-WITH-PRIMARY-MNAME.example.com"
+#     ipv4: "0.0.0.0"
+#     ipv6: ""
+
+secondary_dns_primaries_strict: false
+
+# Optional TSIG key for signed AXFR — leave empty unless the primary requires
+# one. Format: "name:algorithm:base64-secret".
+# secondary_dns_tsig_key: "transfer-key:hmac-sha256:BASE64SECRET"
+
+# --- Auto-update ---
+# DNS is critical infrastructure: keep daily security updates ON, but allow
+# the weekly reboot only on Sundays at the standard time. Leave both at the
+# global default unless this host needs special handling.

@@ -1,0 +1,12 @@
+---
+# =============================================================================
+# secondary_dns - Group Variables
+# =============================================================================
+# Override role defaults for ALL hosts in the secondary_dns group.
+# Per-host overrides go in host_vars/<hostname>.yml.
+#
+# Common pattern: enforce inventory-only mode across the whole group
+#   secondary_dns_primaries_strict: true
+#
+# Or: pin a TSIG key shared with the primary infrastructure
+#   secondary_dns_tsig_key: "transfer-key:hmac-sha256:BASE64SECRET"

@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: secondary_dns
+  namespace: bauer_group
+  author: BAUER GROUP
+  description: PowerDNS authoritative secondary (NOTIFY/AXFR slave) with dns-admin tooling
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    # Mirrors what the upstream installer (bauer-group/IP-Helper.SecondaryDNS)
+    # supports: any Debian/Ubuntu where the PowerDNS apt packages are
+    # available. Ubuntu 24.04 LTS is the recommended baseline for fleet
+    # consistency.
+    - name: Ubuntu
+      versions: [jammy, noble, resolute]
+    - name: Debian
+      versions: [bookworm, trixie]
+
+dependencies: []

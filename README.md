@@ -86,6 +86,7 @@ roles/             Reusable roles
   auto_update/     Automatic system updates
   ansible_pull/    Git-based pull mechanism
   k0s/             Bare-metal Kubernetes (multi-cluster, VLAN or WG mesh)
+  secondary_dns/   PowerDNS authoritative secondary (NOTIFY/AXFR slave)
 scripts/           Bootstrap and helper scripts
 filter_plugins/    Custom Jinja2 filters
 docs/              Documentation
@@ -121,6 +122,7 @@ auto_update_type: "security"  # Security updates only
 - [Workflows](docs/workflows.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [k0s — Bare-Metal Kubernetes](docs/k0s-architecture.md)
+- [Secondary DNS (PowerDNS)](docs/secondary-dns.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Platforms

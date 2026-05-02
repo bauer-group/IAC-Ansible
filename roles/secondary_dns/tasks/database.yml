@@ -1,0 +1,142 @@
+---
+# =============================================================================
+# secondary_dns - SQLite database setup
+# =============================================================================
+# Idempotent: schema uses CREATE IF NOT EXISTS; supermasters use INSERT OR
+# IGNORE so manually-added entries (via dns-admin) survive re-runs unless
+# secondary_dns_primaries_strict is set.
+#
+# All sqlite3 invocations use the argv form so Ansible passes the full SQL
+# statement as ONE argument — `command:` doesn't honour shell quoting and
+# would otherwise split SQL on internal whitespace.
+
+- name: Ensure /var/lib/powerdns exists
+  ansible.builtin.file:
+    path: /var/lib/powerdns
+    state: directory
+    owner: pdns
+    group: pdns
+    mode: "0750"
+
+- name: Stat database file
+  ansible.builtin.stat:
+    path: "{{ secondary_dns_db_path }}"
+  register: secondary_dns_db_stat
+
+- name: Copy schema script for re-use by sqlite3
+  ansible.builtin.copy:
+    src: pdns-schema.sql
+    dest: /var/lib/powerdns/.iac-schema.sql
+    owner: pdns
+    group: pdns
+    mode: "0640"
+
+- name: Apply PowerDNS schema (idempotent — IF NOT EXISTS only)
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - "{{ secondary_dns_db_path }}"
+      - ".read /var/lib/powerdns/.iac-schema.sql"
+  changed_when: not secondary_dns_db_stat.stat.exists
+
+- name: Ensure database ownership
+  ansible.builtin.file:
+    path: "{{ secondary_dns_db_path }}"
+    owner: pdns
+    group: pdns
+    mode: "0640"
+
+# --- Supermasters (primary allow-list in DB) -------------------------------
+
+- name: Reset accumulator for supermaster rows
+  ansible.builtin.set_fact:
+    secondary_dns_supermaster_rows: []
+
+- name: Build supermaster row list (one per IP/hostname pair)
+  ansible.builtin.set_fact:
+    secondary_dns_supermaster_rows: >-
+      {{
+        secondary_dns_supermaster_rows
+        + ([{'ip': item.ipv4, 'host': item.hostname}] if (item.ipv4 | default('') | length > 0) else [])
+        + ([{'ip': item.ipv6, 'host': item.hostname}] if (item.ipv6 | default('') | length > 0) else [])
+      }}
+  loop: "{{ secondary_dns_primaries }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+
+- name: Insert supermasters from inventory (idempotent)
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - "{{ secondary_dns_db_path }}"
+      - >-
+        INSERT OR IGNORE INTO supermasters (ip, nameserver, account)
+        VALUES ('{{ item.ip }}', '{{ item.host }}', 'inventory');
+  loop: "{{ secondary_dns_supermaster_rows | default([]) }}"
+  loop_control:
+    label: "{{ item.host }} -> {{ item.ip }}"
+  changed_when: false  # sqlite3 has no easy 'rows changed' echo; conservative no-op
+  notify: Reload pdns
+
+# --- Optional: strict mode — drop entries that are NOT in the inventory ----
+
+- name: Compute allowed (ip, host) tuples
+  ansible.builtin.set_fact:
+    secondary_dns_allowed_pairs: >-
+      {{
+        secondary_dns_supermaster_rows | default([])
+        | map(attribute='ip')
+        | zip(secondary_dns_supermaster_rows | default([]) | map(attribute='host'))
+        | map('list')
+        | list
+      }}
+  when: secondary_dns_primaries_strict | bool
+
+- name: Read current supermasters from DB
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - -separator
+      - "|"
+      - "{{ secondary_dns_db_path }}"
+      - "SELECT ip, nameserver FROM supermasters;"
+  register: secondary_dns_db_supermasters
+  changed_when: false
+  when: secondary_dns_primaries_strict | bool
+
+- name: Delete supermasters not in inventory (strict mode)
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - "{{ secondary_dns_db_path }}"
+      - >-
+        DELETE FROM supermasters
+        WHERE ip='{{ (item.split('|'))[0] }}'
+        AND nameserver='{{ (item.split('|'))[1] }}';
+  loop: "{{ secondary_dns_db_supermasters.stdout_lines | default([]) }}"
+  loop_control:
+    label: "{{ item }}"
+  when:
+    - secondary_dns_primaries_strict | bool
+    - item | length > 0
+    - "[(item.split('|'))[0], (item.split('|'))[1]] not in secondary_dns_allowed_pairs"
+  notify: Reload pdns
+
+# --- Optional: TSIG key for signed AXFR ------------------------------------
+
+- name: Install TSIG key
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - "{{ secondary_dns_db_path }}"
+      - >-
+        INSERT OR REPLACE INTO tsigkeys (name, algorithm, secret)
+        VALUES ('{{ (secondary_dns_tsig_key.split(':'))[0] }}',
+                '{{ (secondary_dns_tsig_key.split(':'))[1] }}',
+                '{{ (secondary_dns_tsig_key.split(':'))[2] }}');
+  when:
+    - secondary_dns_tsig_key | length > 0
+    - secondary_dns_tsig_key.split(':') | length == 3
+  changed_when: false
+  no_log: true
+  notify: Reload pdns

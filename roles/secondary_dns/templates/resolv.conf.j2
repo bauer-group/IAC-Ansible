@@ -1,0 +1,7 @@
+# Managed by IAC-Ansible (role: secondary_dns) - DO NOT EDIT MANUALLY
+# systemd-resolved is disabled on this host (port 53 conflict with PowerDNS).
+# This file lists external resolvers used by the host itself for outbound
+# lookups (apt, monitoring, mail relay, ...).
+{% for ns in secondary_dns_host_resolvers %}
+nameserver {{ ns }}
+{% endfor %}

@@ -1,0 +1,19 @@
+---
+- name: Reload pdns
+  ansible.builtin.systemd:
+    name: pdns
+    state: reloaded
+
+- name: Restart pdns
+  ansible.builtin.systemd:
+    name: pdns
+    state: restarted
+
+- name: Restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
+
+- name: Apply sysctl
+  ansible.builtin.command: sysctl --system
+  changed_when: false

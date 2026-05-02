@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# secondary_dns role defaults
+# =============================================================================
+# Pure-authoritative PowerDNS slave/secondary, mirrors the bauer-group
+# IP-Helper.SecondaryDNS reference setup. Intentionally minimal — chrony,
+# fail2ban (sshd jail), msmtp, SSH hardening and MOTD are baseline tasks of
+# the `common` role and must NOT be duplicated here.
+#
+# Override per host in inventory/<env>/host_vars/<hostname>.yml.
+
+# Master switch — set false to skip the entire role on a host
+secondary_dns_enabled: true
+
+# --- Primary DNS servers ---------------------------------------------------
+# List of primaries this secondary should accept NOTIFY and AXFR from.
+# Each entry MUST have `hostname` (= MNAME in the SOA, NOT reverse-DNS!) and
+# at least one of `ipv4` / `ipv6`.
+#
+# Example (in host_vars):
+#   secondary_dns_primaries:
+#     - hostname: "ns1.example.com"
+#       ipv4: "203.0.113.10"
+#       ipv6: "2001:db8::10"
+#     - hostname: "ns2.example.com"
+#       ipv4: "203.0.113.11"
+#
+# The role applies these as `INSERT OR IGNORE` into the supermasters table —
+# entries added at runtime via `dns-admin primary add` are preserved across
+# Ansible runs. To enforce inventory-only mode (delete out-of-band entries),
+# set `secondary_dns_primaries_strict: true`.
+secondary_dns_primaries: []
+secondary_dns_primaries_strict: false
+
+# --- Optional TSIG key for signed AXFR -------------------------------------
+# Format: "name:algorithm:base64-secret"
+# Empty string = no TSIG (relies on IP allow-list only).
+secondary_dns_tsig_key: ""
+
+# --- Network bind ----------------------------------------------------------
+secondary_dns_local_address: "0.0.0.0,::"
+secondary_dns_local_port: 53
+
+# --- Public resolvers used by the host itself ------------------------------
+# systemd-resolved is disabled (port 53 conflict). /etc/resolv.conf is
+# replaced with this static list — Quad9 IPv4+IPv6 by default.
+secondary_dns_host_resolvers:
+  - "9.9.9.9"
+  - "2620:fe::fe"
+  - "149.112.112.112"
+  - "2620:fe::9"
+
+# --- Performance / sysctl tuning ------------------------------------------
+secondary_dns_sysctl_tune: true
+
+# --- Firewall (UFW) --------------------------------------------------------
+# Opens 53/tcp + 53/udp WHEN UFW is active on the host. Coexists with
+# `common_firewall_ufw_state: enabled` — the common role only ensures UFW
+# runs, this role manages the DNS rules.
+secondary_dns_firewall_open: true
+
+# --- Paths (rarely overridden) --------------------------------------------
+secondary_dns_db_path: "/var/lib/powerdns/pdns.sqlite3"
+secondary_dns_conf_path: "/etc/powerdns/pdns.conf"
+secondary_dns_admin_tool_path: "/usr/local/bin/dns-admin"

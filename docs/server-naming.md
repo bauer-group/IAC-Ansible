@@ -168,3 +168,31 @@ iot_edge:             # 80-89
 - The **domain is constant** (`cloud.bauer-group.com`)
 - The scheme is fully **numeric, machine-readable, and semantically stable**
 - The **hyphen separates identity (asset) from function (group)**
+
+## Service FQDNs vs. asset FQDN
+
+The asset FQDN (e.g. `0001-35.cloud.bauer-group.com`) is the **system
+identity** — it is what `/etc/hostname` is set to, what Ansible uses as
+`inventory_hostname`, what shows up in logs and monitoring, and what every
+internal artefact references.
+
+A host may additionally answer under one or more **service FQDNs** that
+have nothing to do with the naming scheme. Examples:
+
+| Asset FQDN | Service FQDN(s) | Note |
+| --- | --- | --- |
+| `0001-35.cloud.bauer-group.com` | `ns1.professional-hosting.com` | DNS server: customers query the service name; inventory tracks the asset |
+| `0046-20.cloud.bauer-group.com` | `coolify.bauer-group.com` | Web UI vanity name pointing at the Coolify app host |
+
+**Rules:**
+
+- Service FQDNs are **plain A/AAAA records** that resolve to the host's IPs.
+  They are **not** the system hostname and **must not** replace the asset
+  FQDN in `/etc/hostname` or `inventory/`.
+- Track service FQDNs in `host_vars/<asset>.yml` under the documentation key
+  `service_fqdns:` so they're discoverable, searchable, and survive ownership
+  handovers — but Ansible does not act on them.
+- This separation keeps the inventory **stable across rebrands and provider
+  migrations**: the customer-facing `ns1.professional-hosting.com` can move
+  to a different asset, or the asset can serve a different vanity name,
+  without renumbering anything.
