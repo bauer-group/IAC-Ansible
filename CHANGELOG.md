@@ -1,3 +1,9 @@
+## [2.5.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.1...v2.5.2) (2026-05-02)
+
+### 🐛 Bug Fixes
+
+* **common:** pinned recidive jail to systemd backend for cross-platform reliability ([5339ca0](https://github.com/bauer-group/IAC-Ansible/commit/5339ca072349a6ec33281fff894cb93249d68e94))
+
 ## [2.5.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.0...v2.5.1) (2026-05-02)
 
 ### 🐛 Bug Fixes
