@@ -5,9 +5,17 @@
 # Bans IPs that have already been banned multiple times by other jails.
 # Escalating defense against persistent bruteforce bots — generic, not
 # service-specific.
+#
+# Backend pinned to `systemd`: the upstream default logpath
+# (/var/log/fail2ban.log) does not exist on RHEL/Rocky/AlmaLinux because
+# fail2ban there logs to SYSLOG by default. Reading fail2ban's own events
+# from journald via SYSLOG_IDENTIFIER works uniformly on every systemd
+# host — Debian/Ubuntu and the RHEL family alike.
 
 [recidive]
 enabled = true
+backend = systemd
+journalmatch = _SYSTEMD_UNIT=fail2ban.service + SYSLOG_IDENTIFIER=fail2ban-server
 
 bantime = {{ common_fail2ban_recidive_bantime }}
 findtime = {{ common_fail2ban_recidive_findtime }}
