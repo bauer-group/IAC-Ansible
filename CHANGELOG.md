@@ -1,3 +1,9 @@
+## [2.5.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.0...v2.5.1) (2026-05-02)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** satisfied ansible-lint no-changed-when in strict mode ([2006e97](https://github.com/bauer-group/IAC-Ansible/commit/2006e97b44dded017dcaea470fff02bd2a95febc))
+
 ## [2.5.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.4.2...v2.5.0) (2026-05-02)
 
 ### 🚀 Features
