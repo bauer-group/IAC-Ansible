@@ -1,3 +1,10 @@
+## [2.5.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.4.2...v2.5.0) (2026-05-02)
+
+### 🚀 Features
+
+* **common:** added fail2ban recidive jail to baseline ([ebfde3b](https://github.com/bauer-group/IAC-Ansible/commit/ebfde3b47a50a7cc213959b0d73d2d5f1e8efcbd))
+* **secondary_dns:** added PowerDNS authoritative secondary role ([df1f6ea](https://github.com/bauer-group/IAC-Ansible/commit/df1f6eabd9821554f487544ceb33c3c51c60bb55))
+
 ## [2.4.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.4.1...v2.4.2) (2026-04-19)
 
 ### 🐛 Bug Fixes
