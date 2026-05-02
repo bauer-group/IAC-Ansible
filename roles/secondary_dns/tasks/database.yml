@@ -120,6 +120,10 @@
     - secondary_dns_primaries_strict | bool
     - item | length > 0
     - "[(item.split('|'))[0], (item.split('|'))[1]] not in secondary_dns_allowed_pairs"
+  # The `when:` already filters to rows that exist in the DB but not in
+  # the inventory — so reaching this task is itself proof a change is
+  # being made. No silent successes.
+  changed_when: true
   notify: Reload pdns
 
 # --- Optional: TSIG key for signed AXFR ------------------------------------
