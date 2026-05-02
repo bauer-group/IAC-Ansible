@@ -1,0 +1,14 @@
+# =============================================================================
+# IAC-Ansible: fail2ban recidive jail
+# Managed by Ansible (role: common) - DO NOT EDIT MANUALLY
+# =============================================================================
+# Bans IPs that have already been banned multiple times by other jails.
+# Escalating defense against persistent bruteforce bots — generic, not
+# service-specific.
+
+[recidive]
+enabled = true
+
+bantime = {{ common_fail2ban_recidive_bantime }}
+findtime = {{ common_fail2ban_recidive_findtime }}
+maxretry = {{ common_fail2ban_recidive_maxretry }}

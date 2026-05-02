@@ -113,6 +113,14 @@ common_fail2ban_sshd_bantime: 86400
 common_fail2ban_sshd_findtime: 900
 common_fail2ban_sshd_maxretry: 5
 
+# fail2ban recidive — escalating ban for repeat offenders. IPs that triggered
+# any other jail `maxretry` times within `findtime` get banned for `bantime`.
+# Generic defense (not service-specific), enabled by default for all hosts.
+common_fail2ban_recidive_enabled: true
+common_fail2ban_recidive_bantime: 604800   # 1 week
+common_fail2ban_recidive_findtime: 86400   # within 1 day
+common_fail2ban_recidive_maxretry: 3
+
 # Open file limits (important for Docker, databases, etc.)
 common_nofile_limit_configure: true
 common_nofile_limit: 1048576

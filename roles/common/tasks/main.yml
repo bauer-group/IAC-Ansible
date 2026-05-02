@@ -261,6 +261,25 @@
   notify: Restart fail2ban
   when: common_fail2ban_enabled | bool
 
+- name: Deploy fail2ban recidive jail configuration
+  ansible.builtin.template:
+    src: jail-recidive.conf.j2
+    dest: /etc/fail2ban/jail.d/99-recidive.conf
+    mode: "0644"
+  notify: Restart fail2ban
+  when:
+    - common_fail2ban_enabled | bool
+    - common_fail2ban_recidive_enabled | bool
+
+- name: Remove fail2ban recidive jail when disabled
+  ansible.builtin.file:
+    path: /etc/fail2ban/jail.d/99-recidive.conf
+    state: absent
+  notify: Restart fail2ban
+  when:
+    - common_fail2ban_enabled | bool
+    - not (common_fail2ban_recidive_enabled | bool)
+
 - name: Enable and start fail2ban
   ansible.builtin.systemd:
     name: fail2ban
