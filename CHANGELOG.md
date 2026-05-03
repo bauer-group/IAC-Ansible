@@ -1,3 +1,9 @@
+## [2.5.12](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.11...v2.5.12) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** moved raw-block explainer outside the raw block ([53f471b](https://github.com/bauer-group/IAC-Ansible/commit/53f471b237ef7a9b0d8a5ddf19903b5e7746a8dc))
+
 ## [2.5.11](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.10...v2.5.11) (2026-05-03)
 
 ### 🐛 Bug Fixes
