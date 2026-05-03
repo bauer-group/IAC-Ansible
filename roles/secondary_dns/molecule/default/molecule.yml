@@ -7,8 +7,10 @@ dependency:
 driver:
   name: docker
 
+# Only Debian-family — the role refuses RHEL-family early (PowerDNS apt
+# packages aren't available there with the same package layout).
 platforms:
-  - name: molecule-coolify-ubuntu2204
+  - name: molecule-secondary-dns-ubuntu2204
     image: geerlingguy/docker-ubuntu2204-ansible:latest
     pre_build_image: true
     privileged: true
@@ -19,7 +21,7 @@ platforms:
     tmpfs:
       - /run
       - /tmp
-  - name: molecule-coolify-ubuntu2404
+  - name: molecule-secondary-dns-ubuntu2404
     image: geerlingguy/docker-ubuntu2404-ansible:latest
     pre_build_image: true
     privileged: true
@@ -30,7 +32,7 @@ platforms:
     tmpfs:
       - /run
       - /tmp
-  - name: molecule-coolify-ubuntu2604
+  - name: molecule-secondary-dns-ubuntu2604
     image: geerlingguy/docker-ubuntu2604-ansible:latest
     pre_build_image: true
     privileged: true
@@ -41,7 +43,7 @@ platforms:
     tmpfs:
       - /run
       - /tmp
-  - name: molecule-coolify-debian13
+  - name: molecule-secondary-dns-debian13
     image: geerlingguy/docker-debian13-ansible:latest
     pre_build_image: true
     privileged: true
@@ -52,18 +54,12 @@ platforms:
     tmpfs:
       - /run
       - /tmp
-  # NOTE: Rocky 9/10 platforms temporarily excluded.
-  # The geerlingguy/docker-rockylinux*-ansible images become UNREACHABLE
-  # immediately after container start in the self-hosted DinD runner
-  # (Ansible reports 'Failed to create temporary directory' before any
-  # task can run). Debian/Ubuntu platforms are unaffected. Re-add the
-  # rocky blocks once the docker-exec / container init issue is debugged.
 
 provisioner:
   name: ansible
   env:
-    ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/.."
-    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../filter_plugins"
+    ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/../.."
+    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../../filter_plugins"
   inventory:
     group_vars:
       all:
