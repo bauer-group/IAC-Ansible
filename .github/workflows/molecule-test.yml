@@ -32,6 +32,11 @@ on:
           - secrets
           - k0s
           - secondary_dns
+      verbose:
+        description: "Run with -vvv to expose stderr from failed connection attempts"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -95,7 +100,7 @@ jobs:
           || inputs.role == matrix.role
         working-directory: roles/${{ matrix.role }}
         run: |
-          molecule test -s ${{ matrix.scenario }}
+          molecule ${{ inputs.verbose && '--debug' || '' }} test -s ${{ matrix.scenario }}
         env:
           ANSIBLE_FORCE_COLOR: "true"
           PY_COLORS: "1"
