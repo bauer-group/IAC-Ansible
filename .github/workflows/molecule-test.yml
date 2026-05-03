@@ -99,9 +99,13 @@ jobs:
         env:
           ANSIBLE_FORCE_COLOR: "true"
           PY_COLORS: "1"
-          # Self-hosted runner workaround: managed-node containers don't
-          # always have a writeable home dir for the SSH user, which makes
-          # the default ~/.ansible/tmp creation fail with UNREACHABLE.
-          # Pinning the remote tmp into /tmp sidesteps the home-dir issue
-          # without changing anything else.
-          ANSIBLE_REMOTE_TMP: "/tmp/.ansible"
+          # Self-hosted runner workaround:
+          # 1. The managed-node containers may not have a writeable home dir
+          #    for the SSH user, so the default ~/.ansible/tmp creation fails.
+          # 2. /tmp is mounted as tmpfs in every molecule.yml platform block
+          #    (`tmpfs: [/run, /tmp]`). On nested-DinD with cgroup memory
+          #    limits the visible RAM is small, so tmpfs /tmp is small too,
+          #    and apt installs blow it out → mkdir under /tmp fails ENOSPC.
+          # /var/tmp is NOT in the tmpfs list → uses the container overlay
+          # filesystem → effectively unlimited within the DinD volume.
+          ANSIBLE_REMOTE_TMP: "/var/tmp/.ansible"
