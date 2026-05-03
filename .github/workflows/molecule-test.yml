@@ -99,3 +99,9 @@ jobs:
         env:
           ANSIBLE_FORCE_COLOR: "true"
           PY_COLORS: "1"
+          # Self-hosted runner workaround: managed-node containers don't
+          # always have a writeable home dir for the SSH user, which makes
+          # the default ~/.ansible/tmp creation fail with UNREACHABLE.
+          # Pinning the remote tmp into /tmp sidesteps the home-dir issue
+          # without changing anything else.
+          ANSIBLE_REMOTE_TMP: "/tmp/.ansible-tmp"
