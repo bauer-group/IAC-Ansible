@@ -104,4 +104,4 @@ jobs:
           # the default ~/.ansible/tmp creation fail with UNREACHABLE.
           # Pinning the remote tmp into /tmp sidesteps the home-dir issue
           # without changing anything else.
-          ANSIBLE_REMOTE_TMP: "/tmp/.ansible-tmp"
+          ANSIBLE_REMOTE_TMP: "/tmp/.ansible"
