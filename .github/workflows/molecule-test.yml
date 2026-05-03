@@ -19,7 +19,8 @@ permissions:
 jobs:
   molecule:
     name: 🔬 ${{ matrix.role }} (${{ matrix.scenario }})
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: '["self-hosted", "linux"]'
     timeout-minutes: 30
 
     strategy:
