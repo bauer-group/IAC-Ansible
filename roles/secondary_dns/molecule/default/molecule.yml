@@ -58,8 +58,11 @@ platforms:
 provisioner:
   name: ansible
   env:
-    ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/../.."
-    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../../filter_plugins"
+    # MOLECULE_PROJECT_DIRECTORY is the role root (not the scenario dir).
+    # roles/secondary_dns/.. = roles → ANSIBLE_ROLES_PATH
+    # roles/secondary_dns/../../filter_plugins = repo's filter_plugins
+    ANSIBLE_ROLES_PATH: "${MOLECULE_PROJECT_DIRECTORY}/.."
+    ANSIBLE_FILTER_PLUGINS: "${MOLECULE_PROJECT_DIRECTORY}/../../filter_plugins"
   inventory:
     group_vars:
       all:
