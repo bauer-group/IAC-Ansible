@@ -247,10 +247,17 @@
     - "'systemd-resolved.service' in (ansible_facts.services | default({}))"
 
 # --- fail2ban ---
+# Retries cushion against transient archive.ubuntu.com / mirror brownouts —
+# the package-install path is the most fragile point of the common role
+# because every host needs network reach to upstream archives.
 - name: Install fail2ban
   ansible.builtin.package:
     name: fail2ban
     state: present
+  register: common_fail2ban_install
+  until: common_fail2ban_install is succeeded
+  retries: 5
+  delay: 30
   when: common_fail2ban_enabled | bool
 
 - name: Deploy fail2ban SSH jail configuration
