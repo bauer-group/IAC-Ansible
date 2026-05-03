@@ -1,3 +1,11 @@
+## [2.5.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.4...v2.5.5) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **molecule-test:** correct syntax for runs-on attribute in workflow ([5f37265](https://github.com/bauer-group/IAC-Ansible/commit/5f37265b55d2a26aeaf42d4a29261083d8a4c998))
+* **workflow:** update Python version from 3.12 to 3.14 in molecule test setup ([ebcf833](https://github.com/bauer-group/IAC-Ansible/commit/ebcf83387e5835d9143592e914cb4c6d05377f32))
+* **workflow:** update Python version from 3.14 to 3.12 in molecule test setup ([91d5fd1](https://github.com/bauer-group/IAC-Ansible/commit/91d5fd194ba40fba891ef5d760f19e96bd4ab201))
+
 ## [2.5.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.3...v2.5.4) (2026-05-03)
 
 ### 🐛 Bug Fixes
