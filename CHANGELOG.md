@@ -1,3 +1,11 @@
+## [2.5.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.5...v2.5.6) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **workflow:** moved ANSIBLE_REMOTE_TMP to /var/tmp to bypass tmpfs pressure ([9e0a586](https://github.com/bauer-group/IAC-Ansible/commit/9e0a58657322b6f786ddb0e60c9cf57f565faf74))
+* **workflow:** pinned ANSIBLE_REMOTE_TMP to /tmp for self-hosted runner ([5c04725](https://github.com/bauer-group/IAC-Ansible/commit/5c047253c1b77e5c13defb9efc1a3843b759d0be))
+* **workflow:** update ANSIBLE_REMOTE_TMP path to /tmp/.ansible ([d293d2e](https://github.com/bauer-group/IAC-Ansible/commit/d293d2e127c7b846e8dea151216a8b1637e8e9e5))
+
 ## [2.5.5](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.4...v2.5.5) (2026-05-03)
 
 ### 🐛 Bug Fixes
