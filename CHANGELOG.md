@@ -1,3 +1,10 @@
+## [2.5.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.3...v2.5.4) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **common:** added apt retry to fail2ban install for archive resilience ([59758ef](https://github.com/bauer-group/IAC-Ansible/commit/59758ef7cd76e66672797da3b386fe95249df504))
+* **molecule-test:** update runner to self-hosted Linux environment ([c8147ef](https://github.com/bauer-group/IAC-Ansible/commit/c8147ef957b2c3fd42d4b89e692c7fc288d61bef))
+
 ## [2.5.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.2...v2.5.3) (2026-05-02)
 
 ### 🐛 Bug Fixes
