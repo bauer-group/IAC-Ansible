@@ -1,3 +1,9 @@
+## [2.5.11](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.10...v2.5.11) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** wrapped dns-admin bash body in jinja raw block ([306ea2b](https://github.com/bauer-group/IAC-Ansible/commit/306ea2b67090044d7205d6e9d9e0ec9c57c18dfa))
+
 ## [2.5.10](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.9...v2.5.10) (2026-05-03)
 
 ### 🐛 Bug Fixes
