@@ -1,3 +1,9 @@
+## [2.5.10](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.9...v2.5.10) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** satisfied var-naming role-prefix lint rule ([9c543a4](https://github.com/bauer-group/IAC-Ansible/commit/9c543a44a925333e15bdb7b2cd053a7d6becafae))
+
 ## [2.5.9](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.8...v2.5.9) (2026-05-03)
 
 ### 🐛 Bug Fixes
