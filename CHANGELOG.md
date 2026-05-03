@@ -1,3 +1,9 @@
+## [2.5.9](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.8...v2.5.9) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** used unsafe_writes for /etc/resolv.conf rewrite ([d5fb970](https://github.com/bauer-group/IAC-Ansible/commit/d5fb9701fd39c2a9b751e08c3a7f1729f7c6adbb))
+
 ## [2.5.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.7...v2.5.8) (2026-05-03)
 
 ### 🐛 Bug Fixes
