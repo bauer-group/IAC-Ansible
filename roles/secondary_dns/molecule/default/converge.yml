@@ -1,0 +1,33 @@
+---
+- name: Converge — secondary_dns (test mode, no real pdns service start)
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Render configs, set up SQLite DB schema, deploy templates and tooling,
+    # but skip the pdns service start + port 53 wait + dns-admin health.
+    # PowerDNS can't reliably bind to port 53 inside a docker container.
+    secondary_dns_test_mode: true
+
+    # Two synthetic primaries — one dual-stack, one IPv4-only — to exercise
+    # the supermasters insertion logic for both code paths.
+    secondary_dns_primaries:
+      - hostname: "ns1.molecule-test.example"
+        ipv4: "203.0.113.10"
+        ipv6: "2001:db8::10"
+      - hostname: "ns2.molecule-test.example"
+        ipv4: "203.0.113.11"
+
+    # UFW is not active in the test container — disable the firewall step
+    # so we don't get bogus failures from `ufw status` against a missing
+    # iptables module.
+    secondary_dns_firewall_open: false
+
+    # Sysctl tuning needs CAP_NET_ADMIN which the privileged container has
+    # but the kernel parameters won't actually take effect on the host's
+    # shared kernel — the file deployment is what we verify, not the apply.
+    secondary_dns_sysctl_tune: true
+
+  roles:
+    - role: secondary_dns

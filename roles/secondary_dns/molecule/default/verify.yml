@@ -1,0 +1,151 @@
+---
+- name: Verify — secondary_dns deployment artefacts
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    expected_primary_v4s:
+      - "203.0.113.10"
+      - "203.0.113.11"
+    expected_primary_v6s:
+      - "2001:db8::10"
+
+  tasks:
+    # --- Files & permissions ------------------------------------------------
+
+    - name: Stat pdns.conf
+      ansible.builtin.stat:
+        path: /etc/powerdns/pdns.conf
+      register: vfy_pdns_conf
+
+    - name: Assert pdns.conf exists with correct ownership
+      ansible.builtin.assert:
+        that:
+          - vfy_pdns_conf.stat.exists
+          - vfy_pdns_conf.stat.pw_name == 'pdns'
+          - vfy_pdns_conf.stat.gr_name == 'pdns'
+          - vfy_pdns_conf.stat.mode == '0640'
+
+    - name: Stat dns-admin tool
+      ansible.builtin.stat:
+        path: /usr/local/bin/dns-admin
+      register: vfy_dns_admin
+
+    - name: Assert dns-admin is executable
+      ansible.builtin.assert:
+        that:
+          - vfy_dns_admin.stat.exists
+          - vfy_dns_admin.stat.executable
+
+    - name: Stat sqlite database
+      ansible.builtin.stat:
+        path: /var/lib/powerdns/pdns.sqlite3
+      register: vfy_pdns_db
+
+    - name: Assert sqlite database created with correct ownership
+      ansible.builtin.assert:
+        that:
+          - vfy_pdns_db.stat.exists
+          - vfy_pdns_db.stat.pw_name == 'pdns'
+
+    - name: Stat sysctl tuning file
+      ansible.builtin.stat:
+        path: /etc/sysctl.d/99-dns-performance.conf
+      register: vfy_sysctl
+
+    - name: Assert sysctl file deployed
+      ansible.builtin.assert:
+        that: vfy_sysctl.stat.exists
+
+    - name: Stat resolv.conf
+      ansible.builtin.stat:
+        path: /etc/resolv.conf
+      register: vfy_resolv
+
+    - name: Read resolv.conf for content check
+      ansible.builtin.slurp:
+        src: /etc/resolv.conf
+      register: vfy_resolv_content
+
+    - name: Assert resolv.conf points at static external resolvers
+      ansible.builtin.assert:
+        that:
+          - "'9.9.9.9' in (vfy_resolv_content.content | b64decode)"
+        fail_msg: "resolv.conf does not contain the expected Quad9 resolver"
+
+    # --- Sentinel markers in pdns.conf --------------------------------------
+
+    - name: Read pdns.conf
+      ansible.builtin.slurp:
+        src: /etc/powerdns/pdns.conf
+      register: vfy_pdns_conf_content
+
+    - name: Assert BEGIN/END PRIMARY-IPS markers present
+      ansible.builtin.assert:
+        that:
+          - "'# BEGIN PRIMARY-IPS' in (vfy_pdns_conf_content.content | b64decode)"
+          - "'# END PRIMARY-IPS' in (vfy_pdns_conf_content.content | b64decode)"
+        fail_msg: "Sentinel markers missing — dns-admin would fail to update the allow-list"
+
+    - name: Assert all inventory primary IPs end up in pdns.conf
+      ansible.builtin.assert:
+        that: "item in (vfy_pdns_conf_content.content | b64decode)"
+        fail_msg: "Primary IP {{ item }} not found in pdns.conf allow-list"
+      loop: "{{ expected_primary_v4s + expected_primary_v6s }}"
+
+    - name: Assert secondary mode + autosecondary enabled
+      ansible.builtin.assert:
+        that:
+          - "'secondary=yes' in (vfy_pdns_conf_content.content | b64decode)"
+          - "'autosecondary=yes' in (vfy_pdns_conf_content.content | b64decode)"
+
+    - name: Assert API + webserver disabled (attack surface minimisation)
+      ansible.builtin.assert:
+        that:
+          - "'api=no' in (vfy_pdns_conf_content.content | b64decode)"
+          - "'webserver=no' in (vfy_pdns_conf_content.content | b64decode)"
+
+    # --- Database state -----------------------------------------------------
+
+    - name: Count supermasters rows
+      ansible.builtin.command:
+        argv:
+          - sqlite3
+          - /var/lib/powerdns/pdns.sqlite3
+          - "SELECT COUNT(*) FROM supermasters;"
+      register: vfy_supermasters_count
+      changed_when: false
+
+    - name: Assert all expected supermaster rows inserted (3 = 2 v4 + 1 v6)
+      ansible.builtin.assert:
+        that: vfy_supermasters_count.stdout | trim | int == 3
+        fail_msg: >-
+          Expected 3 supermaster rows (2 IPv4 + 1 IPv6), got
+          {{ vfy_supermasters_count.stdout }}
+
+    - name: Sample supermaster row for ns1 IPv6
+      ansible.builtin.command:
+        argv:
+          - sqlite3
+          - /var/lib/powerdns/pdns.sqlite3
+          - "SELECT nameserver FROM supermasters WHERE ip = '2001:db8::10';"
+      register: vfy_ns1_v6
+      changed_when: false
+
+    - name: Assert ns1 IPv6 maps to correct hostname
+      ansible.builtin.assert:
+        that: vfy_ns1_v6.stdout | trim == 'ns1.molecule-test.example'
+
+    # --- dns-admin smoke -----------------------------------------------------
+
+    - name: Run 'dns-admin primary list' (read-only, no service needed)
+      ansible.builtin.command: dns-admin primary list
+      register: vfy_admin_list
+      changed_when: false
+
+    - name: Assert dns-admin enumerates the inventory primaries
+      ansible.builtin.assert:
+        that:
+          - "'ns1.molecule-test.example' in vfy_admin_list.stdout"
+          - "'ns2.molecule-test.example' in vfy_admin_list.stdout"

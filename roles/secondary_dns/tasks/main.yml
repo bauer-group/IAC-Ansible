@@ -135,6 +135,7 @@
     secondary_dns_validation.rc != 0
     or 'Fatal' in (secondary_dns_validation.stderr | default(''))
     or 'unknown setting' in (secondary_dns_validation.stderr | default(''))
+  when: not (secondary_dns_test_mode | bool)
 
 # --- Sysctl tuning ---------------------------------------------------------
 
@@ -176,6 +177,7 @@
     name: pdns
     state: started
     enabled: true
+  when: not (secondary_dns_test_mode | bool)
 
 - name: Flush handlers (apply pending pdns reloads before final check)
   ansible.builtin.meta: flush_handlers
@@ -185,13 +187,18 @@
     port: 53
     host: 127.0.0.1
     timeout: 15
+  when: not (secondary_dns_test_mode | bool)
 
 - name: Final health snapshot via dns-admin
   ansible.builtin.command: "{{ secondary_dns_admin_tool_path }} health"
   register: secondary_dns_health
   changed_when: false
   failed_when: secondary_dns_health.rc == 2  # CRITICAL only — WARNINGs are OK during first install
+  when: not (secondary_dns_test_mode | bool)
 
 - name: Show health output
   ansible.builtin.debug:
     msg: "{{ secondary_dns_health.stdout_lines }}"
+  when:
+    - not (secondary_dns_test_mode | bool)
+    - secondary_dns_health is defined

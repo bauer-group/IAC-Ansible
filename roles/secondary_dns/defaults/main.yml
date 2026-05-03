@@ -12,6 +12,12 @@
 # Master switch — set false to skip the entire role on a host
 secondary_dns_enabled: true
 
+# Test mode: render configs, set up DB schema, deploy templates and tooling,
+# but skip everything that requires a working PowerDNS service binding to
+# port 53. Used by the molecule scenario where pdns can't actually start
+# inside a docker container (no real systemd PID 1 in many images).
+secondary_dns_test_mode: false
+
 # --- Primary DNS servers ---------------------------------------------------
 # List of primaries this secondary should accept NOTIFY and AXFR from.
 # Each entry MUST have `hostname` (= MNAME in the SOA, NOT reverse-DNS!) and

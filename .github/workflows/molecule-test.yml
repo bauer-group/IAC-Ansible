@@ -70,6 +70,8 @@ jobs:
             scenario: default
           - role: k0s
             scenario: overlay
+          - role: secondary_dns
+            scenario: default
 
     steps:
       - name: 📥 Checkout repository
