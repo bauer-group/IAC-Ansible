@@ -1,3 +1,9 @@
+## [2.5.8](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.7...v2.5.8) (2026-05-03)
+
+### 🐛 Bug Fixes
+
+* **secondary_dns:** corrected molecule ANSIBLE_ROLES_PATH off-by-one ([c4b6dda](https://github.com/bauer-group/IAC-Ansible/commit/c4b6dda5f832d1d96fb5dd7268d13c44b4a7ba5f))
+
 ## [2.5.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.6...v2.5.7) (2026-05-03)
 
 ### ⏪ Reverts
