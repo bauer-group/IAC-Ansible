@@ -1,3 +1,9 @@
+## [2.5.7](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.6...v2.5.7) (2026-05-03)
+
+### ⏪ Reverts
+
+* **ci:** rolled molecule back to github-hosted runners + restored rocky ([2163b00](https://github.com/bauer-group/IAC-Ansible/commit/2163b00f98dbf76425dec584da18db0d9eb84804))
+
 ## [2.5.6](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.5...v2.5.6) (2026-05-03)
 
 ### 🐛 Bug Fixes
