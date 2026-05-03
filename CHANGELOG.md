@@ -1,3 +1,9 @@
+## [2.5.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.2...v2.5.3) (2026-05-02)
+
+### 🐛 Bug Fixes
+
+* **ansible_pull:** hardened apt cache retries against launchpad mirror flakes ([5bd82be](https://github.com/bauer-group/IAC-Ansible/commit/5bd82beff486d11211ad94a466a5ac3f4e268522))
+
 ## [2.5.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.1...v2.5.2) (2026-05-02)
 
 ### 🐛 Bug Fixes
