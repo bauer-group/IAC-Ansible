@@ -26,6 +26,10 @@ set -euo pipefail
 DB="{{ secondary_dns_db_path }}"
 CONF="{{ secondary_dns_conf_path }}"
 
+{% raw %}
+# Everything below this line is pure bash. Wrapped in {% raw %}...{% endraw %}
+# so Jinja2 does not interpret bash parameter expansions like ${#var}
+# (string length) as the start of a Jinja comment block.
 # --- Helpers ---------------------------------------------------------------
 err()  { echo "ERROR: $*" >&2; exit 1; }
 warn() { echo "WARN:  $*" >&2; }
@@ -686,3 +690,4 @@ main() {
 }
 
 main "$@"
+{% endraw %}
