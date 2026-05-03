@@ -12,6 +12,26 @@ on:
     branches: [main]
     paths:
       - 'roles/**'
+  # Manual trigger — re-run after upstream mirror outages, validate hot-fixes,
+  # or test a single role on demand without a code push.
+  workflow_dispatch:
+    inputs:
+      role:
+        description: "Role to test (leave 'all' to run the full matrix)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - common
+          - ansible_pull
+          - auto_update
+          - docker
+          - smartmon
+          - coolify
+          - secrets
+          - k0s
+          - secondary_dns
 
 permissions:
   contents: read
@@ -65,6 +85,14 @@ jobs:
           ansible-galaxy collection install -r requirements.yml --force
 
       - name: 🧪 Run Molecule tests
+        # Manual single-role runs: skip the test when this matrix entry isn't
+        # the selected role. Auto-triggers (push/PR) and 'all' run everything.
+        # The `matrix` context is only available at step level, not job level —
+        # so we skip the heavy step rather than the whole job.
+        if: >-
+          github.event_name != 'workflow_dispatch'
+          || inputs.role == 'all'
+          || inputs.role == matrix.role
         working-directory: roles/${{ matrix.role }}
         run: |
           molecule test -s ${{ matrix.scenario }}
