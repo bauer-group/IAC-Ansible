@@ -3,6 +3,20 @@
 *.pyc
 __pycache__/
 
+# Python tooling caches (pytest, mypy, ruff, coverage, build artefacts)
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.tox/
+
+# Molecule ephemeral state (per-scenario sandbox dirs)
+.molecule/
+roles/*/molecule/*/.molecule/
+
 # Secrets - NEVER commit these
 *.vault
 vault_password
