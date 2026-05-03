@@ -75,6 +75,13 @@
     owner: root
     group: root
     force: true
+    # /etc/resolv.conf is regularly a bind-mount (docker containers) or a
+    # symlink to /run/systemd/resolve/stub-resolv.conf. The default atomic
+    # write (temp file + rename) fails on bind-mounts with [Errno 16] Device
+    # or resource busy. unsafe_writes drops the rename and writes in place,
+    # which is the only thing that works across docker, real hosts with the
+    # systemd-resolved symlink still present, and minimal containers.
+    unsafe_writes: true
 
 # --- Packages --------------------------------------------------------------
 
