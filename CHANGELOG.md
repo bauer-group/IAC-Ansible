@@ -1,3 +1,9 @@
+## [2.7.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.1...v2.7.2) (2026-05-07)
+
+### ⏪ Reverts
+
+* **docker:** removed subnet migration drain logic ([69b27cc](https://github.com/bauer-group/IAC-Ansible/commit/69b27cc6308374b5158ba6029b6b47f55145c5cc))
+
 ## [2.7.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.0...v2.7.1) (2026-05-07)
 
 ### 🐛 Bug Fixes
