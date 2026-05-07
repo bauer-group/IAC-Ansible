@@ -47,7 +47,7 @@ Konfligierende Pakete (`docker.io`, `podman-docker`, etc.) werden automatisch en
   "bip": "10.0.0.1/9",
   "default-address-pools": [
     { "base": "10.128.0.0/9", "size": 24 },
-    { "base": "fdff:8000::/17", "size": 64 }
+    { "base": "fd10:0:0:8000::/49", "size": 64 }
   ]
 }
 ```
@@ -60,14 +60,14 @@ Konfligierende Pakete (`docker.io`, `podman-docker`, etc.) werden automatisch en
 ```json
 {
   "ipv6": true,
-  "fixed-cidr-v6": "fdff::/17"
+  "fixed-cidr-v6": "fd10::/49"
 }
 ```
 
 Der `docker-support.service` richtet IPv6-NAT ein:
 
 ```
-ip6tables -t nat -A POSTROUTING -s fdff::/16 ! -o docker0 -j MASQUERADE
+ip6tables -t nat -A POSTROUTING -s fd10::/48 ! -o docker0 -j MASQUERADE
 ```
 
 Damit können Container über IPv6 nach außen kommunizieren.
@@ -81,7 +81,7 @@ In `host_vars` oder `group_vars` überschreibbar:
 docker_daemon_options:
   bip: "10.0.0.1/9"
   ipv6: true
-  fixed-cidr-v6: "fdff::/17"
+  fixed-cidr-v6: "fd10::/49"
   log-driver: "json-file"
   log-opts:
     max-size: "10m"
@@ -90,7 +90,15 @@ docker_daemon_options:
 
 # IPv6 NAT
 docker_ipv6_nat_enabled: true
-docker_ipv6_nat_subnet: "fdff::/16"
+docker_ipv6_nat_subnet: "fd10::/48"
+
+# Subnet-Migration (opt-in, destructive)
+# true = Rolle drainiert beim Re-Run alle Container, prunt unused
+# Networks und löscht docker0, damit die neuen IPv6-Ranges aus
+# docker_daemon_options sauber greifen. Default false (Produktion).
+# Staging-Hosts (Group-68) haben dies in
+# inventory/staging/group_vars/docker_hosts/main.yml auf true.
+docker_migrate_subnets: false
 
 # Kernel-Parameter
 docker_sysctl:

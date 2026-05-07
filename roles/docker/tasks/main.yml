@@ -24,6 +24,12 @@
     state: directory
     mode: "0755"
 
+- name: Drain Docker subnet state before reconfiguration
+  ansible.builtin.include_tasks: migrate-subnets.yml
+  when:
+    - docker_enabled | bool
+    - docker_migrate_subnets | bool
+
 - name: Deploy Docker daemon configuration
   ansible.builtin.template:
     src: daemon.json.j2

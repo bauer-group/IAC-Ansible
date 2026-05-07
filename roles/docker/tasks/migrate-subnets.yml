@@ -1,0 +1,84 @@
+---
+# =============================================================================
+# Docker Role - Subnet Migration Drain (opt-in via docker_migrate_subnets)
+# =============================================================================
+# Brings the host into a state where the next daemon.json deployment + Docker
+# restart can recreate docker0 and the default address pools cleanly.
+#
+# Destructive: stops all running containers and removes unused networks.
+# Safe to re-run: every step is guarded and skipped when not applicable.
+# Intended for disposable/staging hosts. Do NOT enable on production without
+# a maintenance window.
+# =============================================================================
+
+- name: Check whether Docker CLI is present (skip migration on fresh hosts)
+  ansible.builtin.command: command -v docker
+  register: docker_cli_path
+  changed_when: false
+  failed_when: false
+
+- name: Run subnet migration drain
+  when: docker_cli_path.rc == 0
+  block:
+    - name: Stop all running containers before bridge teardown
+      ansible.builtin.shell: |
+        set -eo pipefail
+        ids=$(docker ps -q)
+        if [ -n "$ids" ]; then
+          docker stop $ids
+          echo "stopped"
+        else
+          echo "none"
+        fi
+      args:
+        executable: /bin/bash
+      register: docker_migrate_stopped
+      changed_when: docker_migrate_stopped.stdout == "stopped"
+
+    - name: Prune unused networks (forces recreation under new pool)
+      ansible.builtin.command: docker network prune -f
+      register: docker_migrate_prune
+      changed_when: docker_migrate_prune.stdout_lines | length > 1
+
+    - name: Stop docker.socket to prevent activation during teardown
+      ansible.builtin.systemd:
+        name: docker.socket
+        state: stopped
+      failed_when: false
+
+    - name: Stop docker.service so docker0 can be removed
+      ansible.builtin.systemd:
+        name: docker.service
+        state: stopped
+
+    - name: Stop docker-support.service (clears handler-bound state)
+      ansible.builtin.systemd:
+        name: docker-support.service
+        state: stopped
+      failed_when: false
+
+    - name: Enumerate stale IPv6 NAT POSTROUTING rules (source != current subnet)
+      ansible.builtin.shell: |
+        set -o pipefail
+        ip6tables -t nat -S POSTROUTING 2>/dev/null \
+          | grep -E -- '! -o docker0 -j MASQUERADE' \
+          | grep -v -- '-s {{ docker_ipv6_nat_subnet }} ' \
+          || true
+      args:
+        executable: /bin/bash
+      register: docker_migrate_stale_rules
+      changed_when: false
+
+    - name: Remove stale IPv6 NAT POSTROUTING rules
+      ansible.builtin.command:
+        argv: "{{ ['ip6tables', '-t', 'nat'] + (item | regex_replace('^-A ', '-D ') | split) }}"
+      loop: "{{ docker_migrate_stale_rules.stdout_lines }}"
+      when: docker_migrate_stale_rules.stdout_lines | length > 0
+
+    - name: Delete docker0 bridge so it gets recreated with new IPv6 range
+      ansible.builtin.command: ip link delete docker0
+      register: docker_migrate_link_del
+      failed_when:
+        - docker_migrate_link_del.rc != 0
+        - "'Cannot find device' not in docker_migrate_link_del.stderr"
+      changed_when: docker_migrate_link_del.rc == 0

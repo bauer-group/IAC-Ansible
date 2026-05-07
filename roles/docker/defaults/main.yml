@@ -31,11 +31,11 @@ docker_conflicting_packages:
 docker_daemon_options:
   bip: "10.0.0.1/9"
   ipv6: true
-  fixed-cidr-v6: "fdff::/17"
+  fixed-cidr-v6: "fd10::/49"
   default-address-pools:
     - base: "10.128.0.0/9"
       size: 24
-    - base: "fdff:8000::/17"
+    - base: "fd10:0:0:8000::/49"
       size: 64
   log-driver: "json-file"
   log-opts:
@@ -45,7 +45,15 @@ docker_daemon_options:
 
 # IPv6 NAT masquerading for Docker containers
 docker_ipv6_nat_enabled: true
-docker_ipv6_nat_subnet: "fdff::/16"
+docker_ipv6_nat_subnet: "fd10::/48"
+
+# Subnet migration drain (opt-in, destructive on existing workloads)
+# When true: stops all running containers, prunes networks, removes stale
+# ip6tables rules and deletes docker0 BEFORE daemon.json is rewritten so the
+# daemon recreates everything cleanly under the configured IPv6 ranges.
+# Intended for disposable/staging hosts. Production hosts should leave this
+# at false and migrate via a planned maintenance window.
+docker_migrate_subnets: false
 
 # Sysctl settings for Docker workloads
 docker_sysctl:
