@@ -1,0 +1,40 @@
+---
+# =============================================================================
+# Host: 0020-68.cloud.bauer-group.com
+# Asset: 0020 | Group: 68 (Test / Sandbox)
+# Role : Disposable Docker host for ad-hoc Docker-stack tests
+# =============================================================================
+# Provider: VPS (Public Cloud)
+# OS: Ubuntu 24.04 LTS
+#
+# Bootstrap: scripts/cloud-init/staging/0020-68.cloud.bauer-group.com.yml
+# Inventory: inventory/staging/hosts.yml  (clean separation from production)
+# Branch:    main  (staging shares the same branch as production)
+
+# Platform
+platform: ubuntu_2404
+
+# Asset metadata
+asset_id: "0020"
+group_code: "68"
+asset_type: docker_host
+
+# Labels
+labels:
+  - test
+  - sandbox
+  - public-cloud
+  - ubuntu
+  - docker-host
+
+# Override: use main branch until staging branch exists
+iac_repo_branch: "main"
+
+# --- Hostname ---
+# Test boxes get re-imaged often; enforce the inventory FQDN on every pull.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Docker manages its own iptables rules; UFW conflicts with container
+# networking. Match the production docker_hosts setup.
+common_firewall_ufw_state: "disabled"

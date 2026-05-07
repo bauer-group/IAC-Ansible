@@ -1,0 +1,56 @@
+# =============================================================================
+# Cloud-Init User Data for 0012-68.cloud.bauer-group.com
+# =============================================================================
+# Asset:     0012 | Group: 68 (Test / Sandbox)
+# Purpose:   k0s controller+worker — joiner for cluster staging-test-5node
+# OS:        Ubuntu 24.04 LTS (HWE kernel track recommended; verify with uname -r)
+# Inventory: inventory/staging/hosts.yml
+# Branch:    main  (staging shares the same branch as production)
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION A — Cloud-Init (provider user-data, fully unattended)
+# -----------------------------------------------------------------------------
+# Hetzner Cloud:
+#   hcloud server create --name 0012-68 --type cx32 --image ubuntu-24.04 \
+#     --user-data-from-file scripts/cloud-init/staging/0012-68.cloud.bauer-group.com.yml
+#
+# Generic: paste this whole file into the provider's "user-data" field.
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION B — Manual one-liner (SSH into a fresh Ubuntu 24.04 box as root)
+# -----------------------------------------------------------------------------
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0012-68.cloud.bauer-group.com \
+#     INVENTORY=inventory/staging/hosts.yml \
+#     BRANCH=main \
+#     bash
+# =============================================================================
+
+#cloud-config
+
+hostname: 0012-68
+fqdn: 0012-68.cloud.bauer-group.com
+preserve_hostname: false
+manage_etc_hosts: true
+
+timezone: Etc/UTC
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+
+runcmd:
+  - |
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+      IAC_HOSTNAME=0012-68.cloud.bauer-group.com \
+      INVENTORY=inventory/staging/hosts.yml \
+      BRANCH=main \
+      bash
+
+final_message: |
+  IAC-Ansible bootstrap completed for 0012-68.cloud.bauer-group.com (staging, k0s joiner)
+  Logs: /var/log/ansible/ansible-pull.log
+  Timer: systemctl status ansible-pull.timer

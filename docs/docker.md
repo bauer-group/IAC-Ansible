@@ -22,7 +22,7 @@ Server in die `docker_hosts`-Gruppe aufnehmen:
 # inventory/production/hosts.yml oder inventory/staging/hosts.yml
 docker_hosts:
   hosts:
-    0001-68.cloud.bauer-group.com:
+    0021-68.cloud.bauer-group.com:
 ```
 
 ## Was wird installiert?
@@ -133,5 +133,5 @@ ansible-pull --url https://github.com/bauer-group/IAC-Ansible.git \
   --tags docker playbooks/site.yml
 
 # Via Makefile (remote)
-make deploy LIMIT=0001-68.cloud.bauer-group.com TAGS=docker
+make deploy LIMIT=0021-68.cloud.bauer-group.com TAGS=docker
 ```

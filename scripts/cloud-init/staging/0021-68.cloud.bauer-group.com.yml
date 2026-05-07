@@ -1,0 +1,72 @@
+# =============================================================================
+# Cloud-Init User Data for 0021-68.cloud.bauer-group.com
+# =============================================================================
+# Asset:     0021 | Group: 68 (Test / Sandbox)
+# Purpose:   Disposable Docker host for ad-hoc Docker-stack tests
+#            (Debian sibling of 0020-68; same role, different OS family)
+# OS:        Debian 13 (Trixie)
+# Inventory: inventory/staging/hosts.yml
+# Branch:    main  (staging shares the same branch as production)
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION A — Cloud-Init (provider user-data, fully unattended)
+# -----------------------------------------------------------------------------
+# Hetzner Cloud:
+#   hcloud server create --name 0021-68 --type cx22 --image debian-13 \
+#     --user-data-from-file scripts/cloud-init/staging/0021-68.cloud.bauer-group.com.yml
+#
+# Generic: paste this whole file into the provider's "user-data" field.
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION B — Manual one-liner (SSH into a fresh Debian 13 box as root)
+# -----------------------------------------------------------------------------
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0021-68.cloud.bauer-group.com \
+#     INVENTORY=inventory/staging/hosts.yml \
+#     BRANCH=main \
+#     bash
+#
+# Idempotent — safe to re-run; sets hostname, installs Ansible, enables the
+# ansible-pull timer pinned to the staging inventory, and runs the first pull
+# immediately.
+# =============================================================================
+
+#cloud-config
+
+# --- Hostname (the box does not yet have its inventory hostname) -------------
+# cloud-init sets it once on first boot; install.sh then writes
+# preserve_hostname: true so subsequent reboots don't revert it.
+hostname: 0021-68
+fqdn: 0021-68.cloud.bauer-group.com
+preserve_hostname: false
+manage_etc_hosts: true
+
+# --- Timezone ----------------------------------------------------------------
+timezone: Etc/UTC
+
+# --- Prerequisites for the bootstrap installer -------------------------------
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+
+# --- Bootstrap IAC-Ansible ---------------------------------------------------
+# IAC_HOSTNAME pins inventory_hostname so ansible-pull picks up the matching
+# host_vars/0021-68.cloud.bauer-group.com.yml on its very first run.
+# INVENTORY pins the staging inventory so this box never accidentally falls
+# back to production/hosts.yml (which is the ansible.cfg default).
+runcmd:
+  - |
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+      IAC_HOSTNAME=0021-68.cloud.bauer-group.com \
+      INVENTORY=inventory/staging/hosts.yml \
+      BRANCH=main \
+      bash
+
+# --- Final message in the cloud-init log -------------------------------------
+final_message: |
+  IAC-Ansible bootstrap completed for 0021-68.cloud.bauer-group.com (staging, debian sandbox)
+  Logs: /var/log/ansible/ansible-pull.log
+  Timer: systemctl status ansible-pull.timer

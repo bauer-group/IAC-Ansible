@@ -1,0 +1,43 @@
+---
+# =============================================================================
+# Host: 0021-68.cloud.bauer-group.com
+# Asset: 0021 | Group: 68 (Test / Sandbox)
+# Role : Disposable Docker host for ad-hoc Docker-stack tests (Debian sibling)
+# =============================================================================
+# Provider: VPS (Public Cloud)
+# OS: Debian 13 (Trixie)
+#
+# Pair with 0020-68 (Ubuntu 24.04 sibling) to test stacks against both
+# distro families before promoting to production docker_hosts.
+#
+# Bootstrap: scripts/cloud-init/staging/0021-68.cloud.bauer-group.com.yml
+# Inventory: inventory/staging/hosts.yml  (clean separation from production)
+# Branch:    main  (staging shares the same branch as production)
+
+# Platform
+platform: debian_13
+
+# Asset metadata
+asset_id: "0021"
+group_code: "68"
+asset_type: docker_host
+
+# Labels
+labels:
+  - test
+  - sandbox
+  - public-cloud
+  - debian
+  - docker-host
+
+# Override: use main branch until staging branch exists
+iac_repo_branch: "main"
+
+# --- Hostname ---
+# Test boxes get re-imaged often; enforce the inventory FQDN on every pull.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Docker manages its own iptables rules; UFW conflicts with container
+# networking. Match the production docker_hosts setup.
+common_firewall_ufw_state: "disabled"

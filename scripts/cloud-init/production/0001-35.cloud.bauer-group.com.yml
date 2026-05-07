@@ -1,0 +1,56 @@
+# =============================================================================
+# Cloud-Init User Data for 0001-35.cloud.bauer-group.com
+# =============================================================================
+# Asset:     0001 | Group: 35 (Cloud service on virtual machine)
+# Purpose:   PowerDNS authoritative secondary (NOTIFY/AXFR slave)
+# OS:        Ubuntu 24.04 LTS
+# Inventory: inventory/production/hosts.yml
+# Branch:    main
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION A — Cloud-Init (provider user-data, fully unattended)
+# -----------------------------------------------------------------------------
+# Hetzner Cloud:
+#   hcloud server create --name 0001-35 --type cx22 --image ubuntu-24.04 \
+#     --user-data-from-file scripts/cloud-init/production/0001-35.cloud.bauer-group.com.yml
+#
+# Generic: paste this whole file into the provider's "user-data" field.
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION B — Manual one-liner (SSH into a fresh Ubuntu 24.04 box as root)
+# -----------------------------------------------------------------------------
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0001-35.cloud.bauer-group.com \
+#     INVENTORY=inventory/production/hosts.yml \
+#     BRANCH=main \
+#     bash
+# =============================================================================
+
+#cloud-config
+
+hostname: 0001-35
+fqdn: 0001-35.cloud.bauer-group.com
+preserve_hostname: false
+manage_etc_hosts: true
+
+timezone: Etc/UTC
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+
+runcmd:
+  - |
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+      IAC_HOSTNAME=0001-35.cloud.bauer-group.com \
+      INVENTORY=inventory/production/hosts.yml \
+      BRANCH=main \
+      bash
+
+final_message: |
+  IAC-Ansible bootstrap completed for 0001-35.cloud.bauer-group.com (production)
+  Logs: /var/log/ansible/ansible-pull.log
+  Timer: systemctl status ansible-pull.timer

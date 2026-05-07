@@ -201,7 +201,7 @@ molecule test -s overlay     # wireguard scenario, test-mode
 Real cluster verification (after first apply on staging sandbox):
 
 ```bash
-ssh 0001-68.cloud.bauer-group.com
+ssh 0011-68.cloud.bauer-group.com
 k0s status
 kubectl --kubeconfig /var/lib/k0s/pki/admin.conf get nodes -o wide
 kubectl --kubeconfig /var/lib/k0s/pki/admin.conf get pods -A
