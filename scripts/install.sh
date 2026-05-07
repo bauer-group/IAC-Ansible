@@ -14,6 +14,11 @@
 #   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
 #     IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
 #
+# Switch to staging inventory (production / staging share the same branch):
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0020-68.cloud.bauer-group.com \
+#     INVENTORY=inventory/staging/hosts.yml bash
+#
 # Cloud-Init (in user-data):
 #   runcmd:
 #     - curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | bash
@@ -348,12 +353,21 @@ LREOF
 run_initial_pull() {
     log "Running initial ansible-pull (this may take a few minutes)..."
     local rc=0
-    ansible-pull \
-        --url "${REPO_URL}" \
-        --checkout "${BRANCH}" \
-        --directory "${WORKDIR}" \
-        --full \
-        "${PLAYBOOK}" > >(tee -a "${LOG_FILE}") 2>&1 || rc=$?
+    # --inventory is mandatory here: ansible.cfg defaults to
+    # inventory/production/hosts.yml, so without this flag a staging host's
+    # first pull would look up its host_vars in the production inventory and
+    # silently apply the wrong (or no) configuration.
+    local pull_args=(
+        --url "${REPO_URL}"
+        --checkout "${BRANCH}"
+        --directory "${WORKDIR}"
+        --inventory "${INVENTORY}"
+        --full
+    )
+    if [ -n "${VAULT_PASSWORD}" ]; then
+        pull_args+=(--vault-password-file /etc/ansible/vault-password)
+    fi
+    ansible-pull "${pull_args[@]}" "${PLAYBOOK}" > >(tee -a "${LOG_FILE}") 2>&1 || rc=$?
 
     if [ "${rc}" -eq 0 ]; then
         log "Initial pull completed successfully"
