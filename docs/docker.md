@@ -92,14 +92,6 @@ docker_daemon_options:
 docker_ipv6_nat_enabled: true
 docker_ipv6_nat_subnet: "fd10::/48"
 
-# Subnet-Migration (opt-in, destructive)
-# true = Rolle drainiert beim Re-Run alle Container, prunt unused
-# Networks und löscht docker0, damit die neuen IPv6-Ranges aus
-# docker_daemon_options sauber greifen. Default false (Produktion).
-# Staging-Hosts (Group-68) haben dies in
-# inventory/staging/group_vars/docker_hosts/main.yml auf true.
-docker_migrate_subnets: false
-
 # Kernel-Parameter
 docker_sysctl:
   vm.max_map_count: 4194304

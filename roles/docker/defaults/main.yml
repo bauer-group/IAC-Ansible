@@ -47,14 +47,6 @@ docker_daemon_options:
 docker_ipv6_nat_enabled: true
 docker_ipv6_nat_subnet: "fd10::/48"
 
-# Subnet migration drain (opt-in, destructive on existing workloads)
-# When true: stops all running containers, prunes networks, removes stale
-# ip6tables rules and deletes docker0 BEFORE daemon.json is rewritten so the
-# daemon recreates everything cleanly under the configured IPv6 ranges.
-# Intended for disposable/staging hosts. Production hosts should leave this
-# at false and migrate via a planned maintenance window.
-docker_migrate_subnets: false
-
 # Sysctl settings for Docker workloads
 docker_sysctl:
   vm.max_map_count: 4194304
