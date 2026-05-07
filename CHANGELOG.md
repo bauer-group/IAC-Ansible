@@ -1,3 +1,9 @@
+## [2.7.1](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.0...v2.7.1) (2026-05-07)
+
+### 🐛 Bug Fixes
+
+* **docker:** made subnet migration idempotent via docker0 prefix check ([fe5de68](https://github.com/bauer-group/IAC-Ansible/commit/fe5de68bc2151f0625283be596974cbf55695c61))
+
 ## [2.7.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.6.0...v2.7.0) (2026-05-07)
 
 ### 🚀 Features
