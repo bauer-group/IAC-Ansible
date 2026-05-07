@@ -1,3 +1,13 @@
+## [2.6.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.12...v2.6.0) (2026-05-07)
+
+### 🚀 Features
+
+* **cloud-init:** added per-host bootstrap scripts for prod and staging ([351ec5e](https://github.com/bauer-group/IAC-Ansible/commit/351ec5e70e4277252339623daf951525633527fd))
+
+### 🐛 Bug Fixes
+
+* **installer:** passed INVENTORY to initial ansible-pull invocation ([b4f6002](https://github.com/bauer-group/IAC-Ansible/commit/b4f6002622e79c3f83a18e9941959467f5859a1d))
+
 ## [2.5.12](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.11...v2.5.12) (2026-05-03)
 
 ### 🐛 Bug Fixes
