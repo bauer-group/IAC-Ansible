@@ -5,10 +5,15 @@
 # Brings the host into a state where the next daemon.json deployment + Docker
 # restart can recreate docker0 and the default address pools cleanly.
 #
-# Destructive: stops all running containers and removes unused networks.
-# Safe to re-run: every step is guarded and skipped when not applicable.
-# Intended for disposable/staging hosts. Do NOT enable on production without
-# a maintenance window.
+# Idempotent: the drain block is gated on a runtime check that compares the
+# current docker0 IPv6 address against docker_daemon_options['fixed-cidr-v6'].
+# Once docker0 is already on the target prefix the entire block is skipped,
+# so repeated deploys on a migrated host do not stop containers or restart
+# Docker unnecessarily.
+#
+# Destructive when triggered: stops all running containers and removes unused
+# networks. Intended for disposable/staging hosts. Do NOT enable on production
+# without a maintenance window.
 # =============================================================================
 
 - name: Check whether Docker CLI is present (skip migration on fresh hosts)
@@ -17,8 +22,39 @@
   changed_when: false
   failed_when: false
 
-- name: Run subnet migration drain
+- name: Detect current docker0 IPv6 subnet state
+  ansible.builtin.shell: |
+    set -o pipefail
+    if ! ip link show docker0 >/dev/null 2>&1; then
+      echo "no-bridge"
+      exit 0
+    fi
+    target_prefix="{{ docker_daemon_options['fixed-cidr-v6'] | regex_replace('::?/.*$', '') }}"
+    if ip -6 addr show docker0 2>/dev/null | grep -qE "inet6 ${target_prefix}:"; then
+      echo "current"
+    else
+      echo "stale"
+    fi
+  args:
+    executable: /bin/bash
+  register: docker_bridge_state
+  changed_when: false
   when: docker_cli_path.rc == 0
+
+- name: Report subnet migration not needed
+  ansible.builtin.debug:
+    msg: >-
+      Docker subnet migration skipped — docker0 state is
+      '{{ docker_bridge_state.stdout }}'
+      (target prefix {{ docker_daemon_options['fixed-cidr-v6'] }}).
+  when:
+    - docker_cli_path.rc == 0
+    - docker_bridge_state.stdout in ['current', 'no-bridge']
+
+- name: Run subnet migration drain
+  when:
+    - docker_cli_path.rc == 0
+    - docker_bridge_state.stdout == 'stale'
   block:
     - name: Stop all running containers before bridge teardown
       ansible.builtin.shell: |
