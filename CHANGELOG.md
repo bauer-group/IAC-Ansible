@@ -1,3 +1,9 @@
+## [2.7.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.6.0...v2.7.0) (2026-05-07)
+
+### 🚀 Features
+
+* **docker:** migrated to fd10::/48 IPv6 layout with opt-in drain ([66ae86c](https://github.com/bauer-group/IAC-Ansible/commit/66ae86cfb6cb1e428cd6ab713ce6f5e377ec0d2b))
+
 ## [2.6.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.5.12...v2.6.0) (2026-05-07)
 
 ### 🚀 Features
