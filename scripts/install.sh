@@ -170,8 +170,6 @@ install_ansible_debian() {
                 -o "${keyring}"
             chmod 0644 "${keyring}"
         fi
-        # Purge any legacy add-apt-repository registration (inline Signed-By)
-        rm -f /etc/apt/sources.list.d/ansible-ubuntu-ansible-*.sources
         local codename
         codename="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
         cat > /etc/apt/sources.list.d/ansible-ppa.list <<EOF
