@@ -17,6 +17,20 @@ docker_packages:
   - docker-buildx-plugin
   - docker-compose-plugin
 
+# --- APT repository codename selection (Debian/Ubuntu) ---
+# Docker's CDN (download.docker.com) publishes apt repos per distro codename,
+# but lags brand-new releases by weeks/months — e.g. Ubuntu 26.04 "resolute"
+# has no repo yet at release time. tasks/debian.yml probes the CDN at runtime
+# and uses the host's native codename when it is published; otherwise it falls
+# back to the newest codename Docker reliably ships for that distribution.
+# Docker .debs are forward-compatible across releases of the same distribution,
+# so a resolute host on the noble repo is safe and supported.
+# The probe is self-healing: once Docker publishes the native codename, the
+# next run switches to it automatically — no edit to this map required.
+docker_apt_codename_fallback:
+  Ubuntu: noble     # newest Ubuntu LTS Docker publishes
+  Debian: bookworm  # newest Debian stable Docker reliably publishes
+
 # Conflicting packages to remove before installation
 docker_conflicting_packages:
   - docker.io

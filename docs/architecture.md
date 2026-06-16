@@ -151,6 +151,27 @@ site.yml
 
 Platform is auto-detected via `ansible_facts['os_family']` and `ansible_facts['distribution']`.
 
+### New-release handling (e.g. Ubuntu 26.04 "resolute")
+
+A freshly released distribution is supported on day one, with two automatic
+adaptations that absorb the lag in third-party tooling:
+
+- **Ansible install** — Ubuntu 26.04+ universe ships ansible-core ≥ 2.18
+  (resolute: 2.20), so the `ansible_pull` role and `install.sh` install from
+  the distro and skip the Launchpad PPA. The PPA path remains only for 22.04 /
+  24.04, whose universe ansible-core predates the 2.18 minimum. This also
+  sidesteps 26.04's removal of `apt-key` — all repos use the `signed-by`
+  keyring pattern.
+- **Docker repo** — Docker's CDN lags new distro codenames by weeks. The
+  `docker` role probes `download.docker.com` for the host's codename and uses
+  it once published, otherwise falls back to the newest LTS Docker ships
+  (`noble` for Ubuntu, `bookworm` for Debian). Docker `.deb`s are
+  forward-compatible, and the probe self-heals to the native repo automatically
+  once it appears upstream.
+
+Time sync on Ubuntu 26.04+ uses **chrony** (the new upstream default) instead
+of `systemd-timesyncd`; this is driven by `roles/common/vars/Ubuntu-26.yml`.
+
 ## Ansible Compatibility
 
 | Requirement | Value |

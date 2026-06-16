@@ -34,13 +34,47 @@
     dest: /etc/apt/keyrings/docker.asc
     mode: "0644"
 
+# Docker's CDN lags brand-new distro releases (e.g. Ubuntu 26.04 "resolute"
+# has no repo at release time). Probe the CDN and fall back to the newest
+# published codename when the host's own release is not yet available.
+# HEAD request: 200 = published, 403/404 = not yet there (CloudFront may
+# answer either for a missing dist). Transient errors are retried, then fail
+# loudly rather than risk a wrong codename.
+- name: "[Debian] Probe whether Docker publishes a repo for this release"
+  ansible.builtin.uri:
+    url: >-
+      https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/dists/{{ ansible_facts['distribution_release'] }}/Release
+    method: HEAD
+    status_code: [200, 403, 404]
+  register: docker_repo_probe
+  changed_when: false
+  retries: 3
+  delay: 5
+  until: docker_repo_probe is succeeded
+
+- name: "[Debian] Select Docker apt codename (native if published, else newest-LTS fallback)"
+  ansible.builtin.set_fact:
+    docker_apt_codename: >-
+      {{ ansible_facts['distribution_release']
+         if docker_repo_probe.status == 200
+         else docker_apt_codename_fallback[ansible_facts['distribution']]
+              | default(ansible_facts['distribution_release']) }}
+
+- name: "[Debian] Note Docker repo codename fallback"
+  ansible.builtin.debug:
+    msg: >-
+      Docker has not published an apt repo for {{ ansible_facts['distribution'] }}
+      {{ ansible_facts['distribution_release'] }} yet — using the forward-compatible
+      '{{ docker_apt_codename }}' repo. Will switch to native automatically once published.
+  when: docker_apt_codename != ansible_facts['distribution_release']
+
 - name: "[Debian] Add Docker repository"
   ansible.builtin.apt_repository:
     repo: >-
       deb [arch={{ ansible_facts['architecture'] | regex_replace('x86_64', 'amd64') }}
       signed-by=/etc/apt/keyrings/docker.asc]
       https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
-      {{ ansible_facts['distribution_release'] }} stable
+      {{ docker_apt_codename }} stable
     filename: docker
     state: present
 

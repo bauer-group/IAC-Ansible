@@ -127,6 +127,7 @@ detect_os() {
         . /etc/os-release
         OS_ID="${ID}"
         OS_VERSION="${VERSION_ID:-unknown}"
+        OS_VERSION_MAJOR="${OS_VERSION%%.*}"
         OS_FAMILY=""
 
         case "${OS_ID}" in
@@ -157,7 +158,15 @@ install_ansible_debian() {
     apt-get update -qq
     apt-get install -y -qq git curl
 
-    if [ "${OS_ID}" = "ubuntu" ]; then
+    # Ansible PPA is only needed on Ubuntu releases whose universe ships an
+    # ansible-core older than the roles' min_ansible_version (2.18):
+    #   - 22.04 jammy → universe has 2.12 (too old) → PPA
+    #   - 24.04 noble → universe has 2.16 (too old) → PPA
+    #   - 26.04 resolute and newer → universe has >= 2.20 → no PPA, and the
+    #     PPA has no build for these series anyway. 26.04 also removed apt-key,
+    #     but the signed-by keyring pattern below does not depend on it.
+    # This mirrors the version gate in roles/ansible_pull/tasks/debian.yml.
+    if [ "${OS_ID}" = "ubuntu" ] && { [ "${OS_VERSION_MAJOR}" = "22" ] || [ "${OS_VERSION_MAJOR}" = "24" ]; }; then
         # Register Ansible PPA with the signed-by keyring pattern.
         # Must match roles/ansible_pull/tasks/debian.yml byte-for-byte so
         # the role stays idempotent and apt never sees two registrations

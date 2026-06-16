@@ -89,6 +89,35 @@
     - ansible_facts['distribution'] == "Ubuntu"
     - ansible_facts['distribution_major_version'] in ["22", "24"]
 
+- name: "[Ubuntu 26.04+] Remove obsolete Ansible PPA sources (universe ansible-core is current)"
+  # On 26.04+ the distro universe ships ansible-core >= 2.18 (resolute: 2.20),
+  # so the PPA is neither added nor needed above. A host upgraded in place from
+  # 22.04/24.04 may still carry a stale PPA registration pointing at an older
+  # series — remove both our managed .list and any legacy add-apt-repository
+  # .sources so apt resolves ansible from universe and the cache update below
+  # cannot fail on a now-irrelevant PPA dist.
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns:
+      - "ansible-ppa.list"
+      - "ansible-ubuntu-ansible-*.sources"
+    file_type: file
+  register: ansible_pull_obsolete_ppa
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_major_version'] is version('26', '>=')
+
+- name: "[Ubuntu 26.04+] Delete obsolete Ansible PPA source files"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ ansible_pull_obsolete_ppa.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when:
+    - ansible_pull_obsolete_ppa.files is defined
+    - ansible_pull_obsolete_ppa.files | length > 0
+
 - name: "[Debian] Update apt cache"
   ansible.builtin.apt:
     update_cache: true
