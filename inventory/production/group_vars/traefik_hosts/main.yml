@@ -1,0 +1,14 @@
+---
+# =============================================================================
+# Traefik Hosts - Group Variables
+# =============================================================================
+# Override role defaults for all Traefik edge-proxy hosts.
+# Per-host overrides go in host_vars/<hostname>.yml.
+#
+# Core mode (no monitoring, no auto-update) is the default. To opt the whole
+# group into extras, set the single lever here, e.g.:
+#   traefik_compose_profiles: "monitoring"            # add Prometheus/Grafana/...
+#   traefik_compose_profiles: "monitoring,auto-update"  # + Watchtower
+#
+# Note: the role is install-only. Routine updates are a manual operator action
+# on the host: `cd /opt/edgeproxy && sudo ./traefik.sh deploy && sudo ./traefik.sh update`.

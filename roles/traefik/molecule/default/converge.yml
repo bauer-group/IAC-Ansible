@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Disable actual installation in test — the installer needs Docker and
+    # network access to registries which aren't available in molecule. We test
+    # the download + idempotency + cleanup logic only.
+    traefik_enabled: false
+    # docker runs as a meta dependency — disable service start (test container
+    # is not DinD-capable). Configs are still deployed + verified.
+    docker_enabled: false
+
+  roles:
+    - role: traefik

@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: traefik
+  namespace: bauer_group
+  author: BAUER GROUP
+  description: Install and manage Traefik edge proxy (CS-Traefik, core mode)
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Ubuntu
+      versions: [jammy, noble, resolute]
+    - name: Debian
+      versions: [trixie]
+
+dependencies:
+  - role: docker

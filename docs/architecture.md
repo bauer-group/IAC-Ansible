@@ -133,10 +133,21 @@ site.yml
   │   ├── sysctl tuning (vm.max_map_count)
   │   └── Weekly auto-prune
   │
-  └── Phase 5: smartmon         (physical_servers group)
-      ├── smartmontools + auto-detect disks
-      ├── SMART health alerts via email
-      └── smartcheck utility
+  ├── Phase 5: smartmon         (physical_servers group)
+  │   ├── smartmontools + auto-detect disks
+  │   ├── SMART health alerts via email
+  │   └── smartcheck utility
+  │
+  ├── Phase 6: coolify          (coolify_hosts group)
+  │   ├── BAUER GROUP installer (--coolify-only), depends on docker
+  │   └── Idempotent: marker-gated (/data/coolify)
+  │
+  └── Phase 6a: traefik         (traefik_hosts group)
+      ├── CS-Traefik installer, core mode (no monitoring / no auto-update)
+      ├── COMPOSE_PROFILES pinned empty in /opt/edgeproxy/.env, depends on docker
+      ├── Idempotent: marker-gated (/opt/edgeproxy/.env)
+      └── Install-only — update manually on the host:
+          cd /opt/edgeproxy && sudo ./traefik.sh deploy && sudo ./traefik.sh update
 ```
 
 ## Platform Support

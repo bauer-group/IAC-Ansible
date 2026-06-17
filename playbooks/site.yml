@@ -108,6 +108,17 @@
     - role: coolify
       tags: [coolify]
 
+# --- Phase 6a: Traefik edge proxy for designated hosts ---
+- name: "Phase 6a: Traefik edge proxy"
+  hosts: traefik_hosts
+  become: true
+  gather_facts: true
+  tags: [traefik]
+
+  roles:
+    - role: traefik
+      tags: [traefik]
+
 # --- Phase 7: k0s Kubernetes for designated cluster nodes ---
 - name: "Phase 7: k0s cluster nodes"
   hosts: k0s_cluster

@@ -1,0 +1,11 @@
+---
+# =============================================================================
+# Traefik Role - Handlers
+# =============================================================================
+
+# Re-applies the stack with the current COMPOSE_PROFILES. traefik.sh reads
+# COMPOSE_PROFILES from .env and rebuilds the multi-file compose command, so a
+# restart is what makes a profile change take effect.
+- name: Restart Traefik stack
+  ansible.builtin.command: "{{ traefik_install_dir }}/traefik.sh restart"
+  changed_when: true

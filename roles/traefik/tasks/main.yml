@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# Traefik Role - Main Tasks
+# =============================================================================
+# Idempotent installer (mirrors roles/coolify): runs the CS-Traefik one-line
+# installer only when the install marker is missing, then pins COMPOSE_PROFILES
+# so "core mode" (no monitoring, no auto-update) holds regardless of the
+# installer's wizard defaults. Install-only by design — updates are a manual
+# operator action (`traefik.sh deploy && traefik.sh update`); there is no
+# Watchtower and no Ansible-driven git pull.
+
+- name: Check if Traefik is already installed
+  ansible.builtin.stat:
+    path: "{{ traefik_install_marker }}"
+  register: traefik_marker
+
+- name: Download Traefik installer
+  ansible.builtin.get_url:
+    url: "{{ traefik_install_url }}"
+    dest: /tmp/traefik-install.sh
+    mode: "0700"
+    force: true
+  when:
+    - traefik_enabled | bool
+    - (not traefik_marker.stat.exists) or (traefik_force_reinstall | bool)
+
+- name: Run Traefik installer (core mode, non-interactive)
+  ansible.builtin.command: /tmp/traefik-install.sh {{ traefik_install_flags }}
+  environment:
+    CS_TRAEFIK_INSTALL_DIR: "{{ traefik_install_dir }}"
+  register: traefik_install_result
+  when:
+    - traefik_enabled | bool
+    - (not traefik_marker.stat.exists) or (traefik_force_reinstall | bool)
+  changed_when: traefik_install_result.rc == 0
+
+- name: Remove installer script
+  ansible.builtin.file:
+    path: /tmp/traefik-install.sh
+    state: absent
+
+# Enforce core mode explicitly. lineinfile touches ONLY the COMPOSE_PROFILES
+# line — never the generated secrets in .env. Runs once .env exists (either it
+# was already there, or the install task just created it). Changing the value
+# notifies the stack restart so traefik.sh re-reads the profiles.
+- name: Pin COMPOSE_PROFILES (core-mode guarantee)
+  ansible.builtin.lineinfile:
+    path: "{{ traefik_install_marker }}"
+    regexp: '^COMPOSE_PROFILES='
+    line: "COMPOSE_PROFILES={{ traefik_compose_profiles }}"
+    state: present
+  when:
+    - traefik_enabled | bool
+    - traefik_marker.stat.exists or (traefik_install_result is defined and traefik_install_result is changed)
+  notify: Restart Traefik stack
+
+- name: Show Traefik installation status
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: >-
+      {% if traefik_marker.stat.exists and not traefik_force_reinstall %}
+      Traefik already installed at {{ traefik_install_dir }} — installer skipped.
+      {% else %}
+      Traefik installer executed (core mode). Stack at {{ traefik_install_dir }}.
+      {% endif %}

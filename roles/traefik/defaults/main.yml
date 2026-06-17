@@ -1,0 +1,32 @@
+---
+# =============================================================================
+# Traefik role defaults
+# =============================================================================
+
+traefik_enabled: true
+
+# BAUER GROUP CS-Traefik one-line installer.
+traefik_install_url: "https://raw.githubusercontent.com/bauer-group/CS-Traefik/main/install.sh"
+
+# Non-interactive install: random secrets, clone + start. With --yes the
+# installer's wizard defaults to the CORE profile (no monitoring, no
+# auto-update); COMPOSE_PROFILES is then pinned in tasks/main.yml so that core
+# guarantee is explicit and independent of any future wizard-default change.
+traefik_install_flags: "--yes"
+
+# Install directory — exported to the installer as CS_TRAEFIK_INSTALL_DIR.
+# The installer writes .env here on first successful run; that file is the
+# idempotency marker (re-running the installer with .env present is a no-op).
+traefik_install_dir: "/opt/edgeproxy"
+traefik_install_marker: "{{ traefik_install_dir }}/.env"
+
+# Core mode: empty COMPOSE_PROFILES = pure proxy (no monitoring, no
+# auto-update / Watchtower). This is the single lever to opt in later — set to
+# "monitoring", "auto-update", or "monitoring,auto-update". Writing it directly
+# also sidesteps the installer's comma-less profile concatenation quirk.
+traefik_compose_profiles: ""
+
+# Force re-running the installer even if the marker exists. This is for REPAIR,
+# not routine upgrades — updates are a manual operator action
+# (`traefik.sh deploy && traefik.sh update`). Use with care on running hosts.
+traefik_force_reinstall: false

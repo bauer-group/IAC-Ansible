@@ -87,6 +87,7 @@ roles/             Reusable roles
   ansible_pull/    Git-based pull mechanism
   k0s/             Bare-metal Kubernetes (multi-cluster, VLAN or WG mesh)
   secondary_dns/   PowerDNS authoritative secondary (NOTIFY/AXFR slave)
+  traefik/         Traefik edge proxy (CS-Traefik, core mode)
 scripts/           Bootstrap and helper scripts
 filter_plugins/    Custom Jinja2 filters
 docs/              Documentation

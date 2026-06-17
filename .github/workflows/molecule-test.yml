@@ -29,6 +29,7 @@ on:
           - docker
           - smartmon
           - coolify
+          - traefik
           - secrets
           - k0s
           - secondary_dns
@@ -57,6 +58,8 @@ jobs:
           - role: smartmon
             scenario: default
           - role: coolify
+            scenario: default
+          - role: traefik
             scenario: default
           - role: secrets
             scenario: default
