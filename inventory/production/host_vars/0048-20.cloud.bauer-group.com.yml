@@ -1,0 +1,72 @@
+---
+# =============================================================================
+# Host: 0048-20.cloud.bauer-group.com
+# Asset: 0048 | Group: 20 (Public Cloud)
+# =============================================================================
+# Purpose: PowerDNS authoritative secondary (NOTIFY/AXFR slave) AND Docker
+#          application host (Docker Compose workloads).
+#
+# Modelled on 0001-35 (the existing PowerDNS secondary) but co-located with
+# Docker workloads on a public-cloud VM. A full run of `playbooks/site.yml`
+# either retrofits an already-configured host (no disruption) or provisions a
+# blank Ubuntu 24.04 LTS from scratch to the same end state; re-runs are
+# idempotent. Ubuntu 24.04 matches 0001-35 for fleet consistency.
+#
+# Role coverage via group membership (see playbooks/site.yml):
+#   common, ansible_pull, auto_update, docker, secondary_dns
+
+platform: ubuntu_2404
+
+asset_id: "0048"
+group_code: "20"
+asset_type: dns_secondary
+
+labels:
+  - production
+  - public-cloud
+  - ubuntu
+  - dns-secondary
+  - docker-host
+
+# --- Hostname ---
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Modelled on 0001-35: UFW ENABLED so the public-facing DNS host stays
+# hardened — the secondary_dns role opens 53/tcp + 53/udp and SSH is filtered.
+# NOTE on Docker co-location: a container's *published* ports bypass UFW's
+# INPUT filtering (Docker inserts its own iptables rules ahead of UFW). Bind
+# sensitive containers to 127.0.0.1 or front them with the provider/edge
+# firewall — do NOT rely on UFW to gate published container ports here.
+common_firewall_ufw_state: "enabled"
+
+# --- DNS resolver hardening ---
+# This host RUNS the DNS server on :53, so common's systemd-resolved stub must
+# stay off — the secondary_dns role stops + masks resolved and points
+# /etc/resolv.conf at external resolvers (Quad9 by default).
+common_resolved_configure: false
+
+# =============================================================================
+# secondary_dns role configuration
+# =============================================================================
+# >>> OPERATOR MUST FILL IN the primaries this secondary transfers from. <<<
+# Each primary needs `hostname` (= MNAME in the SOA, NOT reverse-DNS) and at
+# least one of `ipv4` / `ipv6`. If the MNAME is unknown, deploy with this list
+# empty (temporarily set secondary_dns_enabled: false), then run
+# `dns-admin primary discover <ip> <known-zone>` on the host to find it.
+#
+# Example:
+#   secondary_dns_primaries:
+#     - hostname: "ns1.example.com"
+#       ipv4: "203.0.113.10"
+#       ipv6: "2001:db8::10"
+#
+# Applied with INSERT OR IGNORE — runtime `dns-admin primary add` entries
+# survive future runs. Set secondary_dns_primaries_strict: true to enforce
+# inventory-only mode (drop out-of-band entries).
+secondary_dns_primaries: []
+
+secondary_dns_primaries_strict: false
+
+# Optional TSIG key for signed AXFR — "name:algorithm:base64-secret".
+# secondary_dns_tsig_key: "transfer-key:hmac-sha256:BASE64SECRET"

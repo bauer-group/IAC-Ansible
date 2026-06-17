@@ -1,0 +1,54 @@
+# =============================================================================
+# Cloud-Init User Data for 0049-00.cloud.bauer-group.com
+# =============================================================================
+# Asset:     0049 | Group: 00 (Physical server)
+# Purpose:   Docker application host (Docker Compose workloads)
+# OS:        Ubuntu 26.04 LTS
+# Inventory: inventory/production/hosts.yml
+# Branch:    main
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION A — Ubuntu autoinstall (physical / bare metal, NoCloud)
+# -----------------------------------------------------------------------------
+# Reference this file as the cloud-init `user-data` of an Ubuntu Server
+# autoinstall (subiquity) seed — on the install media's NoCloud datasource or
+# served over HTTP. The host bootstraps itself on first boot.
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION B — Manual one-liner (SSH into a fresh Ubuntu 26.04 box as root)
+# -----------------------------------------------------------------------------
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0049-00.cloud.bauer-group.com \
+#     INVENTORY=inventory/production/hosts.yml \
+#     BRANCH=main \
+#     bash
+# =============================================================================
+
+#cloud-config
+
+hostname: 0049-00
+fqdn: 0049-00.cloud.bauer-group.com
+preserve_hostname: false
+manage_etc_hosts: true
+
+timezone: Etc/UTC
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+
+runcmd:
+  - |
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+      IAC_HOSTNAME=0049-00.cloud.bauer-group.com \
+      INVENTORY=inventory/production/hosts.yml \
+      BRANCH=main \
+      bash
+
+final_message: |
+  IAC-Ansible bootstrap completed for 0049-00.cloud.bauer-group.com (production)
+  Logs: /var/log/ansible/ansible-pull.log
+  Timer: systemctl status ansible-pull.timer

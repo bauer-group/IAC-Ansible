@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# Host: 0049-00.cloud.bauer-group.com
+# Asset: 0049 | Group: 00 (Physical server)
+# =============================================================================
+# Purpose: Docker application host (Docker Compose workloads).
+#
+# This host is provisioned from scratch via Ansible. Running
+# `playbooks/site.yml --limit 0049-00.cloud.bauer-group.com` takes a blank
+# Ubuntu 26.04 LTS and converges it to the managed end state; re-runs are
+# idempotent no-ops.
+#
+# Being a physical server (group 00) it is additionally picked up by
+# site.yml Phase 5 (smartmon) for SMART disk-health monitoring, and the
+# common role auto-installs dmidecode instead of open-vm-tools because
+# ansible_facts['virtualization_role'] != "guest".
+
+platform: ubuntu_2604
+
+asset_id: "0049"
+group_code: "00"
+asset_type: docker_host
+
+labels:
+  - production
+  - physical
+  - ubuntu
+  - docker-host
+
+# --- Hostname ---
+# Set by default (idempotent); explicit here so a fresh-install run names the
+# host correctly before services come up.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Docker manages its own iptables rules; UFW conflicts with container
+# networking. Match the other Docker hosts (0046-20, 0047-20) by keeping UFW
+# disabled and governing inbound exposure at the provider/edge firewall.
+common_firewall_ufw_state: "disabled"
+
+# --- AppArmor: stays at the global default (disabled + masked) ---
+
+# --- Netplan (optional) ---
+# Physical-host network config is site-specific and intentionally NOT stored
+# in version control. Enable + fill only if static addresses must be enforced.
+# The role takes a backup, schedules a systemd rollback timer, applies the
+# change, runs a connectivity test and only cancels the rollback on success
+# (no manual apply, no lockout risk).
+#
+# common_netplan_configure: true
+# common_netplan_ipv4_extra:
+#   - "<additional-ipv4>/<prefix>"
+# common_netplan_ipv6_extra:
+#   - "<additional-ipv6>/<prefix>"
