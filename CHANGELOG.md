@@ -1,3 +1,9 @@
+## [2.8.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.4...v2.8.0) (2026-06-17)
+
+### 🚀 Features
+
+* **inventory:** added three production hosts (0048-20, 0049-00, 0050-00) ([e648d9b](https://github.com/bauer-group/IAC-Ansible/commit/e648d9ba6d4ea8cc78d6a84e870ca5a82a521370))
+
 ## [2.7.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.3...v2.7.4) (2026-06-17)
 
 ### 🐛 Bug Fixes
