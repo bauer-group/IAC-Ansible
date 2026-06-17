@@ -1,3 +1,9 @@
+## [2.7.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.2...v2.7.3) (2026-06-16)
+
+### 🐛 Bug Fixes
+
+* **platform:** completed Ubuntu 26.04 LTS support for fresh hosts ([a0cf60c](https://github.com/bauer-group/IAC-Ansible/commit/a0cf60c115010a183c5dbbb5cfe45aa42e1a906b))
+
 ## [2.7.2](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.1...v2.7.2) (2026-05-07)
 
 ### ⏪ Reverts
