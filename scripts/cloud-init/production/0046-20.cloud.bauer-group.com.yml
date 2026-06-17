@@ -2,7 +2,7 @@
 # Cloud-Init User Data for 0046-20.cloud.bauer-group.com
 # =============================================================================
 # Asset:     0046 | Group: 20 (Public Cloud)
-# Purpose:   Coolify application platform
+# Purpose:   Coolify application platform & Docker application host
 # OS:        Ubuntu 24.04 LTS
 # Inventory: inventory/production/hosts.yml
 # Branch:    main
