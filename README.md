@@ -124,6 +124,7 @@ auto_update_type: "security"  # Security updates only
 - [Troubleshooting](docs/troubleshooting.md)
 - [k0s — Bare-Metal Kubernetes](docs/k0s-architecture.md)
 - [Secondary DNS (PowerDNS)](docs/secondary-dns.md)
+- [ADR-0001: Collection distribution strategy](docs/adr/0001-collection-distribution-strategy.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Platforms
