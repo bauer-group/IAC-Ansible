@@ -1,3 +1,9 @@
+## [2.7.4](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.3...v2.7.4) (2026-06-17)
+
+### 🐛 Bug Fixes
+
+* **cloud-init:** update purpose to include Docker application host ([de3586f](https://github.com/bauer-group/IAC-Ansible/commit/de3586fe7d4511cc0afb1803563909d6712e7e2e))
+
 ## [2.7.3](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.2...v2.7.3) (2026-06-16)
 
 ### 🐛 Bug Fixes
