@@ -1,3 +1,9 @@
+## [2.9.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.8.0...v2.9.0) (2026-06-17)
+
+### 🚀 Features
+
+* **traefik:** added Traefik edge-proxy role (core mode) ([47aeba6](https://github.com/bauer-group/IAC-Ansible/commit/47aeba6a51547ecf2ccc2fc584a7e7857c4aae86))
+
 ## [2.8.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.7.4...v2.8.0) (2026-06-17)
 
 ### 🚀 Features
