@@ -2,10 +2,10 @@
 # Ansible Galaxy Requirements
 collections:
   - name: community.general
-    version: ">=12.0.0,<13.0.0"
+    version: ">=13.0.0,<14.0.0"
   - name: ansible.posix
     version: ">=2.1.0,<3.0.0"
   - name: community.hashi_vault
-    version: ">=6.0.0,<7.0.0"
+    version: ">=7.0.0,<8.0.0"
   - name: ansible.utils
     version: ">=6.0.0,<7.0.0"
