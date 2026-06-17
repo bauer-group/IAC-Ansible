@@ -3,12 +3,16 @@
 # Host: 0047-20.cloud.bauer-group.com
 # Asset: 0047 | Group: 20 (Public Cloud)
 # =============================================================================
-# Purpose: Docker application host (Docker Compose workloads, no Coolify).
+# Purpose: Docker application host (Docker Compose workloads) — Coolify-managed
+#          REMOTE server. Coolify (running on 0046-20) deploys and manages the
+#          container workloads here over SSH; this host runs the Docker runtime
+#          only, NOT the Coolify control plane (hence it is not in coolify_hosts).
 #
-# This host is provisioned from scratch via Ansible. Running
-# `playbooks/site.yml --limit 0047-20.cloud.bauer-group.com` takes a blank
-# Ubuntu 24.04 LTS and converges it to the managed end state; re-runs are
-# idempotent no-ops.
+# Ansible provisions only the bare end state — Docker + hardened SSH — from
+# scratch: `playbooks/site.yml --limit 0047-20.cloud.bauer-group.com` takes a
+# blank Ubuntu 24.04 LTS and converges it; re-runs are idempotent no-ops.
+# Coolify's own SSH key is added out-of-band via the Coolify UI and is
+# intentionally not tracked in this inventory.
 
 platform: ubuntu_2404
 
@@ -21,6 +25,7 @@ labels:
   - public-cloud
   - ubuntu
   - docker-host
+  - coolify-managed  # workloads deployed by Coolify on 0046-20 (remote server)
 
 # --- Hostname: already set during bootstrap (install.sh + IAC_HOSTNAME) ---
 
