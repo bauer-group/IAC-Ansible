@@ -184,7 +184,7 @@ have nothing to do with the naming scheme. Examples:
 | Asset FQDN | Service FQDN(s) | Note |
 | --- | --- | --- |
 | `0001-35.cloud.bauer-group.com` | `ns1.professional-hosting.com` | DNS server: customers query the service name; inventory tracks the asset |
-| `0046-20.cloud.bauer-group.com` | `coolify.bauer-group.com` | Web UI vanity name pointing at the Coolify app host |
+| `0046-20.cloud.bauer-group.com` | `paas.cloud.bauer-group.com` | Web UI vanity name pointing at the Coolify app host |
 
 **Rules:**
 

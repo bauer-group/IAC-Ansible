@@ -4,9 +4,10 @@
 # Asset: 0001 | Group: 21 (Public Cloud — Azure Compute instance)
 # =============================================================================
 # Purpose: Docker application host (Docker Compose workloads) — Coolify-managed
-#          REMOTE server. Coolify (running on 0046-20) deploys and manages the
-#          container workloads here over SSH; this host runs the Docker runtime
-#          only, NOT the Coolify control plane (hence it is NOT in coolify_hosts).
+#          REMOTE server. The Coolify control plane (asset 0046-20, dashboard at
+#          paas.cloud.bauer-group.com) deploys and manages the container
+#          workloads here over SSH; this host runs the Docker runtime only,
+#          NOT the Coolify control plane (hence it is NOT in coolify_hosts).
 #
 # Provider: Microsoft Azure. Group code 21 designates an Azure Compute instance
 #           inside the 20-29 public-cloud range (20 = generic public-cloud VM,
@@ -61,5 +62,6 @@ common_firewall_ufw_state: "disabled"
 
 # --- Coolify ---
 # No Coolify control plane runs here (this host is not in coolify_hosts). It is
-# registered as a remote server in the Coolify UI on 0046-20, which then
-# deploys and manages container workloads over SSH.
+# registered as a remote server in the Coolify dashboard at
+# paas.cloud.bauer-group.com (served by asset 0046-20), which then deploys and
+# manages container workloads over SSH.

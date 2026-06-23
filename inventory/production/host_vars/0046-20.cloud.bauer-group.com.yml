@@ -20,6 +20,13 @@ asset_id: "0046"
 group_code: "20"
 asset_type: coolify_host
 
+# Service FQDN the Coolify dashboard/UI is reached under — a plain A/AAAA
+# record that resolves to this host, NOT the system hostname (see
+# docs/server-naming.md "Service FQDNs vs. asset FQDN"). Informational only;
+# Ansible does not act on it.
+service_fqdns:
+  - paas.cloud.bauer-group.com
+
 labels:
   - production
   - public-cloud
