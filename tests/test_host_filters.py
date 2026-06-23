@@ -52,7 +52,7 @@ class TestParseAssetHostname:
         assert result["asset_type"] == "unknown_99"
 
     def test_all_known_group_codes(self):
-        known_codes = ["00", "05", "10", "15", "20", "25", "30", "35",
+        known_codes = ["00", "05", "10", "15", "20", "21", "25", "30", "35",
                        "40", "45", "48", "50", "55", "60", "61", "68",
                        "70", "71", "72", "78", "80", "85", "88"]
         for code in known_codes:
@@ -60,6 +60,13 @@ class TestParseAssetHostname:
             assert result["valid"] is True
             assert not result["asset_type"].startswith("unknown_"), \
                 f"Group code {code} should be known"
+
+    def test_azure_compute_group_code(self):
+        result = parse_asset_hostname("0001-21.cloud.bauer-group.com")
+        assert result["valid"] is True
+        assert result["asset_id"] == "0001"
+        assert result["group_code"] == "21"
+        assert result["asset_type"] == "azure_compute"
 
 
 class TestConvenienceFilters:

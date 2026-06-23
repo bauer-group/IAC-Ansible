@@ -35,6 +35,7 @@ AAAA-GG.cloud.bauer-group.com
 | Code | Type |
 | --- | --- |
 | 20 | VM / Compute instance (Public Cloud) |
+| 21 | Azure Compute instance |
 | 25 | Public Cloud managed service |
 
 ### 30-39: Cloud Services
@@ -96,6 +97,7 @@ Reserved for future extensions.
 | Virtual machine | `0020-10.cloud.bauer-group.com` |
 | Cluster VM | `0033-15.cloud.bauer-group.com` |
 | Public Cloud instance | `0046-20.cloud.bauer-group.com` |
+| Azure Compute instance | `0001-21.cloud.bauer-group.com` |
 | Cloud service on physical | `0001-30.cloud.bauer-group.com` |
 | Cloud service on VM | `0020-35.cloud.bauer-group.com` |
 | Storage system | `0100-45.cloud.bauer-group.com` |

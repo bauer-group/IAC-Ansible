@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# Host: 0001-21.cloud.bauer-group.com
+# Asset: 0001 | Group: 21 (Public Cloud — Azure Compute instance)
+# =============================================================================
+# Purpose: Docker application host (Docker Compose workloads) — Coolify-managed
+#          REMOTE server. Coolify (running on 0046-20) deploys and manages the
+#          container workloads here over SSH; this host runs the Docker runtime
+#          only, NOT the Coolify control plane (hence it is NOT in coolify_hosts).
+#
+# Provider: Microsoft Azure. Group code 21 designates an Azure Compute instance
+#           inside the 20-29 public-cloud range (20 = generic public-cloud VM,
+#           21 = Azure Compute) — see docs/server-naming.md.
+#
+# This host_vars file is written so that a full run of `playbooks/site.yml`
+# either retrofits an already-configured host (no disruption) OR provisions a
+# blank Ubuntu 26.04 LTS from scratch to the same end state:
+# `playbooks/site.yml --limit 0001-21.cloud.bauer-group.com` converges it;
+# re-runs are idempotent no-ops. Coolify's own SSH key is added out-of-band via
+# the Coolify UI and is intentionally not tracked in this inventory.
+#
+# Intentionally not captured here: subscription, resource group, VM size,
+# IP addresses. Those belong to the Azure resource definition, not the
+# version-controlled inventory.
+
+platform: ubuntu_2604
+
+asset_id: "0001"
+group_code: "21"
+asset_type: docker_host
+
+labels:
+  - production
+  - public-cloud
+  - azure
+  - ubuntu
+  - docker-host
+  - coolify-managed  # workloads deployed by Coolify on 0046-20 (remote server)
+
+# --- Hostname ---
+# Set by default (idempotent); explicit here so a fresh-install run is
+# guaranteed to name the host correctly before the Docker runtime comes up.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Docker manages its own iptables rules; UFW conflicts with container
+# networking. Match the other Docker hosts by ensuring UFW is disabled.
+# Inbound exposure is governed by the Azure Network Security Group (NSG),
+# not by an in-guest firewall.
+common_firewall_ufw_state: "disabled"
+
+# --- AppArmor ---
+# Stays at the global default (disabled + masked).
+
+# --- Netplan: stays at the default (NOT configured) ---
+# Azure assigns the NIC address via DHCP and manages it at the platform level.
+# Static in-guest addressing must NOT be pinned here — it would desync from the
+# Azure-managed NIC and can break connectivity on reallocation. cloud-init's
+# default DHCP network config is correct for Azure, so common_netplan_configure
+# is left off (contrast 0047-20, whose provider required an IPv6 override).
+
+# --- Coolify ---
+# No Coolify control plane runs here (this host is not in coolify_hosts). It is
+# registered as a remote server in the Coolify UI on 0046-20, which then
+# deploys and manages container workloads over SSH.

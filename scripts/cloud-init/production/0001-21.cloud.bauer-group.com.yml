@@ -1,0 +1,64 @@
+# =============================================================================
+# Cloud-Init User Data for 0001-21.cloud.bauer-group.com
+# =============================================================================
+# Asset:     0001 | Group: 21 (Public Cloud — Azure Compute instance)
+# Purpose:   Docker application host (Docker Compose workloads) — Coolify-managed remote server (controlled by 0046-20)
+# OS:        Ubuntu 26.04 LTS
+# Inventory: inventory/production/hosts.yml
+# Branch:    main
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION A — Cloud-Init (Azure custom-data, fully unattended)
+# -----------------------------------------------------------------------------
+# Azure CLI consumes this whole file as custom-data. Confirm the current
+# Ubuntu 26.04 image identifier first — image URNs change over time:
+#   az vm image list --publisher Canonical --offer ubuntu-26_04-lts --all -o table
+#
+#   az vm create \
+#     --resource-group <resource-group> \
+#     --name 0001-21 \
+#     --image Canonical:ubuntu-26_04-lts:server:latest \
+#     --size Standard_B2s \
+#     --admin-username azureuser \
+#     --custom-data scripts/cloud-init/production/0001-21.cloud.bauer-group.com.yml
+#
+# Generic: paste this whole file into the provider's "custom data" / user-data field.
+#
+# -----------------------------------------------------------------------------
+# DEPLOY OPTION B — Manual one-liner (SSH into a fresh Ubuntu 26.04 box, run as root)
+# -----------------------------------------------------------------------------
+#   curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+#     IAC_HOSTNAME=0001-21.cloud.bauer-group.com \
+#     INVENTORY=inventory/production/hosts.yml \
+#     BRANCH=main \
+#     bash
+# =============================================================================
+
+#cloud-config
+
+hostname: 0001-21
+fqdn: 0001-21.cloud.bauer-group.com
+preserve_hostname: false
+manage_etc_hosts: true
+
+timezone: Etc/UTC
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+
+runcmd:
+  - |
+    curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
+      IAC_HOSTNAME=0001-21.cloud.bauer-group.com \
+      INVENTORY=inventory/production/hosts.yml \
+      BRANCH=main \
+      bash
+
+final_message: |
+  IAC-Ansible bootstrap completed for 0001-21.cloud.bauer-group.com (production)
+  Logs: /var/log/ansible/ansible-pull.log
+  Timer: systemctl status ansible-pull.timer

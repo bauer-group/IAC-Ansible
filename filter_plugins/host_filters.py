@@ -23,6 +23,7 @@ GROUP_CODE_MAP = {
     "10": "vm_private_cloud",
     "15": "vm_cluster",
     "20": "public_cloud_vm",
+    "21": "azure_compute",
     "25": "public_cloud_managed",
     "30": "cloud_service_physical",
     "35": "cloud_service_vm",
