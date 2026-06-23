@@ -2,7 +2,7 @@
 # Cloud-Init User Data for 0047-20.cloud.bauer-group.com
 # =============================================================================
 # Asset:     0047 | Group: 20 (Public Cloud)
-# Purpose:   Docker application host (Docker Compose workloads) — Coolify-managed remote server (controlled by 0046-20)
+# Purpose:   Docker application host (Docker Compose workloads) — Coolify-managed remote server (control plane: asset 0046-20, dashboard paas.cloud.bauer-group.com)
 # OS:        Ubuntu 24.04 LTS
 # Inventory: inventory/production/hosts.yml
 # Branch:    main

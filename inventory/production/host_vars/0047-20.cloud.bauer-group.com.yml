@@ -4,9 +4,10 @@
 # Asset: 0047 | Group: 20 (Public Cloud)
 # =============================================================================
 # Purpose: Docker application host (Docker Compose workloads) — Coolify-managed
-#          REMOTE server. Coolify (running on 0046-20) deploys and manages the
-#          container workloads here over SSH; this host runs the Docker runtime
-#          only, NOT the Coolify control plane (hence it is not in coolify_hosts).
+#          REMOTE server. The Coolify control plane (asset 0046-20, dashboard at
+#          paas.cloud.bauer-group.com) deploys and manages the container
+#          workloads here over SSH; this host runs the Docker runtime only,
+#          NOT the Coolify control plane (hence it is not in coolify_hosts).
 #
 # Ansible provisions only the bare end state — Docker + hardened SSH — from
 # scratch: `playbooks/site.yml --limit 0047-20.cloud.bauer-group.com` takes a
