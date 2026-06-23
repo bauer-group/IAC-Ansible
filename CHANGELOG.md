@@ -1,3 +1,9 @@
+## [2.10.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.9.0...v2.10.0) (2026-06-23)
+
+### 🚀 Features
+
+* **inventory:** added Azure host 0001-21 and group code 21 ([ea9acbc](https://github.com/bauer-group/IAC-Ansible/commit/ea9acbc1601d399df906003be04c3ebf9277fd5c))
+
 ## [2.9.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.8.0...v2.9.0) (2026-06-17)
 
 ### 🚀 Features
