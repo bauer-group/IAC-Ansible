@@ -1,0 +1,61 @@
+---
+# =============================================================================
+# Host: 0001-45.cloud.bauer-group.com
+# Asset: 0001 | Group: 45 (Storage — NAS, SAN, Ceph)
+# =============================================================================
+# Purpose: Physical storage host running Docker Compose workloads behind a
+# Traefik edge proxy.
+#
+# This host is provisioned from scratch via Ansible. Running
+# `playbooks/site.yml --limit 0001-45.cloud.bauer-group.com` takes a blank
+# Ubuntu 24.04 LTS and converges it to the managed end state; re-runs are
+# idempotent no-ops.
+#
+# Group membership (see inventory/production/hosts.yml):
+#   network_storage  — asset type (group code 45)
+#   physical_servers — bare metal, so site.yml Phase 5 (smartmon) applies for
+#                      SMART disk-health monitoring (critical for a storage box)
+#                      and the common role installs dmidecode instead of
+#                      open-vm-tools (virtualization_role != "guest")
+#   docker_hosts     — Phase 4 installs the Docker runtime
+#   traefik_hosts    — Phase 6a installs the CS-Traefik edge proxy (core mode)
+
+platform: ubuntu_2404
+
+asset_id: "0001"
+group_code: "45"
+asset_type: storage
+
+labels:
+  - production
+  - physical
+  - storage
+  - ubuntu
+  - docker-host
+  - traefik
+
+# --- Hostname ---
+# Set by default (idempotent); explicit here so a fresh-install run names the
+# host correctly before services come up.
+common_hostname_configure: true
+
+# --- UFW firewall ---
+# Docker manages its own iptables rules; UFW conflicts with container
+# networking. Match the other Docker hosts (0049-00, 0050-00) by keeping UFW
+# disabled and governing inbound exposure at the provider/edge firewall.
+common_firewall_ufw_state: "disabled"
+
+# --- AppArmor: stays at the global default (disabled + masked) ---
+
+# --- Netplan (optional) ---
+# Physical-host network config is site-specific and intentionally NOT stored
+# in version control. Enable + fill only if static addresses must be enforced.
+# The role takes a backup, schedules a systemd rollback timer, applies the
+# change, runs a connectivity test and only cancels the rollback on success
+# (no manual apply, no lockout risk).
+#
+# common_netplan_configure: true
+# common_netplan_ipv4_extra:
+#   - "<additional-ipv4>/<prefix>"
+# common_netplan_ipv6_extra:
+#   - "<additional-ipv6>/<prefix>"
