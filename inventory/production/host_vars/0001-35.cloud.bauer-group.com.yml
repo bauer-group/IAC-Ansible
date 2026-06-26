@@ -39,6 +39,7 @@ labels:
   - dns-secondary
   - ubuntu
   - public-facing
+  - auto-update
 
 # --- Hostname ---
 # Set by default; explicit here so a fresh-install run names the host

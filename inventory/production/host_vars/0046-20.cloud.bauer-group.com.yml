@@ -33,6 +33,7 @@ labels:
   - ubuntu
   - docker-host
   - coolify
+  - auto-update
 
 # --- Hostname ---
 # Set by default (idempotent); kept here explicit so a fresh-install run is

@@ -28,6 +28,7 @@ labels:
   - dns-secondary
   - docker-host
   - traefik
+  - auto-update
 
 # --- Hostname ---
 common_hostname_configure: true

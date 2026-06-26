@@ -27,6 +27,7 @@ labels:
   - ubuntu
   - docker-host
   - traefik
+  - auto-update
 
 # --- Hostname ---
 # Set by default (idempotent); explicit here so a fresh-install run names the

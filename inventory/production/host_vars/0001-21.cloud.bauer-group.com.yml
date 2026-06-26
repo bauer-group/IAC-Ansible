@@ -37,6 +37,7 @@ labels:
   - ubuntu
   - docker-host
   - coolify-managed  # workloads deployed by Coolify on 0046-20 (remote server)
+  - auto-update
 
 # --- Hostname ---
 # Set by default (idempotent); explicit here so a fresh-install run is

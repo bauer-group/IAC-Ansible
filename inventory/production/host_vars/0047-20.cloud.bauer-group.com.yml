@@ -27,6 +27,7 @@ labels:
   - ubuntu
   - docker-host
   - coolify-managed  # workloads deployed by Coolify on 0046-20 (remote server)
+  - auto-update
 
 # --- Hostname: already set during bootstrap (install.sh + IAC_HOSTNAME) ---
 
