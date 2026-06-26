@@ -1,3 +1,9 @@
+## [2.12.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.11.0...v2.12.0) (2026-06-26)
+
+### 🚀 Features
+
+* **inventory:** added physical storage host 0001-45 ([051354f](https://github.com/bauer-group/IAC-Ansible/commit/051354f56e9bfc83a05fa805e9dd8525978b72cc))
+
 ## [2.11.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.10.0...v2.11.0) (2026-06-26)
 
 ### 🚀 Features
