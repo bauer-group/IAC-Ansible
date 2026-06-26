@@ -27,6 +27,7 @@ labels:
   - ubuntu
   - dns-secondary
   - docker-host
+  - traefik
 
 # --- Hostname ---
 common_hostname_configure: true
