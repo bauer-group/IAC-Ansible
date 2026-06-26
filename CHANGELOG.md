@@ -1,3 +1,9 @@
+## [2.13.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.12.0...v2.13.0) (2026-06-26)
+
+### 🚀 Features
+
+* **inventory:** added traefik labels and auto-update for storage host ([09f9d4d](https://github.com/bauer-group/IAC-Ansible/commit/09f9d4d41847f748e443f54058ecf0e3c860c99d))
+
 ## [2.12.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.11.0...v2.12.0) (2026-06-26)
 
 ### 🚀 Features
