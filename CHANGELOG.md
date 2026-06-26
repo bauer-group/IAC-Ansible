@@ -1,3 +1,9 @@
+## [2.11.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.10.0...v2.11.0) (2026-06-26)
+
+### 🚀 Features
+
+* **inventory:** rolled out Traefik on 0048-20, 0049-00, 0050-00 ([1d809a1](https://github.com/bauer-group/IAC-Ansible/commit/1d809a1c43818d57f6f7d28cf73f0034a8bccc7e))
+
 ## [2.10.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.9.0...v2.10.0) (2026-06-23)
 
 ### 🚀 Features
