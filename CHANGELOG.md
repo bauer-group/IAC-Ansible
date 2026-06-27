@@ -1,3 +1,9 @@
+## [2.14.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.13.0...v2.14.0) (2026-06-27)
+
+### 🚀 Features
+
+* **portainer:** added role for Portainer management UI ([66141b5](https://github.com/bauer-group/IAC-Ansible/commit/66141b501c838d1c210a065ecaf4f72940335ca1))
+
 ## [2.13.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.12.0...v2.13.0) (2026-06-26)
 
 ### 🚀 Features
