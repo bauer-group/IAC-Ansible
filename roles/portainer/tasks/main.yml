@@ -51,8 +51,10 @@
         group: root
         mode: "{{ item.mode }}"
       loop:
-        - { path: "{{ portainer_project_dir }}", mode: "0750" }
-        - { path: "{{ portainer_project_dir }}/secrets", mode: "0700" }
+        - path: "{{ portainer_project_dir }}"
+          mode: "0750"
+        - path: "{{ portainer_project_dir }}/secrets"
+          mode: "0700"
 
     - name: Write admin password file (read on first boot only)
       ansible.builtin.copy:
