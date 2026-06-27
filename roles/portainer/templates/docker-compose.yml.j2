@@ -1,0 +1,31 @@
+# =============================================================================
+# IAC-Ansible: Portainer compose stack
+# Managed by Ansible (roles/portainer) - DO NOT EDIT MANUALLY
+# =============================================================================
+services:
+  portainer:
+    image: "{{ portainer_image }}"
+    container_name: "{{ portainer_container_name }}"
+    restart: "{{ portainer_restart_policy }}"
+    command:
+      - "--admin-password-file"
+      - "{{ portainer_admin_password_container_path }}"
+{% if portainer_edition == 'ee' and portainer_license_key | length > 0 %}
+    environment:
+      PORTAINER_LICENSE_KEY: "{{ portainer_license_key }}"
+{% endif %}
+    ports:
+      - "{{ portainer_bind_ipv4 }}:{{ portainer_port_edge }}:8000"
+      - "[{{ portainer_bind_ipv6 }}]:{{ portainer_port_edge }}:8000"
+      - "{{ portainer_bind_ipv4 }}:{{ portainer_port_http }}:9000"
+      - "[{{ portainer_bind_ipv6 }}]:{{ portainer_port_http }}:9000"
+      - "{{ portainer_bind_ipv4 }}:{{ portainer_port_https }}:9443"
+      - "[{{ portainer_bind_ipv6 }}]:{{ portainer_port_https }}:9443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ portainer_data_volume }}:/data"
+      - "{{ portainer_admin_password_path }}:{{ portainer_admin_password_container_path }}:ro"
+
+volumes:
+  {{ portainer_data_volume }}:
+    name: "{{ portainer_data_volume }}"

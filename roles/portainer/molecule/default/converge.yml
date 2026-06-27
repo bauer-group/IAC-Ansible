@@ -1,0 +1,15 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Disable the actual stack deploy in molecule — docker_compose_v2 needs a
+    # running Docker daemon and registry access, which the test container lacks.
+    # We validate that the role parses and runs idempotently (structure only).
+    portainer_enabled: false
+    docker_enabled: false
+
+  roles:
+    - role: portainer

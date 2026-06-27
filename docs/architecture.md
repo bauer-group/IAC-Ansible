@@ -142,12 +142,19 @@ site.yml
   │   ├── BAUER GROUP installer (--coolify-only), depends on docker
   │   └── Idempotent: marker-gated (/data/coolify)
   │
-  └── Phase 6a: traefik         (traefik_hosts group)
-      ├── CS-Traefik installer, core mode (no monitoring / no auto-update)
-      ├── COMPOSE_PROFILES pinned empty in /opt/edgeproxy/.env, depends on docker
-      ├── Idempotent: marker-gated (/opt/edgeproxy/.env)
-      └── Install-only — update manually on the host:
-          cd /opt/edgeproxy && sudo ./traefik.sh deploy && sudo ./traefik.sh update
+  ├── Phase 6a: traefik         (traefik_hosts group)
+  │   ├── CS-Traefik installer, core mode (no monitoring / no auto-update)
+  │   ├── COMPOSE_PROFILES pinned empty in /opt/edgeproxy/.env, depends on docker
+  │   ├── Idempotent: marker-gated (/opt/edgeproxy/.env)
+  │   └── Install-only — update manually on the host:
+  │       cd /opt/edgeproxy && sudo ./traefik.sh deploy && sudo ./traefik.sh update
+  │
+  └── Phase 6b: portainer       (portainer_hosts group)
+      ├── Container-management UI via docker compose plugin, depends on docker
+      ├── Localhost-only by default (portainer_expose_public for public)
+      ├── Admin seeded from --admin-password-file; EE license via env var
+      ├── Mutually exclusive with coolify on a host (role asserts this)
+      └── Idempotent: docker_compose_v2 recreates only on image/config change
 ```
 
 ## Platform Support

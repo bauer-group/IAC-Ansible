@@ -88,6 +88,7 @@ roles/             Reusable roles
   k0s/             Bare-metal Kubernetes (multi-cluster, VLAN or WG mesh)
   secondary_dns/   PowerDNS authoritative secondary (NOTIFY/AXFR slave)
   traefik/         Traefik edge proxy (CS-Traefik, core mode)
+  portainer/       Portainer container-management UI (docker compose)
 scripts/           Bootstrap and helper scripts
 filter_plugins/    Custom Jinja2 filters
 docs/              Documentation
@@ -124,6 +125,7 @@ auto_update_type: "security"  # Security updates only
 - [Troubleshooting](docs/troubleshooting.md)
 - [k0s — Bare-Metal Kubernetes](docs/k0s-architecture.md)
 - [Secondary DNS (PowerDNS)](docs/secondary-dns.md)
+- [Portainer](docs/portainer.md)
 - [ADR-0001: Collection distribution strategy](docs/adr/0001-collection-distribution-strategy.md)
 - [Contributing](CONTRIBUTING.md)
 

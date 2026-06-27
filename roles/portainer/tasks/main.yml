@@ -1,0 +1,93 @@
+---
+# =============================================================================
+# Portainer Role - Main Tasks
+# =============================================================================
+# Declarative install via the docker compose plugin. The admin user is seeded
+# by Portainer from a mounted password file on first boot; the EE license (if
+# any) is applied via the PORTAINER_LICENSE_KEY environment variable. Both are
+# idempotent and non-destructive — re-runs only recreate the container when the
+# image or compose config actually changes.
+
+- name: Configure Portainer
+  when: portainer_enabled | bool
+  block:
+    - name: Assert Portainer and Coolify are not co-located
+      ansible.builtin.assert:
+        that:
+          - "'coolify' not in (labels | default([]))"
+          - "'coolify_hosts' not in group_names"
+        fail_msg: >-
+          Portainer and Coolify must not run on the same host. This host is
+          flagged for Coolify — remove it from coolify_hosts / drop the
+          'coolify' label, or do not enable Portainer here.
+        quiet: true
+
+    - name: Assert admin password is set and long enough
+      ansible.builtin.assert:
+        that:
+          - portainer_admin_password | length >= 12
+        fail_msg: >-
+          portainer_admin_password must be at least 12 characters. Set
+          secrets_portainer_admin_password in the vault (see docs/portainer.md).
+        quiet: true
+      no_log: true
+
+    - name: Assert EE edition has a license key
+      ansible.builtin.assert:
+        that:
+          - portainer_license_key | length > 0
+        fail_msg: >-
+          portainer_edition is 'ee' but no license key is set. Provide
+          secrets_portainer_license in the vault, or use the 'ce' edition.
+        quiet: true
+      no_log: true
+      when: portainer_edition == "ee"
+
+    - name: Create Portainer project and secrets directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ portainer_project_dir }}", mode: "0750" }
+        - { path: "{{ portainer_project_dir }}/secrets", mode: "0700" }
+
+    - name: Write admin password file (read on first boot only)
+      ansible.builtin.copy:
+        content: "{{ portainer_admin_password }}"
+        dest: "{{ portainer_admin_password_path }}"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+
+    - name: Deploy Portainer compose file
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ portainer_project_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: "0640"
+      # Rendered file contains the EE license key when set — keep it out of logs.
+      no_log: "{{ portainer_license_key | length > 0 }}"
+
+    - name: Deploy Portainer stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ portainer_project_dir }}"
+        pull: always
+        state: present
+      register: portainer_compose
+
+    - name: Show Portainer access information
+      ansible.builtin.debug:
+        verbosity: 1
+        msg: >-
+          Portainer ({{ portainer_edition | upper }}) deployed on
+          {{ inventory_hostname }}.
+          {% if portainer_expose_public %}
+          Published publicly on :{{ portainer_port_https }} (HTTPS).
+          {% else %}
+          Reachable on 127.0.0.1:{{ portainer_port_https }} only — tunnel in.
+          {% endif %}

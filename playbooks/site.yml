@@ -119,6 +119,17 @@
     - role: traefik
       tags: [traefik]
 
+# --- Phase 6b: Portainer container-management UI for designated hosts ---
+- name: "Phase 6b: Portainer management UI"
+  hosts: portainer_hosts
+  become: true
+  gather_facts: true
+  tags: [portainer]
+
+  roles:
+    - role: portainer
+      tags: [portainer]
+
 # --- Phase 7: k0s Kubernetes for designated cluster nodes ---
 - name: "Phase 7: k0s cluster nodes"
   hosts: k0s_cluster

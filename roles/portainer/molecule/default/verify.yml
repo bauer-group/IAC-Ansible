@@ -1,0 +1,19 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Verify role executed without errors
+      ansible.builtin.debug:
+        msg: >-
+          Portainer role converged successfully.
+          Actual deployment is disabled in molecule (requires Docker + network).
+          Verifying idempotency and task structure only.
+
+    - name: Verify project dir is absent when role is disabled
+      ansible.builtin.stat:
+        path: /opt/portainer
+      register: portainer_project_stat
+      failed_when: portainer_project_stat.stat.exists

@@ -1,0 +1,50 @@
+---
+# =============================================================================
+# Portainer role defaults
+# =============================================================================
+# Portainer is a container-management UI. Unlike other workloads in this fleet
+# (which Coolify deploys), Portainer is infra-level and is managed directly by
+# this role via the `docker compose` plugin (community.docker.docker_compose_v2).
+#
+# Portainer and Coolify are mutually exclusive on a host — the role asserts this.
+
+portainer_enabled: true
+
+# Edition: "ce" (Community, default) or "ee" (Business).
+# EE additionally requires a license (see portainer_license_key).
+portainer_edition: "ce"
+portainer_image: "portainer/portainer-{{ portainer_edition }}:latest"
+portainer_container_name: "portainer"
+portainer_data_volume: "portainer"
+portainer_restart_policy: "always"
+
+# Compose project directory on the host (holds docker-compose.yml + secrets/).
+portainer_project_dir: "/opt/portainer"
+
+# --- Exposure -------------------------------------------------------------
+# Localhost-only by default. Set portainer_expose_public: true to publish on
+# all interfaces (0.0.0.0 / [::]). NOTE: published container ports bypass UFW
+# (Docker inserts iptables rules ahead of it) — gate public exposure at the
+# provider/edge firewall, or front Portainer with Traefik.
+portainer_expose_public: false
+portainer_bind_ipv4: "{{ '0.0.0.0' if portainer_expose_public else '127.0.0.1' }}"
+portainer_bind_ipv6: "{{ '::' if portainer_expose_public else '::1' }}"
+
+portainer_port_edge: 8000     # Edge agent tunnel
+portainer_port_http: 9000     # legacy HTTP UI
+portainer_port_https: 9443    # HTTPS UI
+
+# --- First-run admin ------------------------------------------------------
+# Created by Portainer itself on first boot from --admin-password-file. The
+# flag is ignored on later boots when an admin already exists (idempotent, no
+# 5-minute init-timeout race). Password must be >= 12 chars (Portainer rule)
+# and comes from the vault via the secrets role — never hardcode it here.
+portainer_admin_username: "admin"   # informational; the flag always seeds "admin"
+portainer_admin_password: "{{ secrets_portainer_admin_password | default('') }}"
+portainer_admin_password_path: "{{ portainer_project_dir }}/secrets/admin_password"
+portainer_admin_password_container_path: "/run/secrets/portainer_admin"
+
+# --- EE license -----------------------------------------------------------
+# Applied at startup via the PORTAINER_LICENSE_KEY environment variable
+# (EE only). Vault-backed; left empty for CE.
+portainer_license_key: "{{ secrets_portainer_license | default('') }}"

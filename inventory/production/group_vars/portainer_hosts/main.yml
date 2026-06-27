@@ -1,0 +1,14 @@
+---
+# =============================================================================
+# Portainer Hosts - Group Variables
+# =============================================================================
+# Override role defaults for all hosts in the portainer_hosts group.
+# Per-host overrides go in host_vars/<hostname>.yml.
+#
+# Common overrides:
+#   portainer_edition: "ee"          # Business edition (needs a license)
+#   portainer_expose_public: true    # publish on all interfaces (default: localhost)
+#
+# Secrets (set in the encrypted vault, never here):
+#   secrets_portainer_admin_password # >= 12 chars; seeds the first admin
+#   secrets_portainer_license        # EE license key (edition == "ee" only)
