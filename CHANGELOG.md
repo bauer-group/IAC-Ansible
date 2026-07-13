@@ -1,3 +1,9 @@
+## [2.15.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.14.0...v2.15.0) (2026-07-13)
+
+### 🚀 Features
+
+* **inventory:** added 0055-00 Coolify-managed physical host ([a2a5ad8](https://github.com/bauer-group/IAC-Ansible/commit/a2a5ad88f73ba017ff2dcc18cf24713c14f6e683))
+
 ## [2.14.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.13.0...v2.14.0) (2026-06-27)
 
 ### 🚀 Features
