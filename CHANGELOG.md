@@ -1,3 +1,9 @@
+## [2.16.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.15.0...v2.16.0) (2026-07-18)
+
+### 🚀 Features
+
+* **inventory:** add new host 0500-20.cloud.bauer-group.com and update labels ([48b47f8](https://github.com/bauer-group/IAC-Ansible/commit/48b47f86488d168fa58ca52f22238e6706b96c13))
+
 ## [2.15.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.14.0...v2.15.0) (2026-07-13)
 
 ### 🚀 Features
