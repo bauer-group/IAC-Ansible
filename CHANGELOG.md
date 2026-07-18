@@ -1,3 +1,13 @@
+## [2.17.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.16.0...v2.17.0) (2026-07-18)
+
+### 🚀 Features
+
+* **cloud-init:** add Cloud-Init user data for 0500-20.cloud.bauer-group.com ([14f9549](https://github.com/bauer-group/IAC-Ansible/commit/14f95494cd821396c8e92f2c0f7e931674c020fb))
+
+### 🐛 Bug Fixes
+
+* **docs:** update hostname in installation instructions and first workflow ([4327cfc](https://github.com/bauer-group/IAC-Ansible/commit/4327cfc6d07f8cb4301d19919f179380bfb7d2a0))
+
 ## [2.16.0](https://github.com/bauer-group/IAC-Ansible/compare/v2.15.0...v2.16.0) (2026-07-18)
 
 ### 🚀 Features
