@@ -18,7 +18,7 @@ correct `host_vars/<name>.yml` on the first run:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/bauer-group/IAC-Ansible/main/scripts/install.sh | \
-  IAC_HOSTNAME=0047-20.cloud.bauer-group.com bash
+  IAC_HOSTNAME=0123-00.cloud.bauer-group.com bash
 ```
 
 The installer runs `hostnamectl`, updates `/etc/hosts` and writes
@@ -96,7 +96,7 @@ docs/              Documentation
 
 ## First Workflow: Auto-Updates
 
-The host `0046-20.cloud.bauer-group.com` (Ubuntu 24.04) is configured with:
+The host `0123-00.cloud.bauer-group.com` (Ubuntu 24.04) is configured with:
 
 - **Updates**: Daily at 02:00 (all packages or security-only, configurable)
 - **Reboot**: Sundays at 03:00 (only when required)
