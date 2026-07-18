@@ -33,7 +33,7 @@ labels:
   - physical
   - ubuntu
   - docker-host
-  - coolify-managed  # workloads deployed by Coolify on 0046-20 (remote server)
+  - coolify-managed
   - auto-update
 
 # --- Hostname ---
