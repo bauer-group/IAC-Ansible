@@ -37,4 +37,3 @@ common_firewall_ufw_state: "disabled"
 # --- AppArmor: stays at the global default (disabled + masked) ---
 
 # --- Netplan ---
-
