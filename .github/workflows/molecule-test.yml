@@ -85,8 +85,27 @@ jobs:
           pip install -r requirements.txt
 
       - name: 📚 Install Ansible collections
+        # galaxy.ansible.com intermittently answers with a body that has no
+        # 'results' key. ansible-core caches that response and then dies
+        # reading it back (KeyError: 'results' -> exit 250) — it killed one
+        # matrix job on 2026-08-23 while the other ten installed the same
+        # collections in the same second. Runners start with a cold cache, so
+        # the bad entry is written and re-read inside a single invocation:
+        # --clear-response-cache would be a no-op, --no-cache skips the branch
+        # entirely and lets a bad response surface as a retryable error.
         run: |
-          ansible-galaxy collection install -r requirements.yml --force
+          for attempt in 1 2 3; do
+            if ansible-galaxy collection install -r requirements.yml --force --no-cache; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              delay=$(( attempt * 20 ))
+              echo "::warning::ansible-galaxy attempt ${attempt}/3 failed; retrying in ${delay}s"
+              sleep "${delay}"
+            fi
+          done
+          echo "::error::ansible-galaxy collection install failed after 3 attempts"
+          exit 1
 
       - name: 🧪 Run Molecule tests
         # Manual single-role runs: skip the test when this matrix entry isn't
